@@ -2,9 +2,9 @@ import React from 'react'
 import Layout from '@theme/Layout'
 import Link from '@docusaurus/Link'
 
-const DEMO_CODE = `import { useChat, ChatContainer, Message, InputBar } from '@agentkit/react'
-import { anthropic } from '@agentkit/react/adapters'
-import '@agentkit/react/theme'
+const DEMO_CODE = `import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
+import { anthropic } from '@agentkit-react/core/adapters'
+import '@agentkit-react/core/theme'
 
 function Chat() {
   const chat = useChat({
@@ -152,7 +152,7 @@ export default function Home(): React.JSX.Element {
             </Link>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--ifm-color-emphasis-500)', marginTop: '1rem' }}>
-            npm install @agentkit/react
+            npm install @agentkit-react/core
           </p>
         </div>
 

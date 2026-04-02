@@ -13,13 +13,13 @@ AgentKit's `useChat` hook styled with shadcn/ui patterns. This demo recreates th
 ## With real shadcn/ui
 
 ```tsx
-import { useChat } from '@agentkit/react'
+import { useChat } from '@agentkit-react/core'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { anthropic } from '@agentkit/react/adapters'
+import { anthropic } from '@agentkit-react/core/adapters'
 
 function Chat() {
   const chat = useChat({ adapter: anthropic({ apiKey: 'key', model: 'claude-sonnet-4-6' }) })

@@ -40,5 +40,5 @@ Style with attribute selectors:
 Or import the default theme:
 
 ```tsx
-import '@agentkit/react/theme'
+import '@agentkit-react/core/theme'
 ```

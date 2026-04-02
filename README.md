@@ -2,24 +2,24 @@
 
 **Ship AI chat in 10 lines of React.**
 
-[![npm version](https://img.shields.io/npm/v/@agentkit/react)](https://www.npmjs.com/package/@agentkit/react)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@agentkit/react)](https://bundlephobia.com/package/@agentkit/react)
-[![license](https://img.shields.io/npm/l/@agentkit/react)](https://github.com/EmersonBraun/agentkit/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@agentkit-react/core)](https://www.npmjs.com/package/@agentkit-react/core)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@agentkit-react/core)](https://bundlephobia.com/package/@agentkit-react/core)
+[![license](https://img.shields.io/npm/l/@agentkit-react/core)](https://github.com/EmersonBraun/agentkit/blob/main/LICENSE)
 
 Drop-in hooks and components for streaming AI interfaces. Works with **Claude**, **GPT**, **Vercel AI SDK**, or any LLM. So simple an AI agent can write it for you.
 
 ## Install
 
 ```bash
-npm install @agentkit/react
+npm install @agentkit-react/core
 ```
 
 ## 10-Line Chat
 
 ```tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit/react'
-import { anthropic } from '@agentkit/react/adapters'
-import '@agentkit/react/theme'
+import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
+import { anthropic } from '@agentkit-react/core/adapters'
+import '@agentkit-react/core/theme'
 
 function Chat() {
   const chat = useChat({
@@ -49,7 +49,7 @@ That's it. Streaming, auto-scroll, keyboard handling, light/dark theme — all i
 ## Swap providers in one line
 
 ```tsx
-import { anthropic, openai, vercelAI, generic } from '@agentkit/react/adapters'
+import { anthropic, openai, vercelAI, generic } from '@agentkit-react/core/adapters'
 
 // Claude
 useChat({ adapter: anthropic({ apiKey, model: 'claude-sonnet-4-6' }) })
@@ -71,9 +71,9 @@ useChat({ adapter: generic({ send: async (msgs) => fetch('/api', { body: JSON.st
 ```tsx
 // app/chat/page.tsx
 'use client'
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit/react'
-import { anthropic } from '@agentkit/react/adapters'
-import '@agentkit/react/theme'
+import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
+import { anthropic } from '@agentkit-react/core/adapters'
+import '@agentkit-react/core/theme'
 
 export default function ChatPage() {
   const chat = useChat({ adapter: anthropic({ apiKey: process.env.NEXT_PUBLIC_API_KEY!, model: 'claude-sonnet-4-6' }) })
@@ -90,9 +90,9 @@ export default function ChatPage() {
 
 ```tsx
 // src/App.tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit/react'
-import { openai } from '@agentkit/react/adapters'
-import '@agentkit/react/theme'
+import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
+import { openai } from '@agentkit-react/core/adapters'
+import '@agentkit-react/core/theme'
 
 function App() {
   const chat = useChat({ adapter: openai({ apiKey: import.meta.env.VITE_OPENAI_KEY, model: 'gpt-4o' }) })
@@ -109,9 +109,9 @@ function App() {
 
 ```tsx
 // app/routes/chat.tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit/react'
-import { vercelAI } from '@agentkit/react/adapters'
-import '@agentkit/react/theme'
+import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
+import { vercelAI } from '@agentkit-react/core/adapters'
+import '@agentkit-react/core/theme'
 
 export default function Chat() {
   const chat = useChat({ adapter: vercelAI({ api: '/api/chat' }) })
@@ -128,9 +128,9 @@ export default function Chat() {
 
 ```tsx
 // src/routes/chat.tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit/react'
-import { anthropic } from '@agentkit/react/adapters'
-import '@agentkit/react/theme'
+import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
+import { anthropic } from '@agentkit-react/core/adapters'
+import '@agentkit-react/core/theme'
 
 export default function Chat() {
   const chat = useChat({ adapter: anthropic({ apiKey: 'your-key', model: 'claude-sonnet-4-6' }) })
@@ -175,7 +175,7 @@ const chat = useChat({ adapter })
 Components ship unstyled with `data-ak-*` attributes. Import the theme for instant polish:
 
 ```tsx
-import '@agentkit/react/theme' // light/dark, CSS custom properties
+import '@agentkit-react/core/theme' // light/dark, CSS custom properties
 ```
 
 Override any token:

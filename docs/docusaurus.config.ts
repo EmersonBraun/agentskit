@@ -48,7 +48,7 @@ const config: Config = {
           title: 'Community',
           items: [
             { label: 'GitHub', href: 'https://github.com/EmersonBraun/agentkit' },
-            { label: 'npm', href: 'https://www.npmjs.com/package/@agentkit/react' },
+            { label: 'npm', href: 'https://www.npmjs.com/package/@agentkit-react/core' },
           ],
         },
       ],

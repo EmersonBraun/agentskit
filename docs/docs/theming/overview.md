@@ -9,7 +9,7 @@ AgentKit components are headless by default. Import the optional theme for a pol
 ## Default Theme
 
 ```tsx
-import '@agentkit/react/theme'
+import '@agentkit-react/core/theme'
 ```
 
 Includes light and dark mode support via `prefers-color-scheme` or `data-theme` attribute.

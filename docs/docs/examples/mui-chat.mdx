@@ -13,9 +13,9 @@ AgentKit's `useChat` hook styled with Material UI components. This demo recreate
 ## With real MUI
 
 ```tsx
-import { useChat } from '@agentkit/react'
+import { useChat } from '@agentkit-react/core'
 import { Paper, TextField, Button, List, ListItem, Avatar, Typography } from '@mui/material'
-import { anthropic } from '@agentkit/react/adapters'
+import { anthropic } from '@agentkit-react/core/adapters'
 
 function MuiChat() {
   const chat = useChat({ adapter: anthropic({ apiKey: 'key', model: 'claude-sonnet-4-6' }) })

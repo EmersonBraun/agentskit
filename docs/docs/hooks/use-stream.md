@@ -9,7 +9,7 @@ The fundamental streaming primitive. Consumes any async stream and returns react
 ## Usage
 
 ```tsx
-import { useStream } from '@agentkit/react'
+import { useStream } from '@agentkit-react/core'
 
 function StreamViewer({ source }) {
   const { text, status, error, stop } = useStream(source)

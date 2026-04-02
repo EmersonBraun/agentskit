@@ -1,5 +1,5 @@
 {
-  "name": "@agentkit/react",
+  "name": "@agentkit-react/core",
   "version": "0.1.0",
   "description": "Ship AI chat in 10 lines of React. Drop-in hooks and components for streaming AI interfaces.",
   "type": "module",

@@ -9,7 +9,7 @@ Adapters normalize AI provider streaming APIs into a common interface that Agent
 ## Built-in Adapters
 
 ```tsx
-import { anthropic, openai, vercelAI, generic } from '@agentkit/react/adapters'
+import { anthropic, openai, vercelAI, generic } from '@agentkit-react/core/adapters'
 
 // Anthropic
 const adapter = anthropic({ apiKey: 'key', model: 'claude-sonnet-4-6' })
@@ -32,7 +32,7 @@ const adapter = generic({
 ## Custom Adapters
 
 ```tsx
-import { createAdapter } from '@agentkit/react/adapters'
+import { createAdapter } from '@agentkit-react/core/adapters'
 
 const myAdapter = createAdapter({
   send: async (messages) => fetch('/api', { body: JSON.stringify(messages) }),

@@ -7,15 +7,15 @@ sidebar_position: 1
 Install AgentKit with your package manager:
 
 ```bash
-npm install @agentkit/react
+npm install @agentkit-react/core
 ```
 
 ```bash
-yarn add @agentkit/react
+yarn add @agentkit-react/core
 ```
 
 ```bash
-pnpm add @agentkit/react
+pnpm add @agentkit-react/core
 ```
 
 ## Peer Dependencies
@@ -31,7 +31,7 @@ npm install react react-dom
 Import the default theme CSS for a polished chat UI out of the box:
 
 ```tsx
-import '@agentkit/react/theme'
+import '@agentkit-react/core/theme'
 ```
 
 The theme uses CSS custom properties, so you can override any token without ejecting.

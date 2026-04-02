@@ -29,7 +29,7 @@ chat.input / setInput   // controlled input
 ## Adapters
 
 ```tsx
-import { anthropic, openai, vercelAI, generic } from '@agentkit/react/adapters'
+import { anthropic, openai, vercelAI, generic } from '@agentkit-react/core/adapters'
 
 anthropic({ apiKey, model })
 openai({ apiKey, model })
@@ -52,7 +52,7 @@ generic({ send: async (msgs) => ReadableStream })
 ## Theme
 
 ```tsx
-import '@agentkit/react/theme' // optional default CSS
+import '@agentkit-react/core/theme' // optional default CSS
 ```
 
 All components use `data-ak-*` attributes. Override with CSS custom properties (`--ak-color-*`, `--ak-font-*`, `--ak-spacing-*`).

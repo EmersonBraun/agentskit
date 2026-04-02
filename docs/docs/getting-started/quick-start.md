@@ -9,9 +9,9 @@ Build a working AI chat in under 10 lines.
 ## Basic Chat
 
 ```tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit/react'
-import { anthropic } from '@agentkit/react/adapters'
-import '@agentkit/react/theme'
+import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
+import { anthropic } from '@agentkit-react/core/adapters'
+import '@agentkit-react/core/theme'
 
 function App() {
   const chat = useChat({
@@ -41,7 +41,7 @@ function App() {
 Swap the adapter — everything else stays the same:
 
 ```tsx
-import { openai } from '@agentkit/react/adapters'
+import { openai } from '@agentkit-react/core/adapters'
 
 const chat = useChat({
   adapter: openai({ apiKey: 'your-key', model: 'gpt-4o' }),
@@ -53,7 +53,7 @@ const chat = useChat({
 Skip the theme import and style everything yourself:
 
 ```tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit/react'
+import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
 // No theme import — components render with data-ak-* attributes only
 
 function App() {
