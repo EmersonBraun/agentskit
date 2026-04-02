@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.superpowers/
+*.tsbuildinfo
+.DS_Store
+docs/node_modules/
+docs/build/
+docs/.docusaurus/
