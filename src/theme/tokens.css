@@ -1,0 +1,79 @@
+:root {
+  --ra-color-bg: #ffffff;
+  --ra-color-surface: #f9fafb;
+  --ra-color-border: #e5e7eb;
+  --ra-color-text: #111827;
+  --ra-color-text-muted: #6b7280;
+  --ra-color-bubble-user: #2563eb;
+  --ra-color-bubble-user-text: #ffffff;
+  --ra-color-bubble-assistant: #f3f4f6;
+  --ra-color-bubble-assistant-text: #111827;
+  --ra-color-input-bg: #ffffff;
+  --ra-color-input-border: #d1d5db;
+  --ra-color-input-focus: #2563eb;
+  --ra-color-button: #2563eb;
+  --ra-color-button-text: #ffffff;
+  --ra-color-code-bg: #1f2937;
+  --ra-color-code-text: #e5e7eb;
+  --ra-color-tool-bg: #fef3c7;
+  --ra-color-tool-border: #f59e0b;
+  --ra-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ra-font-size: 14px;
+  --ra-font-size-sm: 12px;
+  --ra-font-size-lg: 16px;
+  --ra-line-height: 1.5;
+  --ra-radius: 8px;
+  --ra-radius-lg: 12px;
+  --ra-spacing-xs: 4px;
+  --ra-spacing-sm: 8px;
+  --ra-spacing-md: 12px;
+  --ra-spacing-lg: 16px;
+  --ra-spacing-xl: 24px;
+  --ra-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --ra-transition: 150ms ease;
+}
+
+[data-theme="dark"],
+.dark {
+  --ra-color-bg: #111827;
+  --ra-color-surface: #1f2937;
+  --ra-color-border: #374151;
+  --ra-color-text: #f9fafb;
+  --ra-color-text-muted: #9ca3af;
+  --ra-color-bubble-user: #3b82f6;
+  --ra-color-bubble-user-text: #ffffff;
+  --ra-color-bubble-assistant: #1f2937;
+  --ra-color-bubble-assistant-text: #f9fafb;
+  --ra-color-input-bg: #1f2937;
+  --ra-color-input-border: #4b5563;
+  --ra-color-input-focus: #3b82f6;
+  --ra-color-button: #3b82f6;
+  --ra-color-button-text: #ffffff;
+  --ra-color-code-bg: #0f172a;
+  --ra-color-code-text: #e2e8f0;
+  --ra-color-tool-bg: #451a03;
+  --ra-color-tool-border: #d97706;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ra-color-bg: #111827;
+    --ra-color-surface: #1f2937;
+    --ra-color-border: #374151;
+    --ra-color-text: #f9fafb;
+    --ra-color-text-muted: #9ca3af;
+    --ra-color-bubble-user: #3b82f6;
+    --ra-color-bubble-user-text: #ffffff;
+    --ra-color-bubble-assistant: #1f2937;
+    --ra-color-bubble-assistant-text: #f9fafb;
+    --ra-color-input-bg: #1f2937;
+    --ra-color-input-border: #4b5563;
+    --ra-color-input-focus: #3b82f6;
+    --ra-color-button: #3b82f6;
+    --ra-color-button-text: #ffffff;
+    --ra-color-code-bg: #0f172a;
+    --ra-color-code-text: #e2e8f0;
+    --ra-color-tool-bg: #451a03;
+    --ra-color-tool-border: #d97706;
+  }
+}
