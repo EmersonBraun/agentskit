@@ -154,7 +154,7 @@ export function MuiChat() {
 
   useEffect(() => {
     if (listRef.current) {
-      // scroll removed
+      listRef.current.scrollTop = listRef.current.scrollHeight
     }
   }, [messages])
 

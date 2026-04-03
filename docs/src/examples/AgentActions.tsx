@@ -406,11 +406,12 @@ export function AgentActions() {
 
   const nextIdRef = useRef(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const scrollToBottom = useCallback(() => {
-    // auto-scroll removed
+    if (containerRef.current) containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [])
 
   useEffect(() => {
@@ -606,6 +607,7 @@ export function AgentActions() {
 
       {/* Messages */}
       <div
+        ref={containerRef}
         style={{
           flex: 1,
           overflowY: 'auto',

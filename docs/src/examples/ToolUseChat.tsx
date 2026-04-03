@@ -328,11 +328,12 @@ export function ToolUseChat() {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const ranRef = useRef(false)
 
   // Auto-scroll
   useEffect(() => {
-    // auto-scroll removed
+    if (containerRef.current) containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [messages])
 
   // ---------------------------------------------------------------------------
@@ -544,6 +545,7 @@ export function ToolUseChat() {
 
       {/* Messages area */}
       <div
+        ref={containerRef}
         style={{
           flex: 1,
           overflowY: 'auto',

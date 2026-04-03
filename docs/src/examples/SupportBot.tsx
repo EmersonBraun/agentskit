@@ -204,6 +204,7 @@ export function SupportBot() {
   const [activeFlow, setActiveFlow] = useState<Flow>('none')
   const [, setTick] = useState(0)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const nextId = useRef(1)
 
   // Refresh timestamps every 30s
@@ -228,7 +229,7 @@ export function SupportBot() {
   }, [])
 
   useEffect(() => {
-    // auto-scroll removed
+    if (containerRef.current) containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [messages, botState])
 
   function addBotMessage(content: string | React.ReactNode) {
@@ -410,6 +411,7 @@ export function SupportBot() {
 
       {/* Messages */}
       <div
+        ref={containerRef}
         style={{
           flex: 1,
           overflowY: 'auto',

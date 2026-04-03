@@ -283,7 +283,7 @@ function useStreamMessage(
 
         requestAnimationFrame(() => {
           if (scrollRef.current) {
-            // scroll removed
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight
           }
         })
       }

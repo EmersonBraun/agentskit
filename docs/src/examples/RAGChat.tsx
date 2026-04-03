@@ -285,11 +285,12 @@ export function RAGChat() {
   const [phase, setPhase] = useState<Phase>('idle')
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const nextIdRef = useRef(1)
   const demoFiredRef = useRef(false)
 
   const scrollToBottom = useCallback(() => {
-    // auto-scroll removed
+    if (containerRef.current) containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [])
 
   useEffect(() => {
@@ -507,6 +508,7 @@ export function RAGChat() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Messages */}
           <div
+            ref={containerRef}
             style={{
               flex: 1,
               overflowY: 'auto',

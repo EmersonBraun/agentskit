@@ -21,10 +21,11 @@ export function ShadcnChat() {
   const [focused, setFocused] = useState(false)
   const [hovered, setHovered] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const nextId = useRef(INITIAL_MESSAGES.length + 1)
 
   useEffect(() => {
-    // auto-scroll removed
+    if (containerRef.current) containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [messages])
 
   const sendMessage = () => {
@@ -102,6 +103,7 @@ export function ShadcnChat() {
 
       {/* Messages */}
       <div
+        ref={containerRef}
         style={{
           flex: 1,
           overflowY: 'auto',

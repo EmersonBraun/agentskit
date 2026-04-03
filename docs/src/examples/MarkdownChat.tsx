@@ -429,11 +429,12 @@ export function MarkdownChat() {
   const [demoComplete, setDemoComplete] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const nextIdRef = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = useCallback(() => {
-    // auto-scroll removed
+    if (containerRef.current) containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [])
 
   useEffect(() => { scrollToBottom() }, [messages, scrollToBottom])
@@ -632,6 +633,7 @@ export function MarkdownChat() {
 
       {/* Messages */}
       <div
+        ref={containerRef}
         style={{
           flex: 1,
           overflowY: 'auto',

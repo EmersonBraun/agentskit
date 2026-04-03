@@ -29,11 +29,12 @@ export function BasicChat() {
   const [streamingId, setStreamingId] = useState<number | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const nextIdRef = useRef(1)
 
   const scrollToBottom = useCallback(() => {
-    // auto-scroll removed
+    if (containerRef.current) containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [])
 
   useEffect(() => {
@@ -178,6 +179,7 @@ export function BasicChat() {
 
       {/* Messages area */}
       <div
+        ref={containerRef}
         style={{
           flex: 1,
           overflowY: 'auto',

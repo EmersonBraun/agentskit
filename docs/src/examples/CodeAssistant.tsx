@@ -502,6 +502,7 @@ export function CodeAssistant() {
   const [isTyping, setIsTyping] = useState(false)
   const [demoPhase, setDemoPhase] = useState(0) // 0 = waiting, 1 = q1 sent, 2 = a1 done, 3 = q2 sent, 4 = done
   const bottomRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const streamCancel = useRef(false)
   const nextId = useRef(1)
 
@@ -509,7 +510,7 @@ export function CodeAssistant() {
 
   // Auto-scroll
   useEffect(() => {
-    // auto-scroll removed
+    if (containerRef.current) containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [messages, isTyping])
 
   // ---- Streaming helper ----
@@ -816,6 +817,7 @@ export function CodeAssistant() {
 
         {/* Messages */}
         <div
+          ref={containerRef}
           style={{
             flex: 1,
             overflowY: 'auto',
