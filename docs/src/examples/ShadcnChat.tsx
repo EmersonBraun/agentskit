@@ -24,7 +24,7 @@ export function ShadcnChat() {
   const nextId = useRef(INITIAL_MESSAGES.length + 1)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // auto-scroll removed
   }, [messages])
 
   const sendMessage = () => {

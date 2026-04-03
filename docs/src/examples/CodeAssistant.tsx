@@ -509,7 +509,7 @@ export function CodeAssistant() {
 
   // Auto-scroll
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // auto-scroll removed
   }, [messages, isTyping])
 
   // ---- Streaming helper ----

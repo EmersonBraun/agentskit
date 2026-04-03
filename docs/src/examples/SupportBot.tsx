@@ -228,7 +228,7 @@ export function SupportBot() {
   }, [])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // auto-scroll removed
   }, [messages, botState])
 
   function addBotMessage(content: string | React.ReactNode) {

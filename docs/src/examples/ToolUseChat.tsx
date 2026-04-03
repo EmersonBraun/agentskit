@@ -332,7 +332,7 @@ export function ToolUseChat() {
 
   // Auto-scroll
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // auto-scroll removed
   }, [messages])
 
   // ---------------------------------------------------------------------------

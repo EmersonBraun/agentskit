@@ -433,7 +433,7 @@ export function MarkdownChat() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // auto-scroll removed
   }, [])
 
   useEffect(() => { scrollToBottom() }, [messages, scrollToBottom])

@@ -410,7 +410,7 @@ export function AgentActions() {
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // auto-scroll removed
   }, [])
 
   useEffect(() => {

@@ -289,7 +289,7 @@ export function RAGChat() {
   const demoFiredRef = useRef(false)
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // auto-scroll removed
   }, [])
 
   useEffect(() => {

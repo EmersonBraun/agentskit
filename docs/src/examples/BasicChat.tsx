@@ -33,7 +33,7 @@ export function BasicChat() {
   const nextIdRef = useRef(1)
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // auto-scroll removed
   }, [])
 
   useEffect(() => {
