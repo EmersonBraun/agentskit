@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest a new feature for AgentKit
+description: Suggest a new feature for AgentsKit
 labels: ["enhancement"]
 body:
   - type: textarea

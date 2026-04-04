@@ -1,27 +1,38 @@
-# AgentKit
+# AgentsKit
 
-**Ship AI chat in 10 lines of React.**
+**Build AI chat, tools, and agents across React, terminal, and CLI.**
 
-[![npm version](https://img.shields.io/npm/v/@agentkit-react/core)](https://www.npmjs.com/package/@agentkit-react/core)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@agentkit-react/core)](https://bundlephobia.com/package/@agentkit-react/core)
-[![license](https://img.shields.io/npm/l/@agentkit-react/core)](https://github.com/EmersonBraun/agentkit/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@agentskit/react)](https://www.npmjs.com/package/@agentskit/react)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@agentskit/react)](https://bundlephobia.com/package/@agentskit/react)
+[![license](https://img.shields.io/npm/l/@agentskit/react)](https://github.com/EmersonBraun/agentskit/blob/main/LICENSE)
 
-[Documentation](https://emersonbraun.github.io/agentkit/) | [npm](https://www.npmjs.com/package/@agentkit-react/core) | [GitHub](https://github.com/EmersonBraun/agentkit)
+[Documentation](https://emersonbraun.github.io/agentskit/) | [npm](https://www.npmjs.com/package/@agentskit/react) | [GitHub](https://github.com/EmersonBraun/agentskit)
 
-Drop-in hooks and components for streaming AI interfaces. Works with **Claude**, **GPT**, **Vercel AI SDK**, or any LLM. So simple an AI agent can write it for you.
+AgentsKit is now a multi-package ecosystem with a portable core, React UI package, terminal package, adapters, and CLI. The goal stays the same: make streaming AI interfaces feel plug-and-play for humans and coding agents.
 
 ## Install
 
 ```bash
-npm install @agentkit-react/core
+npm install @agentskit/react @agentskit/adapters
 ```
 
-## 10-Line Chat
+## Package Layout
+
+```text
+@agentskit/core      portable runtime, tools, memory, retrieval
+@agentskit/react     React hooks + UI components + theme
+@agentskit/ink       terminal hooks + Ink components
+@agentskit/adapters  provider adapters and generic streams
+@agentskit/cli       chat + init commands
+@agentskit-react/core legacy compatibility bridge
+```
+
+## React Quick Start
 
 ```tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
-import { anthropic } from '@agentkit-react/core/adapters'
-import '@agentkit-react/core/theme'
+import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react'
+import { anthropic } from '@agentskit/adapters'
+import '@agentskit/react/theme'
 
 function Chat() {
   const chat = useChat({
@@ -36,22 +47,62 @@ function Chat() {
 }
 ```
 
-That's it. Streaming, auto-scroll, keyboard handling, light/dark theme — all included.
+That still gives you streaming, components, and a default theme out of the box.
 
-## Why AgentKit?
+## Ink Quick Start
 
-| | AgentKit | Vercel AI SDK | assistant-ui |
+```tsx
+import React from 'react'
+import { render } from 'ink'
+import { ChatContainer, InputBar, Message, useChat } from '@agentskit/ink'
+
+function DemoAdapter() {
+  return {
+    createSource: () => ({
+      async *stream() {
+        yield { type: 'text', content: 'Hello from AgentsKit Ink.' }
+        yield { type: 'done' }
+      },
+      abort() {},
+    }),
+  }
+}
+
+function App() {
+  const chat = useChat({ adapter: DemoAdapter() })
+  return (
+    <ChatContainer>
+      {chat.messages.map(message => <Message key={message.id} message={message} />)}
+      <InputBar chat={chat} />
+    </ChatContainer>
+  )
+}
+
+render(<App />)
+```
+
+## CLI Quick Start
+
+```bash
+pnpm --filter @agentskit/cli build
+node packages/cli/dist/bin.js chat --provider demo
+node packages/cli/dist/bin.js init --template react --dir my-agentskit-app
+```
+
+## Why AgentsKit?
+
+| | AgentsKit | Vercel AI SDK | assistant-ui |
 |---|---------|--------------|-------------|
-| **API surface** | 3 hooks | Full toolkit | 50+ components |
-| **Setup** | 10 lines | ~30 lines | ~50 lines |
-| **Headless** | Yes | No UI included | Opinionated |
+| **API surface** | Small + portable | Full toolkit | 50+ components |
+| **Setup** | React, Ink, CLI | Mostly headless | Heavy UI surface |
+| **Headless** | Yes, via core | Yes | Opinionated |
 | **Agent-friendly** | Entire API fits in 2K tokens | Large docs surface | Large docs surface |
-| **Bundle** | <5KB | ~30KB | ~80KB |
+| **Bundle** | Split packages | ~30KB | ~80KB |
 
 ## Swap providers in one line
 
 ```tsx
-import { anthropic, openai, vercelAI, generic } from '@agentkit-react/core/adapters'
+import { anthropic, openai, vercelAI, generic, gemini, ollama } from '@agentskit/adapters'
 
 // Claude
 useChat({ adapter: anthropic({ apiKey, model: 'claude-sonnet-4-6' }) })
@@ -64,134 +115,49 @@ useChat({ adapter: vercelAI({ api: '/api/chat' }) })
 
 // Any ReadableStream
 useChat({ adapter: generic({ send: async (msgs) => fetch('/api', { body: JSON.stringify(msgs) }).then(r => r.body!) }) })
+
+// Gemini
+useChat({ adapter: gemini({ apiKey, model: 'gemini-2.5-flash' }) })
+
+// Ollama
+useChat({ adapter: ollama({ model: 'llama3.1' }) })
 ```
 
-## Works everywhere
+## Official Examples
 
-### Next.js (App Router)
-
-```tsx
-// app/chat/page.tsx
-'use client'
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
-import { anthropic } from '@agentkit-react/core/adapters'
-import '@agentkit-react/core/theme'
-
-export default function ChatPage() {
-  const chat = useChat({ adapter: anthropic({ apiKey: process.env.NEXT_PUBLIC_API_KEY!, model: 'claude-sonnet-4-6' }) })
-  return (
-    <ChatContainer>
-      {chat.messages.map(msg => <Message key={msg.id} message={msg} />)}
-      <InputBar chat={chat} />
-    </ChatContainer>
-  )
-}
-```
-
-### Vite
-
-```tsx
-// src/App.tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
-import { openai } from '@agentkit-react/core/adapters'
-import '@agentkit-react/core/theme'
-
-function App() {
-  const chat = useChat({ adapter: openai({ apiKey: import.meta.env.VITE_OPENAI_KEY, model: 'gpt-4o' }) })
-  return (
-    <ChatContainer>
-      {chat.messages.map(msg => <Message key={msg.id} message={msg} />)}
-      <InputBar chat={chat} />
-    </ChatContainer>
-  )
-}
-```
-
-### Remix
-
-```tsx
-// app/routes/chat.tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
-import { vercelAI } from '@agentkit-react/core/adapters'
-import '@agentkit-react/core/theme'
-
-export default function Chat() {
-  const chat = useChat({ adapter: vercelAI({ api: '/api/chat' }) })
-  return (
-    <ChatContainer>
-      {chat.messages.map(msg => <Message key={msg.id} message={msg} />)}
-      <InputBar chat={chat} />
-    </ChatContainer>
-  )
-}
-```
-
-### TanStack Start
-
-```tsx
-// src/routes/chat.tsx
-import { useChat, ChatContainer, Message, InputBar } from '@agentkit-react/core'
-import { anthropic } from '@agentkit-react/core/adapters'
-import '@agentkit-react/core/theme'
-
-export default function Chat() {
-  const chat = useChat({ adapter: anthropic({ apiKey: 'your-key', model: 'claude-sonnet-4-6' }) })
-  return (
-    <ChatContainer>
-      {chat.messages.map(msg => <Message key={msg.id} message={msg} />)}
-      <InputBar chat={chat} />
-    </ChatContainer>
-  )
-}
-```
+- React example app: [`apps/example-react`](/Users/rebecabraun/workspace/EmersonBraun/lib/apps/example-react)
+- Ink example app: [`apps/example-ink`](/Users/rebecabraun/workspace/EmersonBraun/lib/apps/example-ink)
+- Documentation site: [`apps/docs`](/Users/rebecabraun/workspace/EmersonBraun/lib/apps/docs)
 
 ## The entire API
 
-### 3 Hooks
+### Core
 
 ```tsx
-// Stream any async source
-const { text, status, error, stop } = useStream(source)
-
-// Reactive state (proxy-based, minimal re-renders)
-const state = useReactive({ count: 0 })
-
-// Full chat session
-const chat = useChat({ adapter })
+const controller = createChatController({ adapter })
+const memory = createFileMemory('.agentskit-history.json')
+const retriever = createStaticRetriever({ documents })
 ```
 
-### 7 Components
+### React / Ink
 
 ```tsx
-<ChatContainer>         {/* scrollable chat layout */}
-<Message message={m} /> {/* chat bubble with streaming */}
-<InputBar chat={chat} /> {/* input + send */}
-<Markdown content={s} /> {/* markdown renderer */}
-<CodeBlock code={s} language="ts" copyable />
-<ToolCallView toolCall={tc} />
-<ThinkingIndicator visible />
+const chat = useChat({ adapter, memory, tools })
 ```
 
-### Headless + Optional Theme
-
-Components ship unstyled with `data-ak-*` attributes. Import the theme for instant polish:
+## Legacy Compatibility
 
 ```tsx
-import '@agentkit-react/core/theme' // light/dark, CSS custom properties
+import { useChat } from '@agentskit-react/core'
+import { openai } from '@agentskit-react/core/adapters'
+import '@agentskit-react/core/theme'
 ```
 
-Override any token:
-
-```css
-:root {
-  --ak-color-bubble-user: #10b981;
-  --ak-radius: 16px;
-}
-```
+The compatibility bridge remains available while the ecosystem transitions to the new package names.
 
 ## For AI Agents
 
-The entire API fits in **under 2,000 tokens**. See the [agent-friendly reference](https://emersonbraun.github.io/agentkit/docs/getting-started/for-ai-agents) — paste it into your LLM context and start generating chat UIs.
+The entire API fits in **under 2,000 tokens**. See the [agent-friendly reference](https://emersonbraun.github.io/agentskit/docs/getting-started/for-ai-agents) — paste it into your LLM context and start generating chat UIs.
 
 ## Credits
 
