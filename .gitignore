@@ -1,8 +1,9 @@
 node_modules/
 dist/
+build/
 .superpowers/
+.turbo/
+.docusaurus/
+.playwright-mcp/
 *.tsbuildinfo
 .DS_Store
-docs/node_modules/
-docs/build/
-docs/.docusaurus/

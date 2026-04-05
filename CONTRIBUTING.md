@@ -1,4 +1,4 @@
-# Contributing to AgentKit
+# Contributing to AgentsKit
 
 Thanks for wanting to contribute! Here's how to get started.
 
@@ -10,8 +10,8 @@ Thanks for wanting to contribute! Here's how to get started.
 ## Setup
 
 ```bash
-git clone https://github.com/EmersonBraun/agentkit.git
-cd agentkit
+git clone https://github.com/EmersonBraun/agentskit.git
+cd agentskit
 npm install
 ```
 

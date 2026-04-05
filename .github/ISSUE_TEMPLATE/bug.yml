@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug in AgentKit
+description: Report a bug in AgentsKit
 labels: ["bug"]
 body:
   - type: textarea
@@ -30,7 +30,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: AgentKit version
+      label: AgentsKit version
       placeholder: "0.1.0"
     validations:
       required: true

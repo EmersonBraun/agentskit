@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "types": ["node"],
+    "strict": false
+  },
+  "include": ["src", "docusaurus.config.ts", "sidebars.ts"]
+}

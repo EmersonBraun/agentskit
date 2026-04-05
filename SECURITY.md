@@ -19,4 +19,4 @@ We aim to respond within 48 hours and release a fix within 7 days for critical i
 
 ## Scope
 
-This policy covers the `@agentkit-react/core` npm package. Third-party adapters and example code are provided as-is.
+This policy covers the `@agentskit-react/core` npm package. Third-party adapters and example code are provided as-is.
