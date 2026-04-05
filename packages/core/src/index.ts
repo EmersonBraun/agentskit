@@ -1,6 +1,14 @@
 export { createChatController } from './controller'
 export { createInMemoryMemory, createLocalStorageMemory, createFileMemory } from './memory'
 export { createStaticRetriever, formatRetrievedDocuments } from './rag'
+export {
+  generateId,
+  buildMessage,
+  executeToolCall,
+  consumeStream,
+  createEventEmitter,
+} from './primitives'
+export type { ConsumeStreamHandlers } from './primitives'
 export type {
   MaybePromise,
   StreamStatus,
@@ -29,4 +37,12 @@ export type {
   ChatReturn,
   MemoryRecord,
   AdapterFactory,
+  SkillDefinition,
+  VectorDocument,
+  VectorMemory,
+  AgentEvent,
+  Observer,
+  EvalTestCase,
+  EvalResult,
+  EvalSuite,
 } from './types'
