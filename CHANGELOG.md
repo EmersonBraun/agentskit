@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.0 (2026-04-05)
+
+### New Package: @agentskit/runtime
+
+- Standalone agent runtime with ReAct loop — no UI required.
+- `createRuntime(config)` factory with adapter, tools, memory, observers.
+- `runtime.run(task, options?)` executes autonomous agent loops.
+- Tool results injected as `role: 'tool'` messages and re-sent to adapter.
+- Lazy tool `init()`/`dispose()` lifecycle management.
+- Skill activation with `onActivate()` tool merging (last wins on collision).
+- Tool errors injected as results — LLM decides recovery strategy.
+- `AbortSignal` support for per-run cancellation.
+- Memory save at end of run (no hydration at start).
+- Returns structured `RunResult` (content, messages, steps, toolCalls, durationMs).
+- 19 tests covering all behaviors.
+
 ## 0.3.0 (2026-04-04)
 
 ### Breaking Changes
