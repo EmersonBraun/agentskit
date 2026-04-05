@@ -7,7 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  build-and-test:
+  quality:
+    name: Lint, Test, Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,6 +18,21 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm test
-      - run: pnpm build
+
+      - name: Type check
+        run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Verify core bundle size
+        run: |
+          SIZE=$(gzip -c packages/core/dist/index.js | wc -c)
+          echo "Core gzipped: ${SIZE} bytes"
+          if [ "$SIZE" -gt 10240 ]; then
+            echo "::error::Core bundle exceeds 10KB gzipped limit (${SIZE} bytes)"
+            exit 1
+          fi
