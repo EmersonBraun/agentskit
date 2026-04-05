@@ -1,3 +1,5 @@
+import type { JSONSchema7 } from 'json-schema'
+
 export type MaybePromise<T> = T | Promise<T>
 
 export type StreamStatus = 'idle' | 'streaming' | 'complete' | 'error'
@@ -76,9 +78,16 @@ export interface ToolExecutionContext {
 export interface ToolDefinition {
   name: string
   description?: string
-  schema?: unknown
+  schema?: JSONSchema7
   requiresConfirmation?: boolean
-  execute?: (args: Record<string, unknown>, context: ToolExecutionContext) => MaybePromise<unknown>
+  execute?: (
+    args: Record<string, unknown>,
+    context: ToolExecutionContext,
+  ) => MaybePromise<unknown> | AsyncIterable<unknown>
+  init?: () => MaybePromise<void>
+  dispose?: () => MaybePromise<void>
+  tags?: string[]
+  category?: string
 }
 
 export interface ToolCallHandlerContext {
@@ -130,6 +139,7 @@ export interface ChatConfig {
   onMessage?: (message: Message) => void
   onError?: (error: Error) => void
   onToolCall?: (toolCall: ToolCall, context: ToolCallHandlerContext) => MaybePromise<void>
+  observers?: Observer[]
 }
 
 export interface ChatState {
@@ -162,4 +172,74 @@ export interface ChatReturn extends ChatState {
 export interface MemoryRecord {
   version: 1
   messages: Array<Omit<Message, 'createdAt'> & { createdAt: string }>
+}
+
+export interface SkillDefinition {
+  name: string
+  description: string
+  systemPrompt: string
+  examples?: Array<{ input: string; output: string }>
+  tools?: string[]
+  delegates?: string[]
+  temperature?: number
+  metadata?: Record<string, unknown>
+  onActivate?: () => MaybePromise<{ tools?: ToolDefinition[] }>
+}
+
+export interface VectorDocument {
+  id: string
+  content: string
+  embedding: number[]
+  metadata?: Record<string, unknown>
+}
+
+export interface VectorMemory {
+  store: (docs: VectorDocument[]) => MaybePromise<void>
+  search: (
+    embedding: number[],
+    options?: { topK?: number; threshold?: number },
+  ) => MaybePromise<RetrievedDocument[]>
+  delete?: (ids: string[]) => MaybePromise<void>
+}
+
+export type AgentEvent =
+  | { type: 'llm:start'; model?: string; messageCount: number }
+  | { type: 'llm:first-token'; latencyMs: number }
+  | { type: 'llm:end'; content: string; usage?: { promptTokens: number; completionTokens: number }; durationMs: number }
+  | { type: 'tool:start'; name: string; args: Record<string, unknown> }
+  | { type: 'tool:end'; name: string; result: string; durationMs: number }
+  | { type: 'memory:load'; messageCount: number }
+  | { type: 'memory:save'; messageCount: number }
+  | { type: 'agent:step'; step: number; action: string }
+  | { type: 'error'; error: Error }
+
+export interface Observer {
+  name: string
+  on: (event: AgentEvent) => void | Promise<void>
+}
+
+export interface EvalTestCase {
+  input: string
+  expected: string | ((result: string) => boolean)
+  metadata?: Record<string, unknown>
+}
+
+export interface EvalResult {
+  totalCases: number
+  passed: number
+  failed: number
+  accuracy: number
+  results: Array<{
+    input: string
+    output: string
+    passed: boolean
+    latencyMs: number
+    tokenUsage?: { prompt: number; completion: number }
+    error?: string
+  }>
+}
+
+export interface EvalSuite {
+  name: string
+  cases: EvalTestCase[]
 }
