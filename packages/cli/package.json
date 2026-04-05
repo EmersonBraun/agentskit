@@ -1,6 +1,6 @@
 {
   "name": "@agentskit/cli",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "CLI for AgentsKit chat and project scaffolding.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -16,7 +16,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",

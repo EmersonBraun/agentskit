@@ -1,6 +1,6 @@
 {
   "name": "@agentskit/runtime",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Standalone agent runtime with ReAct loop for AgentsKit.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -13,7 +13,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
