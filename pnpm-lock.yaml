@@ -203,6 +203,9 @@ importers:
 
   packages/core:
     devDependencies:
+      '@types/json-schema':
+        specifier: ^7.0.15
+        version: 7.0.15
       '@types/node':
         specifier: ^24.0.0
         version: 24.12.2
