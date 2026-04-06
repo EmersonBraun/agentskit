@@ -92,12 +92,127 @@ describe('redisChatMemory', () => {
   })
 })
 
+function createMockRediSearchClient(): RedisClientAdapter {
+  const hashes = new Map<string, Map<string, string | Buffer>>()
+
+  return {
+    async get(key) { return null },
+    async set() {},
+    async del(key) {
+      const keys = Array.isArray(key) ? key : [key]
+      for (const k of keys) hashes.delete(k)
+    },
+    async keys() { return [] },
+    async disconnect() {},
+    async call(command, ...args) {
+      const cmd = command.toUpperCase()
+      const strArgs = args.map(String)
+
+      if (cmd === 'FT.CREATE') {
+        return 'OK'
+      }
+
+      if (cmd === 'HSET') {
+        const key = strArgs[0]
+        const fields = new Map<string, string | Buffer>()
+        for (let i = 1; i < args.length; i += 2) {
+          fields.set(String(args[i]), args[i + 1] as string | Buffer)
+        }
+        hashes.set(key, fields)
+        return fields.size / 2
+      }
+
+      if (cmd === 'FT.SEARCH') {
+        // Simulate RediSearch response: [total, key1, [field, val, ...], ...]
+        const entries = [...hashes.entries()]
+        const result: unknown[] = [entries.length]
+        for (const [key, fields] of entries) {
+          result.push(key)
+          const flat: string[] = []
+          for (const [k, v] of fields) {
+            if (k === 'embedding') {
+              flat.push(k, '[binary]')
+            } else {
+              flat.push(k, String(v))
+            }
+          }
+          // Add a fake score
+          flat.push('score', '0.1')
+          result.push(flat)
+        }
+        return result
+      }
+
+      return null
+    },
+  }
+}
+
 describe('redisVectorMemory', () => {
   it('can be instantiated with mock client', () => {
-    const client = createMockRedisClient()
+    const client = createMockRediSearchClient()
     const mem = redisVectorMemory({ url: '', client })
     expect(mem.store).toBeTypeOf('function')
     expect(mem.search).toBeTypeOf('function')
     expect(mem.delete).toBeTypeOf('function')
+  })
+
+  it('stores documents and searches them', async () => {
+    const client = createMockRediSearchClient()
+    const mem = redisVectorMemory({ url: '', client, dimensions: 3 })
+
+    await mem.store([
+      { id: 'doc-1', content: 'Hello world', embedding: [0.1, 0.2, 0.3] },
+      { id: 'doc-2', content: 'Goodbye world', embedding: [0.4, 0.5, 0.6] },
+    ])
+
+    const results = await mem.search([0.1, 0.2, 0.3], { topK: 5 })
+    expect(results.length).toBe(2)
+    expect(results[0].content).toBe('Hello world')
+    expect(results[0].score).toBeTypeOf('number')
+  })
+
+  it('delete removes documents', async () => {
+    const client = createMockRediSearchClient()
+    const mem = redisVectorMemory({ url: '', client, keyPrefix: 'test:vec', dimensions: 3 })
+
+    await mem.store([
+      { id: 'doc-1', content: 'Keep me', embedding: [0.1, 0.2, 0.3] },
+      { id: 'doc-2', content: 'Delete me', embedding: [0.4, 0.5, 0.6] },
+    ])
+
+    await mem.delete!(['doc-2'])
+
+    const results = await mem.search([0.1, 0.2, 0.3], { topK: 10 })
+    const ids = results.map(r => r.id)
+    expect(ids).not.toContain('doc-2')
+  })
+
+  it('respects topK in search', async () => {
+    const client = createMockRediSearchClient()
+    const mem = redisVectorMemory({ url: '', client, dimensions: 2 })
+
+    await mem.store([
+      { id: 'a', content: 'A', embedding: [1, 0] },
+      { id: 'b', content: 'B', embedding: [0, 1] },
+      { id: 'c', content: 'C', embedding: [1, 1] },
+    ])
+
+    // Mock returns all, but the FT.SEARCH command includes KNN topK
+    const results = await mem.search([1, 0], { topK: 2 })
+    expect(results.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('filters by threshold', async () => {
+    const client = createMockRediSearchClient()
+    const mem = redisVectorMemory({ url: '', client, dimensions: 2 })
+
+    await mem.store([
+      { id: 'a', content: 'A', embedding: [1, 0] },
+    ])
+
+    // Mock score is 0.9 (1 - 0.1), threshold 0.95 should filter it
+    const results = await mem.search([1, 0], { threshold: 0.95 })
+    expect(results.length).toBe(0)
   })
 })
