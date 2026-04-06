@@ -1,0 +1,109 @@
+:root {
+  color-scheme: light;
+  font-family: "IBM Plex Sans", "Avenir Next", sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(138, 91, 239, 0.2), transparent 42%),
+    linear-gradient(180deg, #f5f7fb 0%, #ede9f8 100%);
+  color: #132033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.app-shell {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 48px 20px 72px;
+}
+
+.hero {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  color: #6b4f9b;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1;
+  margin: 0 0 12px;
+}
+
+.lede {
+  max-width: 62ch;
+  font-size: 1.05rem;
+  color: #41526f;
+}
+
+.agent-badges {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.badge--planner {
+  background: rgba(138, 91, 239, 0.15);
+  color: #6b3fcb;
+  border: 1px solid rgba(138, 91, 239, 0.3);
+}
+
+.badge--researcher {
+  background: rgba(91, 141, 239, 0.15);
+  color: #3b6fcb;
+  border: 1px solid rgba(91, 141, 239, 0.3);
+}
+
+.badge--coder {
+  background: rgba(39, 174, 96, 0.12);
+  color: #1a7a46;
+  border: 1px solid rgba(39, 174, 96, 0.28);
+}
+
+.badge-arrow {
+  font-size: 0.8rem;
+  color: #6b4f9b;
+  font-style: italic;
+}
+
+.badge-sep {
+  font-size: 0.9rem;
+  color: #8a8fa8;
+  font-weight: 600;
+}
+
+.chat-card {
+  border-radius: 28px;
+  border: 1px solid rgba(109, 62, 138, 0.16);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 24px 80px rgba(80, 31, 130, 0.14);
+  overflow: hidden;
+}
+
+.chat-surface {
+  min-height: 420px;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
