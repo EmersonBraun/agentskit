@@ -1,8 +1,40 @@
 import React, { useMemo } from 'react'
 import { Box, Text } from 'ink'
 import { createFileMemory } from '@agentskit/core'
+import type { ToolDefinition, SkillDefinition } from '@agentskit/core'
 import { ChatContainer, InputBar, Message, ThinkingIndicator, ToolCallView, useChat } from '@agentskit/ink'
 import { resolveChatProvider } from './providers'
+import { webSearch, filesystem, shell } from '@agentskit/tools'
+import { researcher, coder, planner, critic, summarizer } from '@agentskit/skills'
+
+const skillRegistry: Record<string, SkillDefinition> = {
+  researcher,
+  coder,
+  planner,
+  critic,
+  summarizer,
+}
+
+function resolveTools(toolNames: string | undefined): ToolDefinition[] {
+  if (!toolNames) return []
+  const tools: ToolDefinition[] = []
+  for (const name of toolNames.split(',').map(s => s.trim())) {
+    switch (name) {
+      case 'web_search':
+        tools.push(webSearch())
+        break
+      case 'filesystem':
+        tools.push(...filesystem({ basePath: process.cwd() }))
+        break
+      case 'shell':
+        tools.push(shell({ timeout: 30_000 }))
+        break
+      default:
+        process.stderr.write(`Unknown tool: ${name}\n`)
+    }
+  }
+  return tools
+}
 
 export interface ChatCommandOptions {
   provider: string
@@ -11,6 +43,8 @@ export interface ChatCommandOptions {
   memoryPath?: string
   apiKey?: string
   baseUrl?: string
+  tools?: string
+  skill?: string
 }
 
 export function ChatApp(options: ChatCommandOptions) {
@@ -22,11 +56,21 @@ export function ChatApp(options: ChatCommandOptions) {
     () => createFileMemory(options.memoryPath ?? '.agentskit-history.json'),
     [options.memoryPath]
   )
+  const tools = useMemo(() => resolveTools(options.tools), [options.tools])
+  const skills = useMemo(() => {
+    if (!options.skill) return undefined
+    const names = options.skill.split(',').map(s => s.trim())
+    const resolved = names.map(n => skillRegistry[n]).filter(Boolean)
+    if (resolved.length === 0) return undefined
+    return resolved
+  }, [options.skill])
 
   const chat = useChat({
     adapter,
     memory,
     systemPrompt: options.system,
+    tools: tools.length > 0 ? tools : undefined,
+    skills,
   })
 
   return (
@@ -55,5 +99,10 @@ export function ChatApp(options: ChatCommandOptions) {
 
 export function renderChatHeader(options: ChatCommandOptions): string {
   const runtime = resolveChatProvider(options)
-  return `provider=${runtime.provider}${runtime.model ? ` model=${runtime.model}` : ''} mode=${runtime.mode}`
+  const parts = [`provider=${runtime.provider}`]
+  if (runtime.model) parts.push(`model=${runtime.model}`)
+  parts.push(`mode=${runtime.mode}`)
+  if (options.tools) parts.push(`tools=${options.tools}`)
+  if (options.skill) parts.push(`skill=${options.skill}`)
+  return parts.join(' ')
 }
