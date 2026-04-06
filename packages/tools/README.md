@@ -1,22 +1,18 @@
 # @agentskit/tools
 
-Reusable executable tools for [AgentsKit](https://github.com/EmersonBraun/agentskit) agents.
+Give your agents real-world capabilities without writing a single integration.
+
+## Why
+
+- **Save days of integration work** — web search, filesystem read/write, shell execution, and directory listing are ready to drop in; no wiring required
+- **Safe by default** — filesystem tools are sandboxed to a `basePath`, shell commands require an explicit allowlist, so agents can't escape their boundaries
+- **Composable with any runtime** — tools are just objects with a schema; they work with `@agentskit/runtime`, `useChat`, or any custom ReAct loop
 
 ## Install
 
 ```bash
 npm install @agentskit/tools
 ```
-
-## Available tools
-
-| Tool | Description |
-|------|-------------|
-| `web_search` | Search the web (DuckDuckGo default, configurable) |
-| `read_file` | Read file contents (sandboxed to basePath) |
-| `write_file` | Write to files (sandboxed to basePath) |
-| `list_directory` | List directory contents (sandboxed to basePath) |
-| `shell` | Execute shell commands with streaming output |
 
 ## Quick example
 
@@ -26,7 +22,7 @@ import { openai } from '@agentskit/adapters'
 import { webSearch, filesystem, shell } from '@agentskit/tools'
 
 const runtime = createRuntime({
-  adapter: openai({ apiKey, model: 'gpt-4o' }),
+  adapter: openai({ apiKey: process.env.OPENAI_API_KEY, model: 'gpt-4o' }),
   tools: [
     webSearch(),
     ...filesystem({ basePath: './workspace' }),
@@ -34,26 +30,8 @@ const runtime = createRuntime({
   ],
 })
 
-const result = await runtime.run('Find and summarize the README')
-```
-
-## Tool discovery
-
-```ts
-import { listTools } from '@agentskit/tools'
-
-listTools()
-// → [{ name, description, tags, category, schema }, ...]
-```
-
-## Custom search provider
-
-```ts
-// Serper (needs API key)
-webSearch({ provider: 'serper', apiKey: '...' })
-
-// Bring your own
-webSearch({ search: async (query) => mySearchAPI(query) })
+const result = await runtime.run('Find the README and summarize it')
+console.log(result.content)
 ```
 
 ## Docs

@@ -1,6 +1,12 @@
 # @agentskit/skills
 
-Ready-made skills (prompts + behavioral instructions) for [AgentsKit](https://github.com/EmersonBraun/agentskit) agents.
+Pre-tuned agent personas that work out of the box — skills are what your agent IS, tools are what it CAN DO.
+
+## Why
+
+- **Skip prompt engineering** — `researcher`, `coder`, `planner`, `critic`, and `summarizer` are battle-tested behavioral profiles; activate one and your agent immediately behaves like a specialist
+- **Composable by design** — combine skills with `composeSkills` to merge prompts, tools, and delegates; build a research-and-code pipeline in one line
+- **Multi-agent delegation built in** — the `planner` skill knows how to coordinate `researcher` and `coder` as sub-agents, so you get multi-agent workflows without writing orchestration code
 
 ## Install
 
@@ -8,50 +14,23 @@ Ready-made skills (prompts + behavioral instructions) for [AgentsKit](https://gi
 npm install @agentskit/skills
 ```
 
-## Built-in skills
-
-| Skill | Description | Tools | Delegates |
-|-------|-------------|-------|-----------|
-| `researcher` | Methodical web research with source cross-referencing | web_search | — |
-| `coder` | Production-ready code with best practices | read_file, write_file, shell | — |
-| `planner` | Task decomposition and specialist coordination | — | researcher, coder |
-| `critic` | Constructive review for correctness and quality | read_file | — |
-| `summarizer` | Concise summaries preserving nuance | — | — |
-
 ## Quick example
 
 ```ts
 import { createRuntime } from '@agentskit/runtime'
-import { openai } from '@agentskit/adapters'
-import { researcher } from '@agentskit/skills'
-import { webSearch } from '@agentskit/tools'
+import { anthropic } from '@agentskit/adapters'
+import { researcher, coder, composeSkills } from '@agentskit/skills'
+import { webSearch, filesystem } from '@agentskit/tools'
 
 const runtime = createRuntime({
-  adapter: openai({ apiKey, model: 'gpt-4o' }),
-  tools: [webSearch()],
+  adapter: anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, model: 'claude-sonnet-4-6' }),
+  tools: [webSearch(), ...filesystem({ basePath: './workspace' })],
 })
 
-const result = await runtime.run('Research quantum computing advances in 2025', {
-  skill: researcher,
+const result = await runtime.run('Research best practices for TypeScript error handling and write an example', {
+  skill: composeSkills(researcher, coder),
 })
-```
-
-## Compose skills
-
-```ts
-import { composeSkills, researcher, coder } from '@agentskit/skills'
-
-const researchAndCode = composeSkills(researcher, coder)
-// Merges prompts, tools, delegates, examples
-```
-
-## Discover skills
-
-```ts
-import { listSkills } from '@agentskit/skills'
-
-listSkills()
-// → [{ name, description, tools, delegates }, ...]
+console.log(result.content)
 ```
 
 ## Docs

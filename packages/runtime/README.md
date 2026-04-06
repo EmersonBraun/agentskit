@@ -1,6 +1,12 @@
 # @agentskit/runtime
 
-Standalone agent runtime for [AgentsKit](https://github.com/EmersonBraun/agentskit). Run autonomous agents with a ReAct loop — no UI required.
+Run autonomous agents in 5 lines — no UI, no boilerplate, just results.
+
+## Why
+
+- **ReAct loop handled for you** — observe, think, act, repeat: the runtime drives the full cycle and stops when the agent decides it's done
+- **Structured, inspectable results** — every run returns the final content, step count, all tool calls made, and total duration; no black boxes
+- **Production-ready lifecycle** — lazy tool `init`/`dispose`, `AbortSignal` cancellation, memory persistence, and `AgentEvent` emissions for observability
 
 ## Install
 
@@ -13,31 +19,18 @@ npm install @agentskit/runtime @agentskit/adapters
 ```ts
 import { createRuntime } from '@agentskit/runtime'
 import { openai } from '@agentskit/adapters'
+import { webSearch, filesystem } from '@agentskit/tools'
 
 const runtime = createRuntime({
-  adapter: openai({ apiKey: 'your-key', model: 'gpt-4o' }),
-  tools: [mySearchTool, myFileSystemTool],
+  adapter: openai({ apiKey: process.env.OPENAI_API_KEY, model: 'gpt-4o' }),
+  tools: [webSearch(), ...filesystem({ basePath: './workspace' })],
   systemPrompt: 'You are a helpful research assistant.',
 })
 
-const result = await runtime.run('Research quantum computing')
-
-console.log(result.content)    // final response
-console.log(result.steps)      // number of ReAct steps
-console.log(result.toolCalls)  // all tool calls made
-console.log(result.durationMs) // total execution time
+const result = await runtime.run('Research the latest advances in quantum computing')
+console.log(result.content)
+console.log(`Completed in ${result.steps} steps, ${result.durationMs}ms`)
 ```
-
-## Features
-
-- ReAct loop: observe → think → act → repeat until done
-- Tool results injected as messages — LLM decides when to stop
-- Lazy tool `init()`/`dispose()` lifecycle
-- Skill activation with `onActivate()` tool merging
-- Tool errors injected as results — LLM decides recovery
-- `AbortSignal` support for per-run cancellation
-- Memory save at end of run
-- Emits `AgentEvent`s for observability
 
 ## Docs
 
