@@ -1,6 +1,7 @@
 import type {
   AdapterFactory,
   ChatMemory,
+  MaybePromise,
   Message,
   Observer,
   Retriever,
@@ -17,8 +18,6 @@ export interface DelegateConfig {
   maxSteps?: number
 }
 
-export type ConfirmFn = (toolCall: ToolCall) => Promise<boolean>
-
 export interface RuntimeConfig {
   adapter: AdapterFactory
   tools?: ToolDefinition[]
@@ -31,7 +30,7 @@ export interface RuntimeConfig {
   maxTokens?: number
   delegates?: Record<string, DelegateConfig>
   maxDelegationDepth?: number
-  onConfirm?: ConfirmFn
+  onConfirm?: (toolCall: ToolCall) => MaybePromise<boolean>
 }
 
 export interface RunOptions {

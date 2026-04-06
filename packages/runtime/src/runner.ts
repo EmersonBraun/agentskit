@@ -2,17 +2,18 @@ import {
   buildMessage,
   consumeStream,
   createEventEmitter,
-  executeToolCall,
   safeParseArgs,
   createToolLifecycle,
   formatRetrievedDocuments,
+  buildToolMap,
+  activateSkills,
+  executeSafeTool,
 } from '@agentskit/core'
 import type {
   AdapterRequest,
   Message,
   StreamChunk,
   ToolCall,
-  ToolDefinition,
 } from '@agentskit/core'
 import type { RuntimeConfig, RunOptions, RunResult } from './types'
 import { buildDelegateTools } from './delegates'
@@ -36,23 +37,18 @@ export function createRuntime(config: RuntimeConfig) {
     const maxSteps = options?.maxSteps ?? config.maxSteps ?? 10
     const signal = options?.signal
 
-    // Activate skill if provided
-    let skillTools: ToolDefinition[] = []
-    let systemPrompt = options?.systemPrompt ?? config.systemPrompt ?? ''
+    // Activate skill: use skill's systemPrompt directly, activate tools via shared helper
+    let effectiveSystemPrompt = options?.systemPrompt ?? config.systemPrompt ?? ''
+    let skillTools: import('@agentskit/core').ToolDefinition[] = []
 
     if (options?.skill) {
-      systemPrompt = options.skill.systemPrompt
-      if (options.skill.onActivate) {
-        const activation = await options.skill.onActivate()
-        skillTools = activation.tools ?? []
-      }
+      effectiveSystemPrompt = options.skill.systemPrompt
+      const activation = await activateSkills([options.skill])
+      skillTools = activation.skillTools
     }
 
-    // Merge tools: config < options < skill (last wins on name collision)
-    const toolMap = new Map<string, ToolDefinition>()
-    for (const tool of config.tools ?? []) toolMap.set(tool.name, tool)
-    for (const tool of options?.tools ?? []) toolMap.set(tool.name, tool)
-    for (const tool of skillTools) toolMap.set(tool.name, tool)
+    // Build tool map using shared helper
+    const toolMap = buildToolMap(config.tools, options?.tools, skillTools)
 
     // Merge delegates: config < options (last wins on name collision)
     const mergedDelegates = {
@@ -68,7 +64,6 @@ export function createRuntime(config: RuntimeConfig) {
           emitter.emit({ type: 'agent:delegate:start', name, task: delegateTask, depth: depth + 1 })
           const delegateStart = Date.now()
 
-          // Use delegate's adapter if provided, otherwise parent's
           const childRuntime = delegateConfig.adapter
             ? createRuntime({ ...config, adapter: delegateConfig.adapter })
             : { run: (t: string, o?: RunOptions) => runInternal(t, o, depth + 1) }
@@ -103,8 +98,8 @@ export function createRuntime(config: RuntimeConfig) {
     // Build initial messages
     const messages: Message[] = []
 
-    if (systemPrompt) {
-      messages.push(buildMessage({ role: 'system', content: systemPrompt }))
+    if (effectiveSystemPrompt) {
+      messages.push(buildMessage({ role: 'system', content: effectiveSystemPrompt }))
     }
 
     messages.push(buildMessage({ role: 'user', content: task }))
@@ -133,7 +128,7 @@ export function createRuntime(config: RuntimeConfig) {
         const request: AdapterRequest = {
           messages: requestMessages,
           context: {
-            systemPrompt,
+            systemPrompt: effectiveSystemPrompt,
             temperature: options?.skill?.temperature ?? config.temperature,
             maxTokens: config.maxTokens,
             tools,
@@ -203,77 +198,34 @@ export function createRuntime(config: RuntimeConfig) {
           break
         }
 
-        // Execute all tool calls sequentially (including delegates)
+        // Execute all tool calls using shared executeSafeTool
         for (const toolCall of assistantToolCalls) {
           if (signal?.aborted) break
 
           const tool = toolMap.get(toolCall.name)
           allToolCalls.push(toolCall)
 
-          if (!tool?.execute) {
-            const errorMsg = `Tool "${toolCall.name}" not found or has no execute function`
+          const execResult = await executeSafeTool({
+            tool,
+            toolCall,
+            context: { messages, call: toolCall },
+            emitter,
+            lifecycle,
+            onPartial: (partial) => { toolCall.result = partial },
+            onConfirm: config.onConfirm,
+          })
+
+          toolCall.status = execResult.status === 'complete' ? 'complete' : 'error'
+          if (execResult.status === 'complete') {
+            toolCall.result = execResult.result
+            messages.push(buildMessage({ role: 'tool', content: execResult.result ?? '' }))
+          } else if (execResult.status === 'skipped') {
             toolCall.status = 'error'
-            toolCall.error = errorMsg
-            messages.push(buildMessage({ role: 'tool', content: errorMsg }))
-            emitter.emit({ type: 'error', error: new Error(errorMsg) })
-            continue
-          }
-
-          // Check if tool requires confirmation
-          if (tool.requiresConfirmation && config.onConfirm) {
-            const approved = await config.onConfirm(toolCall)
-            if (!approved) {
-              const denialMsg = 'Permission denied: user denied access'
-              toolCall.status = 'error'
-              toolCall.error = denialMsg
-              messages.push(buildMessage({ role: 'tool', content: denialMsg }))
-              continue
-            }
-          } else if (tool.requiresConfirmation && !config.onConfirm) {
-            const denialMsg = `Permission denied: tool "${toolCall.name}" requires confirmation but no onConfirm handler is configured`
-            toolCall.status = 'error'
-            toolCall.error = denialMsg
-            messages.push(buildMessage({ role: 'tool', content: denialMsg }))
-            continue
-          }
-
-          // Lazy init for non-delegate tools
-          if (!toolCall.name.startsWith('delegate_')) {
-            await lifecycle.init(tool)
-          }
-
-          emitter.emit({ type: 'tool:start', name: toolCall.name, args: toolCall.args })
-          const toolStart = Date.now()
-
-          try {
-            const result = await executeToolCall(
-              tool,
-              toolCall.args,
-              { messages, call: toolCall },
-              (partial) => {
-                toolCall.result = partial
-              },
-            )
-            toolCall.status = 'complete'
-            toolCall.result = result
-            messages.push(buildMessage({ role: 'tool', content: result }))
-            emitter.emit({
-              type: 'tool:end',
-              name: toolCall.name,
-              result,
-              durationMs: Date.now() - toolStart,
-            })
-          } catch (error) {
-            const errorMsg = error instanceof Error ? error.message : String(error)
-            toolCall.status = 'error'
-            toolCall.error = errorMsg
-            messages.push(buildMessage({ role: 'tool', content: `Error: ${errorMsg}` }))
-            emitter.emit({
-              type: 'tool:end',
-              name: toolCall.name,
-              result: `Error: ${errorMsg}`,
-              durationMs: Date.now() - toolStart,
-            })
+            toolCall.error = execResult.result
+            messages.push(buildMessage({ role: 'tool', content: execResult.result ?? 'Tool execution skipped' }))
+          } else {
+            toolCall.error = execResult.error
+            messages.push(buildMessage({ role: 'tool', content: `Error: ${execResult.error}` }))
           }
         }
 
