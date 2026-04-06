@@ -69,6 +69,9 @@ importers:
 
   apps/example-ink:
     dependencies:
+      '@agentskit/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@agentskit/ink':
         specifier: workspace:*
         version: link:../../packages/ink
@@ -92,8 +95,45 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2
 
+  apps/example-multi-agent:
+    dependencies:
+      '@agentskit/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      '@agentskit/skills':
+        specifier: workspace:*
+        version: link:../../packages/skills
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.2.4
+        version: 19.2.4(react@19.2.4)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.14)
+      '@vitejs/plugin-react':
+        specifier: ^6.0.1
+        version: 6.0.1(vite@8.0.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.5.2)(esbuild@0.27.7)(jiti@1.21.7)(terser@5.46.1)(tsx@4.21.0))
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
+      vite:
+        specifier: ^8.0.5
+        version: 8.0.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.5.2)(esbuild@0.27.7)(jiti@1.21.7)(terser@5.46.1)(tsx@4.21.0)
+
   apps/example-react:
     dependencies:
+      '@agentskit/adapters':
+        specifier: workspace:*
+        version: link:../../packages/adapters
+      '@agentskit/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@agentskit/react':
         specifier: workspace:*
         version: link:../../packages/react
@@ -119,6 +159,28 @@ importers:
       vite:
         specifier: ^8.0.5
         version: 8.0.5(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.5.2)(esbuild@0.27.7)(jiti@1.21.7)(terser@5.46.1)(tsx@4.21.0)
+
+  apps/example-runtime:
+    dependencies:
+      '@agentskit/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@agentskit/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      '@agentskit/skills':
+        specifier: workspace:*
+        version: link:../../packages/skills
+    devDependencies:
+      '@types/node':
+        specifier: ^25.5.2
+        version: 25.5.2
+      tsx:
+        specifier: ^4.20.6
+        version: 4.21.0
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
 
   packages/adapters:
     dependencies:

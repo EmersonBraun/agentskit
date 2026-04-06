@@ -19,6 +19,20 @@ Interactive demos showing what you can build with AgentsKit. Every example is a 
 | [Agent Actions](./agent-actions) | AI generates live interactive UI (task tracker, dashboard) |
 | [Markdown Chat](./markdown-chat) | Rich responses — tables, lists, code blocks, blockquotes |
 
+## Agents & Runtime
+
+| Example | What it shows |
+|---------|---------------|
+| [Runtime Agent](./runtime-agent) | Standalone agent with tools and skills — no UI |
+| [Multi-Agent Planning](./multi-agent) | Planner delegates to researcher + coder specialists |
+
+## Data Pipeline
+
+| Example | What it shows |
+|---------|---------------|
+| [RAG Pipeline](./rag-pipeline) | Document ingestion, embedding, retrieval, context injection |
+| [Eval Runner](./eval-runner) | Agent evaluation and benchmarking |
+
 ## UI Framework Integration
 
 | Example | What it shows |
