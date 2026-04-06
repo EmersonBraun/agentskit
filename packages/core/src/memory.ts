@@ -1,6 +1,6 @@
 import type { ChatMemory, MemoryRecord, Message } from './types'
 
-function serializeMessages(messages: Message[]): MemoryRecord {
+export function serializeMessages(messages: Message[]): MemoryRecord {
   return {
     version: 1,
     messages: messages.map(message => ({
@@ -10,7 +10,7 @@ function serializeMessages(messages: Message[]): MemoryRecord {
   }
 }
 
-function deserializeMessages(record: MemoryRecord | null | undefined): Message[] {
+export function deserializeMessages(record: MemoryRecord | null | undefined): Message[] {
   if (!record?.messages) return []
   return record.messages.map(message => ({
     ...message,

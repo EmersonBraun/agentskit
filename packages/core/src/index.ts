@@ -1,5 +1,5 @@
 export { createChatController } from './controller'
-export { createInMemoryMemory, createLocalStorageMemory, createFileMemory } from './memory'
+export { createInMemoryMemory, createLocalStorageMemory, createFileMemory, serializeMessages, deserializeMessages } from './memory'
 export { createStaticRetriever, formatRetrievedDocuments } from './rag'
 export {
   generateId,

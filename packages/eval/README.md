@@ -1,6 +1,12 @@
 # @agentskit/eval
 
-Agent evaluation and benchmarking for [AgentsKit](https://github.com/EmersonBraun/agentskit).
+Measure agent quality with numbers, not vibes — ship with confidence.
+
+## Why
+
+- **Replace "it seemed to work" with real metrics** — accuracy, per-case latency, token cost, and pass/fail for every test case in a single result object
+- **CI/CD ready** — exit codes reflect suite results; gate deployments on accuracy thresholds so regressions never reach production
+- **Flexible assertions** — exact string matching, `includes` for LLM verbosity, or full control with a custom `(result) => boolean` function per case
 
 ## Install
 
@@ -13,8 +19,11 @@ npm install @agentskit/eval
 ```ts
 import { runEval } from '@agentskit/eval'
 import { createRuntime } from '@agentskit/runtime'
+import { anthropic } from '@agentskit/adapters'
 
-const runtime = createRuntime({ adapter, tools: [...] })
+const runtime = createRuntime({
+  adapter: anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, model: 'claude-sonnet-4-6' }),
+})
 
 const result = await runEval({
   agent: async (input) => {
@@ -22,39 +31,18 @@ const result = await runEval({
     return r.content
   },
   suite: {
-    name: 'basic-qa',
+    name: 'qa-baseline',
     cases: [
       { input: 'What is 2+2?', expected: '4' },
       { input: 'Capital of France?', expected: 'Paris' },
-      { input: 'Is water wet?', expected: (r) => r.toLowerCase().includes('yes') },
+      { input: 'Is TypeScript a superset of JavaScript?', expected: (r) => r.toLowerCase().includes('yes') },
     ],
   },
 })
 
 console.log(`Accuracy: ${(result.accuracy * 100).toFixed(1)}%`)
 console.log(`Passed: ${result.passed}/${result.totalCases}`)
-
-for (const r of result.results) {
-  console.log(`${r.passed ? 'PASS' : 'FAIL'} [${r.latencyMs}ms] ${r.input}`)
-}
 ```
-
-## With token usage
-
-```ts
-const result = await runEval({
-  agent: async (input) => {
-    const r = await runtime.run(input)
-    return { content: r.content, tokenUsage: { prompt: 100, completion: 20 } }
-  },
-  suite,
-})
-```
-
-## Comparison logic
-
-- **String expected**: uses `includes` (LLM output often wraps the answer)
-- **Function expected**: full control — `(result) => boolean`
 
 ## Docs
 

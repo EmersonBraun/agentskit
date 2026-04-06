@@ -1,6 +1,6 @@
 # AgentsKit
 
-**Build AI chat, tools, and agents across React, terminal, and CLI.**
+**The complete toolkit for building AI agents in JavaScript.** Chat UIs, autonomous agents, tools, skills, memory, RAG, and observability — from prototype to production.
 
 [![npm version](https://img.shields.io/npm/v/@agentskit/react)](https://www.npmjs.com/package/@agentskit/react)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/@agentskit/react)](https://bundlephobia.com/package/@agentskit/react)
@@ -8,33 +8,26 @@
 
 [Documentation](https://emersonbraun.github.io/agentskit/) | [npm](https://www.npmjs.com/package/@agentskit/react) | [GitHub](https://github.com/EmersonBraun/agentskit)
 
-AgentsKit is now a multi-package ecosystem with a portable core, React UI package, terminal package, adapters, and CLI. The goal stays the same: make streaming AI interfaces feel plug-and-play for humans and coding agents.
+## Why AgentsKit?
 
-## Install
+- **Ship in minutes, not days.** A streaming chat UI in 10 lines. An autonomous agent in 5. No boilerplate.
+- **Swap providers in one line.** OpenAI, Anthropic, Gemini, Ollama, or any LLM — change one import, everything else stays the same.
+- **Agent-first architecture.** Not just chat — full ReAct loops, tool execution, multi-agent delegation, memory, RAG, and eval built in.
+- **Zero lock-in.** Every package is independently installable. Use only what you need. The entire API fits in 2K tokens — paste it into any LLM and start building.
+
+| | AgentsKit | Vercel AI SDK | assistant-ui |
+|---|---------|--------------|-------------|
+| **Setup** | 10 lines to working chat | Headless, needs UI work | 50+ components to learn |
+| **Agents** | ReAct loop, tools, skills, delegation | No runtime | No runtime |
+| **Providers** | 10+ adapters, swap in 1 line | Route-handler based | BYO backend |
+| **Agent-friendly** | Entire API in 2K tokens | Large docs surface | Large docs surface |
+| **Bundle** | Tree-shakeable, split packages | ~30KB | ~80KB |
+
+## Quick Start: Chat UI (React)
 
 ```bash
 npm install @agentskit/react @agentskit/adapters
 ```
-
-## Package Layout
-
-```text
-@agentskit/core           portable runtime, types, events, contracts
-@agentskit/react          React hooks + UI components + theme
-@agentskit/ink            terminal hooks + Ink components
-@agentskit/adapters       LLM provider adapters (OpenAI, Anthropic, Gemini, etc.)
-@agentskit/cli            chat + init + run commands
-@agentskit/runtime        standalone agent runtime with ReAct loop
-@agentskit/tools          reusable tools (web search, filesystem, shell)
-@agentskit/skills         ready-made skills (researcher, coder, planner, etc.)
-@agentskit/memory         persistent backends (SQLite, Redis, vectra)
-@agentskit/observability  logging + tracing (console, LangSmith, OpenTelemetry)
-@agentskit/rag            plug-and-play retrieval-augmented generation
-@agentskit/sandbox        secure code execution (E2B, WebContainer)
-@agentskit/eval           agent evaluation and benchmarking
-```
-
-## React Quick Start
 
 ```tsx
 import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react'
@@ -43,7 +36,7 @@ import '@agentskit/react/theme'
 
 function Chat() {
   const chat = useChat({
-    adapter: anthropic({ apiKey: 'your-key', model: 'claude-sonnet-4-6' }),
+    adapter: anthropic({ apiKey: process.env.ANTHROPIC_API_KEY!, model: 'claude-sonnet-4-6' }),
   })
   return (
     <ChatContainer>
@@ -54,111 +47,86 @@ function Chat() {
 }
 ```
 
-That still gives you streaming, components, and a default theme out of the box.
+You get streaming, tool calls, memory, and a default theme out of the box.
 
-## Ink Quick Start
-
-```tsx
-import React from 'react'
-import { render } from 'ink'
-import { ChatContainer, InputBar, Message, useChat } from '@agentskit/ink'
-
-function DemoAdapter() {
-  return {
-    createSource: () => ({
-      async *stream() {
-        yield { type: 'text', content: 'Hello from AgentsKit Ink.' }
-        yield { type: 'done' }
-      },
-      abort() {},
-    }),
-  }
-}
-
-function App() {
-  const chat = useChat({ adapter: DemoAdapter() })
-  return (
-    <ChatContainer>
-      {chat.messages.map(message => <Message key={message.id} message={message} />)}
-      <InputBar chat={chat} />
-    </ChatContainer>
-  )
-}
-
-render(<App />)
-```
-
-## CLI Quick Start
+## Quick Start: Autonomous Agent (No UI)
 
 ```bash
-pnpm --filter @agentskit/cli build
-node packages/cli/dist/bin.js chat --provider demo
-node packages/cli/dist/bin.js init --template react --dir my-agentskit-app
+npm install @agentskit/runtime @agentskit/adapters @agentskit/tools
 ```
 
-## Why AgentsKit?
+```ts
+import { createRuntime } from '@agentskit/runtime'
+import { openai } from '@agentskit/adapters'
+import { webSearch, filesystem } from '@agentskit/tools'
 
-| | AgentsKit | Vercel AI SDK | assistant-ui |
-|---|---------|--------------|-------------|
-| **API surface** | Small + portable | Full toolkit | 50+ components |
-| **Setup** | React, Ink, CLI | Mostly headless | Heavy UI surface |
-| **Headless** | Yes, via core | Yes | Opinionated |
-| **Agent-friendly** | Entire API fits in 2K tokens | Large docs surface | Large docs surface |
-| **Bundle** | Split packages | ~30KB | ~80KB |
+const runtime = createRuntime({
+  adapter: openai({ apiKey: process.env.OPENAI_API_KEY!, model: 'gpt-4o' }),
+  tools: [webSearch(), ...filesystem({ basePath: './workspace' })],
+})
+
+const result = await runtime.run('Research the top 3 AI frameworks and save a summary')
+console.log(result.content)   // final answer
+console.log(result.steps)     // how many think→act cycles
+console.log(result.toolCalls) // every tool call made
+```
+
+## Quick Start: Terminal Chat
+
+```bash
+npm install -g @agentskit/cli
+agentskit chat --provider ollama --model llama3.1
+agentskit chat --provider openai --tools web_search,shell --skill researcher
+```
 
 ## Swap providers in one line
 
-```tsx
-import { anthropic, openai, vercelAI, generic, gemini, ollama } from '@agentskit/adapters'
+```ts
+import { anthropic, openai, gemini, ollama, deepseek, grok } from '@agentskit/adapters'
 
-// Claude
 useChat({ adapter: anthropic({ apiKey, model: 'claude-sonnet-4-6' }) })
-
-// GPT
 useChat({ adapter: openai({ apiKey, model: 'gpt-4o' }) })
-
-// Vercel AI SDK (route handler)
-useChat({ adapter: vercelAI({ api: '/api/chat' }) })
-
-// Any ReadableStream
-useChat({ adapter: generic({ send: async (msgs) => fetch('/api', { body: JSON.stringify(msgs) }).then(r => r.body!) }) })
-
-// Gemini
 useChat({ adapter: gemini({ apiKey, model: 'gemini-2.5-flash' }) })
-
-// Ollama
-useChat({ adapter: ollama({ model: 'llama3.1' }) })
+useChat({ adapter: ollama({ model: 'llama3.1' }) })  // local, no API key
 ```
 
-## Official Examples
+## The Ecosystem
 
-- React example app: [`apps/example-react`](apps/example-react)
-- Ink example app: [`apps/example-ink`](apps/example-ink)
-- Documentation site: [`apps/docs`](apps/docs)
+| Package | What it does | When to use it |
+|---------|-------------|----------------|
+| [`@agentskit/core`](packages/core) | Types, contracts, shared primitives | You're building a framework on top of AgentsKit |
+| [`@agentskit/react`](packages/react) | React hooks + headless UI components | Building chat UIs in the browser |
+| [`@agentskit/ink`](packages/ink) | Terminal UI components (Ink) | Building chat UIs in the terminal |
+| [`@agentskit/adapters`](packages/adapters) | 10+ LLM provider adapters + embedders | Connecting to any LLM |
+| [`@agentskit/cli`](packages/cli) | CLI commands (chat, init, run) | Quick prototyping, scripting |
+| [`@agentskit/runtime`](packages/runtime) | Autonomous agent runtime (ReAct loop) | Running agents without UI |
+| [`@agentskit/tools`](packages/tools) | Web search, filesystem, shell tools | Giving agents real-world capabilities |
+| [`@agentskit/skills`](packages/skills) | Pre-built behavioral prompts | Making agents good at specific tasks |
+| [`@agentskit/memory`](packages/memory) | SQLite, Redis, vector storage | Persisting conversations and knowledge |
+| [`@agentskit/rag`](packages/rag) | Retrieval-augmented generation | Adding knowledge to agents |
+| [`@agentskit/observability`](packages/observability) | Console, LangSmith, OpenTelemetry | Debugging and monitoring agents |
+| [`@agentskit/sandbox`](packages/sandbox) | Secure code execution (E2B) | Letting agents run code safely |
+| [`@agentskit/eval`](packages/eval) | Agent evaluation and benchmarking | Measuring agent quality in CI/CD |
 
-## The entire API
+## Multi-Agent Delegation
 
-### Core
+```ts
+import { planner, researcher, coder } from '@agentskit/skills'
 
-```tsx
-const controller = createChatController({ adapter })
-const memory = createFileMemory('.agentskit-history.json')
-const retriever = createStaticRetriever({ documents })
+const result = await runtime.run('Build a landing page about quantum computing', {
+  skill: planner,
+  delegates: {
+    researcher: { skill: researcher, tools: [webSearch()], maxSteps: 3 },
+    coder: { skill: coder, tools: [...filesystem({ basePath: './src' })], maxSteps: 8 },
+  },
+})
 ```
 
-### React / Ink
-
-```tsx
-const chat = useChat({ adapter, memory, tools })
-```
+The planner breaks the task into subtasks, delegates research and coding to specialist agents, and assembles the final result.
 
 ## For AI Agents
 
-The entire API fits in **under 2,000 tokens**. See the [agent-friendly reference](https://emersonbraun.github.io/agentskit/docs/getting-started/for-ai-agents) — paste it into your LLM context and start generating chat UIs.
-
-## Credits
-
-Inspired by [Arrow.js](https://arrow-js.com/) — the first UI framework for the agentic era.
+The entire API fits in **under 2,000 tokens**. See the [agent-friendly reference](https://emersonbraun.github.io/agentskit/docs/getting-started/for-ai-agents) — paste it into your LLM context and start generating.
 
 ## License
 

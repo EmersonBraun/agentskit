@@ -1,6 +1,12 @@
 # @agentskit/adapters
 
-LLM provider adapters for [AgentsKit](https://github.com/EmersonBraun/agentskit). Swap providers in one line.
+Connect to any LLM provider — and swap between them — without touching your app code.
+
+## Why
+
+- **Vendor independence** — switch from OpenAI to Anthropic to a local Ollama model by changing one line; your hooks, runtime, and tools stay untouched
+- **10+ providers included** — Anthropic, OpenAI, Gemini, Ollama, DeepSeek, Grok, Kimi, LangChain, Vercel AI SDK, and any raw `ReadableStream`
+- **Embedder functions built in** — the same adapter pattern covers text embeddings, so you can reuse provider config for both chat and RAG
 
 ## Install
 
@@ -8,39 +14,20 @@ LLM provider adapters for [AgentsKit](https://github.com/EmersonBraun/agentskit)
 npm install @agentskit/adapters
 ```
 
-## Supported providers
+## Quick example
 
 ```ts
-import { anthropic, openai, gemini, ollama, vercelAI, generic, deepseek, grok, kimi, langchain } from '@agentskit/adapters'
+import { anthropic, openai, ollama } from '@agentskit/adapters'
+import { createRuntime } from '@agentskit/runtime'
 
-// Claude
-useChat({ adapter: anthropic({ apiKey, model: 'claude-sonnet-4-6' }) })
+// Switch provider by swapping one import
+const adapter = anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, model: 'claude-sonnet-4-6' })
+// const adapter = openai({ apiKey: process.env.OPENAI_API_KEY, model: 'gpt-4o' })
+// const adapter = ollama({ model: 'llama3.1' })
 
-// GPT
-useChat({ adapter: openai({ apiKey, model: 'gpt-4o' }) })
-
-// Gemini
-useChat({ adapter: gemini({ apiKey, model: 'gemini-2.5-flash' }) })
-
-// Ollama (local)
-useChat({ adapter: ollama({ model: 'llama3.1' }) })
-
-// Vercel AI SDK
-useChat({ adapter: vercelAI({ api: '/api/chat' }) })
-
-// Any ReadableStream
-useChat({ adapter: generic({ send: async (msgs) => fetch('/api', { body: JSON.stringify(msgs) }).then(r => r.body!) }) })
-```
-
-## Custom adapters
-
-```ts
-import { createAdapter, parseSSEStream } from '@agentskit/adapters'
-
-const myAdapter = createAdapter({
-  send: (request) => fetch('/api/chat', { method: 'POST', body: JSON.stringify(request) }),
-  parse: (stream) => parseSSEStream(stream),
-})
+const runtime = createRuntime({ adapter })
+const result = await runtime.run('Summarize the latest AI news')
+console.log(result.content)
 ```
 
 ## Docs

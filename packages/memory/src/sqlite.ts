@@ -1,30 +1,19 @@
 import type { ChatMemory, Message, MemoryRecord } from '@agentskit/core'
+import { serializeMessages, deserializeMessages } from '@agentskit/core'
 
 export interface SqliteChatMemoryConfig {
   path: string
   conversationId?: string
 }
 
-function serializeMessages(messages: Message[]): string {
-  const record: MemoryRecord = {
-    version: 1,
-    messages: messages.map(m => ({
-      ...m,
-      createdAt: m.createdAt.toISOString(),
-    })),
-  }
-  return JSON.stringify(record)
+function encodeMessages(messages: Message[]): string {
+  return JSON.stringify(serializeMessages(messages))
 }
 
-function deserializeMessages(json: string | undefined): Message[] {
+function decodeMessages(json: string | undefined): Message[] {
   if (!json) return []
   try {
-    const record = JSON.parse(json) as MemoryRecord
-    if (!record?.messages) return []
-    return record.messages.map(m => ({
-      ...m,
-      createdAt: new Date(m.createdAt),
-    }))
+    return deserializeMessages(JSON.parse(json) as MemoryRecord)
   } catch {
     return []
   }
@@ -70,11 +59,11 @@ export function sqliteChatMemory(config: SqliteChatMemoryConfig): ChatMemory {
     async load() {
       const db = await getDb()
       const row = db.prepare('SELECT messages FROM conversations WHERE id = ?').get(conversationId)
-      return deserializeMessages(row?.messages as string | undefined)
+      return decodeMessages(row?.messages as string | undefined)
     },
     async save(messages) {
       const db = await getDb()
-      const json = serializeMessages(messages)
+      const json = encodeMessages(messages)
       db.prepare(`
         INSERT INTO conversations (id, messages) VALUES (?, ?)
         ON CONFLICT(id) DO UPDATE SET messages = ?
