@@ -8,6 +8,12 @@ import type {
   ToolCall,
   ToolDefinition,
 } from '@agentskit/core'
+import type { SharedContext } from './shared-context'
+
+export interface DelegateConfig {
+  skill: SkillDefinition
+  tools?: ToolDefinition[]
+}
 
 export interface RuntimeConfig {
   adapter: AdapterFactory
@@ -19,6 +25,8 @@ export interface RuntimeConfig {
   maxSteps?: number
   temperature?: number
   maxTokens?: number
+  delegates?: Record<string, DelegateConfig>
+  maxDelegationDepth?: number
 }
 
 export interface RunOptions {
@@ -27,6 +35,8 @@ export interface RunOptions {
   skill?: SkillDefinition
   maxSteps?: number
   signal?: AbortSignal
+  delegates?: Record<string, DelegateConfig>
+  sharedContext?: SharedContext
 }
 
 export interface RunResult {
