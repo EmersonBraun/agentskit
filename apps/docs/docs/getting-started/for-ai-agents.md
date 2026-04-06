@@ -6,61 +6,130 @@ sidebar_position: 3
 
 The entire AgentsKit API in one page. Paste this into your LLM context.
 
-## Hooks
+## Chat (React / Ink)
 
 ```tsx
-// Stream any async source
-const { text, status, error, stop } = useStream(source)
+import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react' // or @agentskit/ink
+import { anthropic } from '@agentskit/adapters'
 
-// Reactive state (proxy-based, minimal re-renders)
-const state = useReactive({ count: 0 })
-state.count++ // triggers re-render
-
-// Full chat session
-const chat = useChat({ adapter })
+const chat = useChat({ adapter: anthropic({ apiKey, model: 'claude-sonnet-4-6' }), tools, skills })
 chat.send('message')    // send and stream response
 chat.stop()             // abort stream
 chat.retry()            // retry last
 chat.messages           // Message[]
 chat.status             // 'idle' | 'streaming' | 'error'
-chat.input / setInput   // controlled input
+
+<ChatContainer>
+  <Message message={m} />
+  <InputBar chat={chat} />
+</ChatContainer>
 ```
 
-## Adapters
+## Adapters — swap in one line
 
-```tsx
-import { anthropic, openai, vercelAI, generic } from '@agentskit/adapters'
+```ts
+import { anthropic, openai, gemini, ollama, deepseek, grok, kimi, vercelAI, generic } from '@agentskit/adapters'
 
-anthropic({ apiKey, model })
-openai({ apiKey, model })
-vercelAI({ api: '/api/chat' })
-generic({ send: async (msgs) => ReadableStream })
+anthropic({ apiKey, model })   // openai({ apiKey, model })
+gemini({ apiKey, model })      // ollama({ model })
+vercelAI({ api: '/api/chat' }) // generic({ send: async (msgs) => ReadableStream })
 ```
 
-## Components
+## Running Agents (no UI)
 
-```tsx
-<ChatContainer>         {/* scrollable chat layout */}
-<Message message={m} /> {/* chat bubble */}
-<InputBar chat={chat} /> {/* input + send */}
-<Markdown content={s} /> {/* markdown text */}
-<CodeBlock code={s} language="ts" copyable />
-<ToolCallView toolCall={tc} />
-<ThinkingIndicator visible />
+```ts
+import { createRuntime } from '@agentskit/runtime'
+
+const runtime = createRuntime({ adapter, tools, skills, observers, memory })
+const result = await runtime.run('task', { skill, delegates, signal })
+// → { content, messages, steps, toolCalls, durationMs }
 ```
 
-## Theme
+## Tools
 
-```tsx
-import '@agentskit/react/theme' // optional default CSS
+```ts
+import { webSearch, filesystem, shell, listTools } from '@agentskit/tools'
+
+webSearch()                              // DuckDuckGo (no key)
+webSearch({ provider: 'serper', apiKey }) // Serper
+filesystem({ basePath: './workspace' })  // → [read_file, write_file, list_directory]
+shell({ timeout: 10_000, allowed: ['ls', 'cat'] })
 ```
 
-All components use `data-ak-*` attributes. Override with CSS custom properties (`--ak-color-*`, `--ak-font-*`, `--ak-spacing-*`).
+## Skills
+
+```ts
+import { researcher, coder, planner, critic, summarizer, composeSkills } from '@agentskit/skills'
+
+runtime.run('task', { skill: researcher })
+const combined = composeSkills(researcher, coder) // merges prompts, tools, delegates
+```
+
+## Multi-Agent Delegation
+
+```ts
+runtime.run('Build a landing page', {
+  delegates: {
+    researcher: { skill: researcher, tools: [webSearch()], maxSteps: 3 },
+    coder: { skill: coder, tools: [...filesystem({ basePath: './src' })] },
+  },
+  sharedContext: createSharedContext(),
+})
+```
+
+## Memory
+
+```ts
+import { sqliteChatMemory, fileVectorMemory } from '@agentskit/memory'
+
+sqliteChatMemory({ path: './chat.db' })            // ChatMemory
+fileVectorMemory({ path: './vectors' })             // VectorMemory (vectra)
+```
+
+## RAG
+
+```ts
+import { createRAG } from '@agentskit/rag'
+
+const rag = createRAG({ embed: openaiEmbedder({ apiKey }), store: fileVectorMemory({ path: './v' }) })
+await rag.ingest(documents)
+const docs = await rag.retrieve('query')
+```
+
+## Observability
+
+```ts
+import { consoleLogger, langsmith, opentelemetry } from '@agentskit/observability'
+
+createRuntime({ adapter, observers: [consoleLogger(), langsmith({ apiKey })] })
+```
+
+## Sandbox
+
+```ts
+import { sandboxTool } from '@agentskit/sandbox'
+// → ToolDefinition for secure JS/Python execution via E2B
+```
+
+## Eval
+
+```ts
+import { runEval } from '@agentskit/eval'
+
+const result = await runEval({
+  agent: async (input) => runtime.run(input).then(r => r.content),
+  suite: { name: 'qa', cases: [{ input: 'Q', expected: 'A' }] },
+})
+// → { accuracy, passed, failed, results: [{ latencyMs, tokenUsage? }] }
+```
 
 ## Types
 
 ```ts
 Message { id, role, content, status, toolCalls?, metadata?, createdAt }
-ToolCall { id, name, args, result?, status }
-StreamChunk { type: 'text'|'tool_call'|'error'|'done', content?, toolCall? }
+ToolCall { id, name, args, result?, error?, status }
+ToolDefinition { name, description?, schema?, execute?, init?, dispose?, tags?, category? }
+SkillDefinition { name, description, systemPrompt, tools?, delegates?, onActivate? }
+RunResult { content, messages, steps, toolCalls, durationMs }
+AgentEvent = 'llm:start' | 'llm:end' | 'tool:start' | 'tool:end' | 'agent:step' | 'agent:delegate:start' | ...
 ```

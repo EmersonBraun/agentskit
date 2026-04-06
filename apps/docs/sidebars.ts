@@ -13,6 +13,45 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Building Chat UIs',
+      items: [
+        'chat-uis/react',
+        'chat-uis/ink',
+        'chat-uis/components',
+        'chat-uis/theming',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Running Agents',
+      items: [
+        'agents/runtime',
+        'agents/tools',
+        'agents/skills',
+        'agents/delegation',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Data Layer',
+      items: [
+        'data-layer/adapters',
+        'data-layer/memory',
+        'data-layer/rag',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Infrastructure',
+      items: [
+        'infrastructure/observability',
+        'infrastructure/sandbox',
+        'infrastructure/eval',
+        'infrastructure/cli',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Core Hooks',
       items: [
         'hooks/use-stream',
@@ -22,18 +61,13 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Components',
-      items: ['components/overview'],
-    },
-    {
-      type: 'category',
-      label: 'Adapters',
-      items: ['adapters/overview'],
-    },
-    {
-      type: 'category',
-      label: 'Theming',
-      items: ['theming/overview'],
+      label: 'Legacy Reference',
+      collapsed: true,
+      items: [
+        'components/overview',
+        'adapters/overview',
+        'theming/overview',
+      ],
     },
     {
       type: 'category',

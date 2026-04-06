@@ -4,31 +4,53 @@ sidebar_position: 1
 
 # Installation
 
-Install the React package plus adapters:
+Install only what you need. Every package is independently installable.
+
+## Chat UIs (React)
 
 ```bash
 npm install @agentskit/react @agentskit/adapters
 ```
 
-```bash
-yarn add @agentskit/react @agentskit/adapters
-```
+## Chat UIs (Terminal)
 
 ```bash
-pnpm add @agentskit/react @agentskit/adapters
+npm install @agentskit/ink @agentskit/adapters
 ```
 
-## Other entry points
+## Running Agents
 
 ```bash
-pnpm add @agentskit/core
-pnpm add @agentskit/ink
-pnpm add @agentskit/cli
+npm install @agentskit/runtime @agentskit/adapters @agentskit/tools
 ```
+
+## Full Ecosystem
+
+```bash
+npm install @agentskit/core @agentskit/react @agentskit/adapters @agentskit/runtime @agentskit/tools @agentskit/skills @agentskit/memory
+```
+
+## All Packages
+
+| Package | What it does |
+|---------|-------------|
+| `@agentskit/core` | Types, contracts, shared primitives |
+| `@agentskit/react` | React hooks + headless UI components |
+| `@agentskit/ink` | Terminal UI components (Ink) |
+| `@agentskit/adapters` | LLM provider adapters + embedders |
+| `@agentskit/cli` | CLI commands (chat, init, run) |
+| `@agentskit/runtime` | Standalone agent runtime (ReAct loop) |
+| `@agentskit/tools` | Built-in tools (web search, filesystem, shell) |
+| `@agentskit/skills` | Built-in skills (researcher, coder, planner, etc.) |
+| `@agentskit/memory` | Persistent backends (SQLite, Redis, vectra) |
+| `@agentskit/rag` | Retrieval-augmented generation |
+| `@agentskit/observability` | Logging + tracing (console, LangSmith, OpenTelemetry) |
+| `@agentskit/sandbox` | Secure code execution (E2B) |
+| `@agentskit/eval` | Agent evaluation and benchmarking |
 
 ## Peer Dependencies
 
-AgentsKit requires React 18 or later:
+React packages require React 18+:
 
 ```bash
 npm install react react-dom
@@ -36,10 +58,8 @@ npm install react react-dom
 
 ## Optional: Default Theme
 
-Import the default theme CSS for a polished chat UI out of the box:
-
 ```tsx
 import '@agentskit/react/theme'
 ```
 
-The theme uses CSS custom properties, so you can override any token without ejecting.
+Uses CSS custom properties — override any token without ejecting.
