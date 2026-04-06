@@ -1,62 +1,36 @@
 # @agentskit/memory
 
-Persistent and vector memory backends for [AgentsKit](https://github.com/EmersonBraun/agentskit).
+Persist conversations and add vector search to your agents — swap backends without changing agent code.
+
+## Why
+
+- **Conversations that survive restarts** — SQLite for local development, Redis for production; your agent remembers context across sessions with zero code changes
+- **RAG-ready vector search** — store and retrieve embeddings with `fileVectorMemory` (pure JS, no native deps) or Redis vector search for scale
+- **Plug any backend** — the `VectorStore` interface is 3 methods; bring LanceDB, Pinecone, or any custom store in minutes
 
 ## Install
 
 ```bash
-npm install @agentskit/memory
+npm install @agentskit/memory better-sqlite3
+# For production:  npm install redis
+# For vectors:     npm install vectra
 ```
-
-Then install the backend(s) you need:
-
-```bash
-npm install better-sqlite3  # for sqliteChatMemory
-npm install vectra           # for fileVectorMemory (default, pure JS)
-npm install redis            # for redisChatMemory / redisVectorMemory
-```
-
-## Backends
-
-| Factory | Contract | Underlying lib | Native? |
-|---------|----------|---------------|---------|
-| `sqliteChatMemory({ path })` | ChatMemory | better-sqlite3 | Yes |
-| `redisChatMemory({ url })` | ChatMemory | redis | No |
-| `redisVectorMemory({ url })` | VectorMemory | redis + RediSearch | No |
-| `fileVectorMemory({ path })` | VectorMemory | vectra | No (pure JS) |
 
 ## Quick example
 
 ```ts
+import { createRuntime } from '@agentskit/runtime'
+import { anthropic } from '@agentskit/adapters'
 import { sqliteChatMemory, fileVectorMemory } from '@agentskit/memory'
 
-// Chat persistence
-const chatMemory = sqliteChatMemory({ path: './chat.db' })
+const runtime = createRuntime({
+  adapter: anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, model: 'claude-sonnet-4-6' }),
+  memory: sqliteChatMemory({ path: './chat.db' }),
+})
 
-// Vector search
-const vectorMemory = fileVectorMemory({ path: './vectors' })
-await vectorMemory.store([{
-  id: 'doc-1',
-  content: 'AgentsKit is awesome',
-  embedding: [0.1, 0.2, 0.3, ...],
-}])
-const results = await vectorMemory.search([0.1, 0.2, 0.3, ...], { topK: 5 })
-```
-
-## Custom vector store
-
-Bring your own vector backend (LanceDB, usearch, Pinecone, etc.):
-
-```ts
-import type { VectorStore } from '@agentskit/memory'
-
-const myStore: VectorStore = {
-  async upsert(docs) { /* your logic */ },
-  async query(vector, topK) { /* your logic */ },
-  async delete(ids) { /* your logic */ },
-}
-
-const memory = fileVectorMemory({ path: './vectors', store: myStore })
+// Agent now remembers previous conversations across process restarts
+const result = await runtime.run('What did we discuss yesterday?')
+console.log(result.content)
 ```
 
 ## Docs

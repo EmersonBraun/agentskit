@@ -26,7 +26,7 @@ export interface ResolvedChatProvider {
 
 interface ProviderEntry {
   label: string
-  envKey: string
+  envKeys: string[]
   defaultModel?: string
   requiresModel?: boolean
   factory: (config: { apiKey: string; model: string; baseUrl?: string }) => AdapterFactory
@@ -35,43 +35,43 @@ interface ProviderEntry {
 const providers: Record<string, ProviderEntry> = {
   openai: {
     label: 'OpenAI',
-    envKey: 'OPENAI_API_KEY',
+    envKeys: ['OPENAI_API_KEY'],
     defaultModel: 'gpt-4o-mini',
     factory: (c) => openai(c),
   },
   anthropic: {
     label: 'Anthropic',
-    envKey: 'ANTHROPIC_API_KEY',
+    envKeys: ['ANTHROPIC_API_KEY'],
     defaultModel: 'claude-3-5-sonnet-latest',
     factory: (c) => anthropic(c),
   },
   gemini: {
     label: 'Gemini',
-    envKey: 'GEMINI_API_KEY',
+    envKeys: ['GEMINI_API_KEY'],
     defaultModel: 'gemini-2.5-flash',
     factory: (c) => gemini(c),
   },
   ollama: {
     label: 'Ollama',
-    envKey: '',
+    envKeys: [],
     defaultModel: 'llama3.1',
     factory: (c) => ollama({ model: c.model, baseUrl: c.baseUrl }),
   },
   deepseek: {
     label: 'DeepSeek',
-    envKey: 'DEEPSEEK_API_KEY',
+    envKeys: ['DEEPSEEK_API_KEY'],
     defaultModel: 'deepseek-chat',
     factory: (c) => deepseek(c),
   },
   grok: {
     label: 'xAI Grok',
-    envKey: 'XAI_API_KEY',
+    envKeys: ['XAI_API_KEY'],
     requiresModel: true,
     factory: (c) => grok(c),
   },
   kimi: {
     label: 'Kimi',
-    envKey: 'KIMI_API_KEY',
+    envKeys: ['KIMI_API_KEY', 'MOONSHOT_API_KEY'],
     requiresModel: true,
     factory: (c) => kimi(c),
   },
@@ -127,13 +127,17 @@ export function resolveChatProvider(options: ChatProviderOptions): ResolvedChatP
     throw new Error(`Unsupported provider "${options.provider}". Try ${supported}.`)
   }
 
-  // Resolve API key
-  let apiKey = options.apiKey ?? (entry.envKey ? process.env[entry.envKey] : undefined)
-  if (name === 'kimi' && !apiKey) {
-    apiKey = process.env.MOONSHOT_API_KEY
+  // Resolve API key: try explicit flag first, then each envKey in order
+  let apiKey = options.apiKey
+  if (!apiKey) {
+    for (const key of entry.envKeys) {
+      apiKey = process.env[key]
+      if (apiKey) break
+    }
   }
-  if (!apiKey && entry.envKey) {
-    throw new Error(`${entry.label} requires an API key. Pass --api-key or set ${entry.envKey}.`)
+  if (!apiKey && entry.envKeys.length > 0) {
+    const keyList = entry.envKeys.join(' or ')
+    throw new Error(`${entry.label} requires an API key. Pass --api-key or set ${keyList}.`)
   }
 
   // Resolve model

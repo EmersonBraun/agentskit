@@ -1,6 +1,12 @@
 # @agentskit/core
 
-Portable runtime for the [AgentsKit](https://github.com/EmersonBraun/agentskit) ecosystem. Zero external dependencies.
+The zero-dependency foundation that every AgentsKit package builds on.
+
+## Why
+
+- **Start without baggage** — no external deps means it installs fast, audits clean, and works in any environment (Node, Deno, edge, browser)
+- **Build your own framework** — all shared primitives, type contracts, and the chat state machine are here, ready to compose
+- **Types without the weight** — import `ToolDefinition`, `SkillDefinition`, `AgentEvent`, and more without pulling in React or any adapter
 
 ## Install
 
@@ -8,21 +14,14 @@ Portable runtime for the [AgentsKit](https://github.com/EmersonBraun/agentskit) 
 npm install @agentskit/core
 ```
 
-## What's inside
-
-- `createChatController` — state machine for chat: messages, streaming, tools, memory
-- Shared primitives: `generateId`, `buildMessage`, `executeToolCall`, `consumeStream`, `createEventEmitter`
-- Memory: `createInMemoryMemory`, `createLocalStorageMemory`, `createFileMemory`
-- Retrieval: `createStaticRetriever`
-- Type contracts: `ToolDefinition`, `SkillDefinition`, `VectorMemory`, `AgentEvent`, `Observer`, `EvalSuite`
-
 ## Quick example
 
 ```ts
 import { createChatController, createInMemoryMemory } from '@agentskit/core'
+import { anthropic } from '@agentskit/adapters'
 
 const controller = createChatController({
-  adapter: myAdapter,
+  adapter: anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, model: 'claude-sonnet-4-6' }),
   memory: createInMemoryMemory(),
 })
 

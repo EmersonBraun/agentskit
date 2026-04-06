@@ -1,6 +1,12 @@
 # @agentskit/ink
 
-Terminal UI components using [Ink](https://github.com/vadimdemedes/ink) for [AgentsKit](https://github.com/EmersonBraun/agentskit).
+Build terminal AI chat interfaces with the exact same API as `@agentskit/react`.
+
+## Why
+
+- **No context switching** — if you know `@agentskit/react`, you already know this; same hooks, same component names, different renderer
+- **Real terminal UX** — keyboard navigation, ANSI colors, and proper TTY streaming so your CLI feels native, not like a web app in a box
+- **Any local or cloud model** — pair with Ollama for fully offline CLI tools, or any other provider via `@agentskit/adapters`
 
 ## Install
 
@@ -28,10 +34,6 @@ function App() {
 
 render(<App />)
 ```
-
-## Components
-
-`ChatContainer`, `Message`, `InputBar`, `ToolCallView`, `ThinkingIndicator` — terminal equivalents of the React package with keyboard navigation and ANSI theming.
 
 ## Docs
 

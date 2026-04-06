@@ -1,6 +1,12 @@
 # @agentskit/cli
 
-Command-line interface for [AgentsKit](https://github.com/EmersonBraun/agentskit).
+Chat with any LLM, scaffold projects, and run agents — all from your terminal.
+
+## Why
+
+- **Zero setup for prototyping** — go from idea to running conversation in under a minute; no boilerplate, no config files to write
+- **Scaffold production-ready projects** — generate a React chat app or terminal agent with the right structure so you skip the boring setup
+- **Script and automate** — pipe inputs, use env vars for keys, and compose with other Unix tools for lightweight agent scripting
 
 ## Install
 
@@ -8,32 +14,21 @@ Command-line interface for [AgentsKit](https://github.com/EmersonBraun/agentskit
 npm install -g @agentskit/cli
 ```
 
-## Commands
+## Quick example
 
 ```bash
-# Interactive chat
-agentskit chat --provider openai --model gpt-4o
+# Chat with Claude instantly
+ANTHROPIC_API_KEY=... agentskit chat --provider anthropic --model claude-sonnet-4-6
 
-# Chat with local model
+# Chat with a local model (no API key needed)
 agentskit chat --provider ollama --model llama3.1
 
-# Demo mode (no API key needed)
-agentskit chat --provider demo
-
-# Scaffold a new project
+# Scaffold a new React chat app
 agentskit init --template react --dir my-app
+
+# Scaffold a terminal agent
 agentskit init --template ink --dir my-cli
 ```
-
-## Flags
-
-| Flag | Description |
-|------|-------------|
-| `--provider` | LLM provider: openai, anthropic, gemini, ollama, deepseek, grok, kimi, demo |
-| `--model` | Model name |
-| `--api-key` | API key (or use env vars: OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.) |
-| `--base-url` | Custom API base URL |
-| `--memory` | Enable file-based memory persistence |
 
 ## Docs
 
