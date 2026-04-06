@@ -1,4 +1,5 @@
 import type { ChatMemory, Message, MemoryRecord } from '@agentskit/core'
+import { serializeMessages, deserializeMessages } from '@agentskit/core'
 import type { RedisClientAdapter, RedisConnectionConfig } from './redis-client'
 import { createRedisClientAdapter } from './redis-client'
 
@@ -7,26 +8,14 @@ export interface RedisChatMemoryConfig extends RedisConnectionConfig {
   conversationId?: string
 }
 
-function serializeMessages(messages: Message[]): string {
-  const record: MemoryRecord = {
-    version: 1,
-    messages: messages.map(m => ({
-      ...m,
-      createdAt: m.createdAt.toISOString(),
-    })),
-  }
-  return JSON.stringify(record)
+function encodeMessages(messages: Message[]): string {
+  return JSON.stringify(serializeMessages(messages))
 }
 
-function deserializeMessages(json: string | null): Message[] {
+function decodeMessages(json: string | null): Message[] {
   if (!json) return []
   try {
-    const record = JSON.parse(json) as MemoryRecord
-    if (!record?.messages) return []
-    return record.messages.map(m => ({
-      ...m,
-      createdAt: new Date(m.createdAt),
-    }))
+    return deserializeMessages(JSON.parse(json) as MemoryRecord)
   } catch {
     return []
   }
@@ -48,11 +37,11 @@ export function redisChatMemory(config: RedisChatMemoryConfig): ChatMemory {
     async load() {
       const client = await getClient()
       const json = await client.get(key)
-      return deserializeMessages(json)
+      return decodeMessages(json)
     },
     async save(messages) {
       const client = await getClient()
-      await client.set(key, serializeMessages(messages))
+      await client.set(key, encodeMessages(messages))
     },
     async clear() {
       const client = await getClient()
