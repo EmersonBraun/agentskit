@@ -28,8 +28,31 @@ function buildRetrievalMessage(documentsText: string): Message | null {
   })
 }
 
+async function activateSkills(config: ChatConfig): Promise<{
+  systemPrompt: string | undefined
+  skillTools: ToolDefinition[]
+}> {
+  const skills = config.skills ?? []
+  if (skills.length === 0) return { systemPrompt: config.systemPrompt, skillTools: [] }
+
+  const skillPrompts = skills.map(s => `--- ${s.name} ---\n${s.systemPrompt}`)
+  const basePrompt = config.systemPrompt ? `${config.systemPrompt}\n\n` : ''
+  const systemPrompt = `${basePrompt}${skillPrompts.join('\n\n')}`
+
+  const skillTools: ToolDefinition[] = []
+  for (const skill of skills) {
+    if (skill.onActivate) {
+      const activation = await skill.onActivate()
+      skillTools.push(...(activation.tools ?? []))
+    }
+  }
+
+  return { systemPrompt, skillTools }
+}
+
 export function createChatController(initialConfig: ChatConfig): ChatController {
   let config = initialConfig
+  let effectiveSystemPrompt = config.systemPrompt
   let source: StreamSource | null = null
   let state: ChatState = {
     messages: initialConfig.initialMessages ?? [],
@@ -42,12 +65,23 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
   const toolMap = new Map<string, ToolDefinition>()
   let lifecycle = createToolLifecycle(toolMap)
   let hydrated = false
+  let skillsActivated = false
 
-  const rebuildToolMap = () => {
+  const rebuildToolMap = (extraTools: ToolDefinition[] = []) => {
     toolMap.clear()
     for (const tool of config.tools ?? []) toolMap.set(tool.name, tool)
+    for (const tool of extraTools) toolMap.set(tool.name, tool)
   }
   rebuildToolMap()
+
+  const ensureSkillsActivated = async () => {
+    if (skillsActivated) return
+    skillsActivated = true
+    const { systemPrompt, skillTools } = await activateSkills(config)
+    effectiveSystemPrompt = systemPrompt
+    if (skillTools.length > 0) rebuildToolMap(skillTools)
+  }
+  void ensureSkillsActivated()
 
   for (const observer of config.observers ?? []) {
     emitter.addObserver(observer)
@@ -102,7 +136,7 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
   }
 
   const findTool = (name: string): ToolDefinition | undefined =>
-    config.tools?.find(tool => tool.name === name)
+    toolMap.get(name)
 
   const handleToolCall = async (assistantId: string, chunk: StreamChunk) => {
     if (!chunk.toolCall) return
@@ -188,7 +222,8 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
   }
 
   const buildAdapterRequest = async (messages: Message[], text: string): Promise<AdapterRequest> => {
-    const withSystem = mergeSystemMessages(messages, config.systemPrompt)
+    await ensureSkillsActivated()
+    const withSystem = mergeSystemMessages(messages, effectiveSystemPrompt)
     const retrievedDocuments = config.retriever
       ? await config.retriever.retrieve({ query: text, messages })
       : []
@@ -197,10 +232,10 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
     return {
       messages: retrievalMessage ? [retrievalMessage, ...withSystem] : withSystem,
       context: {
-        systemPrompt: config.systemPrompt,
+        systemPrompt: effectiveSystemPrompt,
         temperature: config.temperature,
         maxTokens: config.maxTokens,
-        tools: config.tools,
+        tools: [...toolMap.values()],
         metadata: retrievedDocuments.length > 0 ? { retrievedDocuments } : undefined,
       },
     }
@@ -328,8 +363,10 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
     updateConfig(nextConfig) {
       void lifecycle.disposeAll()
       config = { ...config, ...nextConfig }
+      skillsActivated = false
       rebuildToolMap()
       lifecycle = createToolLifecycle(toolMap)
+      void ensureSkillsActivated()
       void hydrateMemory()
     },
   }

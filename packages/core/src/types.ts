@@ -133,6 +133,7 @@ export interface ChatConfig {
   temperature?: number
   maxTokens?: number
   tools?: ToolDefinition[]
+  skills?: SkillDefinition[]
   memory?: ChatMemory
   retriever?: Retriever
   initialMessages?: Message[]
