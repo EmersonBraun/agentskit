@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { createChatController } from '../src/controller'
 import { createInMemoryMemory } from '../src/memory'
 import { createMockAdapter } from './helpers'
-import type { Observer, AgentEvent, ChatConfig } from '../src/types'
+import type { Observer, AgentEvent, ChatConfig, SkillDefinition } from '../src/types'
 
 function createTestController(overrides: Partial<ChatConfig> = {}) {
   const adapter = createMockAdapter([
@@ -298,5 +298,95 @@ describe('ChatController event emission', () => {
 
     const errorEvent = events.find(e => e.type === 'error')
     expect(errorEvent?.type === 'error' && errorEvent.error.message).toBe('boom')
+  })
+})
+
+describe('ChatController skills support', () => {
+  it('applies skill systemPrompt to messages', async () => {
+    let capturedMessages: unknown[] = []
+    const adapter = {
+      createSource: (request: { messages: unknown[] }) => {
+        capturedMessages = request.messages
+        return createMockAdapter([
+          { type: 'text', content: 'ok' },
+          { type: 'done' },
+        ]).createSource(request as never)
+      },
+    }
+
+    const skill: SkillDefinition = {
+      name: 'test-skill',
+      description: 'Test',
+      systemPrompt: 'You are a test assistant.',
+    }
+
+    const ctrl = createChatController({ adapter, skills: [skill] })
+    await new Promise(r => setTimeout(r, 10)) // wait for skill activation
+    await ctrl.send('Hi')
+
+    const systemMsg = capturedMessages.find((m: unknown) => (m as { role: string }).role === 'system')
+    expect(systemMsg).toBeDefined()
+    expect((systemMsg as { content: string }).content).toContain('test-skill')
+    expect((systemMsg as { content: string }).content).toContain('You are a test assistant.')
+  })
+
+  it('merges skill-activated tools', async () => {
+    const execute = vi.fn().mockResolvedValue('skill-tool-result')
+    const skill: SkillDefinition = {
+      name: 'tool-skill',
+      description: 'Skill with tools',
+      systemPrompt: 'Use tools.',
+      onActivate: async () => ({
+        tools: [{ name: 'skill_tool', execute }],
+      }),
+    }
+
+    const adapter = createMockAdapter([
+      { type: 'tool_call', toolCall: { id: 't1', name: 'skill_tool', args: '{}' } },
+      { type: 'done' },
+    ])
+
+    const ctrl = createChatController({ adapter, skills: [skill] })
+    await new Promise(r => setTimeout(r, 10)) // wait for skill activation
+    await ctrl.send('Use the tool')
+
+    const toolCalls = ctrl.getState().messages[1]?.toolCalls
+    expect(toolCalls?.[0].result).toBe('skill-tool-result')
+    expect(execute).toHaveBeenCalled()
+  })
+
+  it('composes multiple skill prompts', async () => {
+    let capturedMessages: unknown[] = []
+    const adapter = {
+      createSource: (request: { messages: unknown[] }) => {
+        capturedMessages = request.messages
+        return createMockAdapter([
+          { type: 'text', content: 'ok' },
+          { type: 'done' },
+        ]).createSource(request as never)
+      },
+    }
+
+    const skillA: SkillDefinition = {
+      name: 'skill-a',
+      description: 'A',
+      systemPrompt: 'You are skill A.',
+    }
+    const skillB: SkillDefinition = {
+      name: 'skill-b',
+      description: 'B',
+      systemPrompt: 'You are skill B.',
+    }
+
+    const ctrl = createChatController({ adapter, skills: [skillA, skillB] })
+    await new Promise(r => setTimeout(r, 10))
+    await ctrl.send('Hi')
+
+    const systemMsg = capturedMessages.find((m: unknown) => (m as { role: string }).role === 'system')
+    const content = (systemMsg as { content: string }).content
+    expect(content).toContain('--- skill-a ---')
+    expect(content).toContain('--- skill-b ---')
+    expect(content).toContain('You are skill A.')
+    expect(content).toContain('You are skill B.')
   })
 })

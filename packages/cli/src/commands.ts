@@ -21,6 +21,8 @@ export function createCli() {
     .option('--base-url <url>', 'Override provider base URL')
     .option('--system <prompt>', 'System prompt')
     .option('--memory <path>', 'Path for file-based memory', '.agentskit-history.json')
+    .option('--tools <tools>', 'Comma-separated tools: web_search,filesystem,shell')
+    .option('--skill <skills>', 'Comma-separated skills: researcher,coder,planner,critic,summarizer')
     .action((options) => {
       process.stdout.write(`${renderChatHeader(options)}\n`)
       render(React.createElement(ChatApp, {
@@ -30,6 +32,8 @@ export function createCli() {
         model: options.model,
         system: options.system,
         memoryPath: options.memory,
+        tools: options.tools,
+        skill: options.skill,
       }))
     })
 

@@ -29,6 +29,8 @@
     "@agentskit/adapters": "workspace:*",
     "@agentskit/core": "workspace:*",
     "@agentskit/ink": "workspace:*",
+    "@agentskit/skills": "workspace:*",
+    "@agentskit/tools": "workspace:*",
     "commander": "^14.0.1",
     "ink": "^5.1.1",
     "react": "^18.3.1"
