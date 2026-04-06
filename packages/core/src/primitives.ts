@@ -80,6 +80,38 @@ export async function executeToolCall(
   return result == null ? '' : String(result)
 }
 
+export function safeParseArgs(args: string): Record<string, unknown> {
+  try {
+    const parsed = JSON.parse(args)
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {}
+  } catch {
+    return {}
+  }
+}
+
+export function createToolLifecycle(tools: Map<string, ToolDefinition>) {
+  const initialized = new Set<string>()
+
+  return {
+    async init(tool: ToolDefinition): Promise<void> {
+      if (tool.init && !initialized.has(tool.name)) {
+        await tool.init()
+        initialized.add(tool.name)
+      }
+    },
+    async disposeAll(): Promise<void> {
+      for (const name of initialized) {
+        try {
+          await tools.get(name)?.dispose?.()
+        } catch {
+          // Dispose errors should not propagate.
+        }
+      }
+      initialized.clear()
+    },
+  }
+}
+
 export interface ConsumeStreamHandlers {
   onText?: (accumulated: string) => void
   onReasoning?: (accumulated: string) => void

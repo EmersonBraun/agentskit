@@ -3,6 +3,7 @@ import type {
   ChatMemory,
   Message,
   Observer,
+  Retriever,
   SkillDefinition,
   ToolCall,
   ToolDefinition,
@@ -13,6 +14,7 @@ export interface RuntimeConfig {
   tools?: ToolDefinition[]
   systemPrompt?: string
   memory?: ChatMemory
+  retriever?: Retriever
   observers?: Observer[]
   maxSteps?: number
   temperature?: number

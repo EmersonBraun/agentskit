@@ -3,7 +3,9 @@ import {
   consumeStream,
   createEventEmitter,
   executeToolCall,
-  generateId,
+  safeParseArgs,
+  createToolLifecycle,
+  formatRetrievedDocuments,
 } from '@agentskit/core'
 import type {
   AdapterRequest,
@@ -13,15 +15,6 @@ import type {
   ToolDefinition,
 } from '@agentskit/core'
 import type { RuntimeConfig, RunOptions, RunResult } from './types'
-
-function safeParseArgs(args: string): Record<string, unknown> {
-  try {
-    const parsed = JSON.parse(args)
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {}
-  } catch {
-    return {}
-  }
-}
 
 export function createRuntime(config: RuntimeConfig) {
   const emitter = createEventEmitter()
@@ -34,7 +27,6 @@ export function createRuntime(config: RuntimeConfig) {
     async run(task: string, options?: RunOptions): Promise<RunResult> {
       const startTime = Date.now()
 
-      // Resolve effective config
       const maxSteps = options?.maxSteps ?? config.maxSteps ?? 10
       const signal = options?.signal
 
@@ -57,26 +49,7 @@ export function createRuntime(config: RuntimeConfig) {
       for (const tool of skillTools) toolMap.set(tool.name, tool)
       const tools = [...toolMap.values()]
 
-      // Lazy init tracking
-      const initialized = new Set<string>()
-
-      const initTool = async (tool: ToolDefinition) => {
-        if (tool.init && !initialized.has(tool.name)) {
-          await tool.init()
-          initialized.add(tool.name)
-        }
-      }
-
-      const disposeAll = async () => {
-        for (const name of initialized) {
-          const tool = toolMap.get(name)
-          try {
-            await tool?.dispose?.()
-          } catch {
-            // Dispose errors should not propagate
-          }
-        }
-      }
+      const lifecycle = createToolLifecycle(toolMap)
 
       // Build initial messages
       const messages: Message[] = []
@@ -93,28 +66,35 @@ export function createRuntime(config: RuntimeConfig) {
 
       try {
         while (step < maxSteps) {
-          if (signal?.aborted) {
-            break
-          }
+          if (signal?.aborted) break
 
           step++
           emitter.emit({ type: 'agent:step', step, action: step === 1 ? 'initial' : 'tool-result-loop' })
 
-          // Build adapter request
+          // Retrieve context if configured
+          const retrievedDocuments = config.retriever
+            ? await config.retriever.retrieve({ query: task, messages })
+            : []
+          const retrievalContext = formatRetrievedDocuments(retrievedDocuments)
+
+          const requestMessages = retrievalContext
+            ? [buildMessage({ role: 'system', content: `Use the retrieved context below when it is relevant.\n\n${retrievalContext}` }), ...messages]
+            : messages
+
           const request: AdapterRequest = {
-            messages,
+            messages: requestMessages,
             context: {
               systemPrompt,
               temperature: options?.skill?.temperature ?? config.temperature,
               maxTokens: config.maxTokens,
               tools,
+              metadata: retrievedDocuments.length > 0 ? { retrievedDocuments } : undefined,
             },
           }
 
-          // Call adapter
           const streamStart = Date.now()
           const source = config.adapter.createSource(request)
-          emitter.emit({ type: 'llm:start', messageCount: messages.length })
+          emitter.emit({ type: 'llm:start', messageCount: request.messages.length })
 
           let accumulatedText = ''
           const stepToolCalls: Array<{ toolCall: StreamChunk['toolCall'] }> = []
@@ -148,9 +128,7 @@ export function createRuntime(config: RuntimeConfig) {
             throw streamError
           }
 
-          if (signal?.aborted) {
-            break
-          }
+          if (signal?.aborted) break
 
           // Build assistant message with tool calls
           const assistantToolCalls: ToolCall[] = stepToolCalls.map(({ toolCall }) => ({
@@ -184,7 +162,6 @@ export function createRuntime(config: RuntimeConfig) {
             allToolCalls.push(toolCall)
 
             if (!tool?.execute) {
-              // No executor — inject error as tool result
               const errorMsg = `Tool "${toolCall.name}" not found or has no execute function`
               toolCall.status = 'error'
               toolCall.error = errorMsg
@@ -193,17 +170,21 @@ export function createRuntime(config: RuntimeConfig) {
               continue
             }
 
-            // Lazy init
-            await initTool(tool)
+            await lifecycle.init(tool)
 
             emitter.emit({ type: 'tool:start', name: toolCall.name, args: toolCall.args })
             const toolStart = Date.now()
 
             try {
-              const result = await executeToolCall(tool, toolCall.args, {
-                messages,
-                call: toolCall,
-              })
+              const result = await executeToolCall(
+                tool,
+                toolCall.args,
+                { messages, call: toolCall },
+                (partial) => {
+                  // Emit partial results for streaming tools (e.g., shell)
+                  toolCall.result = partial
+                },
+              )
               toolCall.status = 'complete'
               toolCall.result = result
               messages.push(buildMessage({ role: 'tool', content: result }))
@@ -214,7 +195,6 @@ export function createRuntime(config: RuntimeConfig) {
                 durationMs: Date.now() - toolStart,
               })
             } catch (error) {
-              // Inject error as tool result — let LLM decide what to do
               const errorMsg = error instanceof Error ? error.message : String(error)
               toolCall.status = 'error'
               toolCall.error = errorMsg
@@ -228,7 +208,6 @@ export function createRuntime(config: RuntimeConfig) {
             }
           }
 
-          // After last iteration with tool calls, if we hit maxSteps next loop will break
           finalContent = accumulatedText
         }
 
@@ -246,7 +225,7 @@ export function createRuntime(config: RuntimeConfig) {
           durationMs: Date.now() - startTime,
         }
       } finally {
-        await disposeAll()
+        await lifecycle.disposeAll()
       }
     },
   }

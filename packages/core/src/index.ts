@@ -7,6 +7,8 @@ export {
   executeToolCall,
   consumeStream,
   createEventEmitter,
+  safeParseArgs,
+  createToolLifecycle,
 } from './primitives'
 export type { ConsumeStreamHandlers } from './primitives'
 export type {

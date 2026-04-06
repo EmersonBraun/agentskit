@@ -1,5 +1,5 @@
 import { formatRetrievedDocuments } from './rag'
-import { generateId, buildMessage, consumeStream, executeToolCall, createEventEmitter } from './primitives'
+import { buildMessage, consumeStream, executeToolCall, createEventEmitter, safeParseArgs, createToolLifecycle } from './primitives'
 import type {
   AdapterRequest,
   ChatConfig,
@@ -11,15 +11,6 @@ import type {
   ToolCall,
   ToolDefinition,
 } from './types'
-
-function safeParseArgs(args: string): Record<string, unknown> {
-  try {
-    const parsed = JSON.parse(args)
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {}
-  } catch {
-    return {}
-  }
-}
 
 function mergeSystemMessages(messages: Message[], systemPrompt?: string): Message[] {
   if (!systemPrompt) return messages
@@ -48,7 +39,15 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
   }
   const listeners = new Set<() => void>()
   const emitter = createEventEmitter()
+  const toolMap = new Map<string, ToolDefinition>()
+  let lifecycle = createToolLifecycle(toolMap)
   let hydrated = false
+
+  const rebuildToolMap = () => {
+    toolMap.clear()
+    for (const tool of config.tools ?? []) toolMap.set(tool.name, tool)
+  }
+  rebuildToolMap()
 
   for (const observer of config.observers ?? []) {
     emitter.addObserver(observer)
@@ -145,6 +144,8 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
         call.id === toolCall.id ? { ...call, status: 'running' as const } : call
       ),
     }))
+
+    await lifecycle.init(tool)
 
     emitter.emit({ type: 'tool:start', name: toolCall.name, args })
     const toolStart = Date.now()
@@ -315,6 +316,7 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
       setState(current => ({ ...current, messages }))
     },
     async clear() {
+      await lifecycle.disposeAll()
       setState(current => ({
         ...current,
         messages: [],
@@ -324,7 +326,10 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
       await config.memory?.clear?.()
     },
     updateConfig(nextConfig) {
+      void lifecycle.disposeAll()
       config = { ...config, ...nextConfig }
+      rebuildToolMap()
+      lifecycle = createToolLifecycle(toolMap)
       void hydrateMemory()
     },
   }
