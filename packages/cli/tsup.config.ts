@@ -6,7 +6,7 @@ export default defineConfig({
     bin: 'src/bin.ts',
   },
   format: ['esm', 'cjs'],
-  dts: true,
+  dts: { compilerOptions: { ignoreDeprecations: "6.0" } },
   sourcemap: true,
   clean: true,
   external: ['react', 'ink', 'commander', '@agentskit/core', '@agentskit/ink'],

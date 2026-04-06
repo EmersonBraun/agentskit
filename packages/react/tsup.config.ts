@@ -6,7 +6,7 @@ export default defineConfig({
     index: 'src/index.ts',
   },
   format: ['esm', 'cjs'],
-  dts: true,
+  dts: { compilerOptions: { ignoreDeprecations: "6.0" } },
   sourcemap: true,
   clean: true,
   external: ['react', 'react-dom', '@agentskit/core'],

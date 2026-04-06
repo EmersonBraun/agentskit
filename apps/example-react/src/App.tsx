@@ -1,5 +1,6 @@
 import { ChatContainer, InputBar, Message, useChat } from '@agentskit/react'
 import type { AdapterFactory } from '@agentskit/react'
+// @ts-expect-error CSS side-effect import
 import '@agentskit/react/theme'
 
 function createDemoAdapter(): AdapterFactory {
