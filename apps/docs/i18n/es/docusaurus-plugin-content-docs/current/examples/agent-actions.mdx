@@ -1,0 +1,36 @@
+---
+sidebar_position: 8
+---
+
+import { AgentActions } from '@site/src/examples/AgentActions'
+
+# Acciones de agente
+
+Agentes de IA que generan UI viva e interactiva: seguimiento de tareas, paneles, formularios. El agente no solo responde con texto: construye interfaces que funcionan.
+
+<AgentActions />
+
+## Con AgentsKit
+
+Combina `useChat` con renderizadores personalizados para resultados de llamadas a herramientas:
+
+```tsx
+import { useChat, ChatContainer, Message } from '@agentskit/react'
+
+function AgentChat() {
+  const chat = useChat({ adapter })
+  return (
+    <ChatContainer>
+      {chat.messages.map(msg => (
+        <div key={msg.id}>
+          <Message message={msg} />
+          {msg.toolCalls?.map(tc => (
+            <DynamicWidget key={tc.id} type={tc.name} data={JSON.parse(tc.result || '{}')} />
+          ))}
+        </div>
+      ))}
+      <InputBar chat={chat} />
+    </ChatContainer>
+  )
+}
+```

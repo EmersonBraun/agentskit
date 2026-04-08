@@ -1,0 +1,31 @@
+---
+sidebar_position: 6
+---
+
+import { SupportBot } from '@site/src/examples/SupportBot'
+
+# Bot de atención al cliente
+
+Respuestas rápidas, indicadores de escritura y flujos de escalado. Construye experiencias de soporte en producción con los componentes sin estilos de AgentsKit.
+
+<SupportBot />
+
+## Con AgentsKit
+
+```tsx
+import { useChat, ChatContainer, Message, InputBar, ThinkingIndicator } from '@agentskit/react'
+
+function SupportChat() {
+  const chat = useChat({
+    adapter: myAdapter,
+    initialMessages: [{ id: '1', role: 'assistant', content: 'How can I help?', status: 'complete', createdAt: new Date() }],
+  })
+  return (
+    <ChatContainer>
+      {chat.messages.map(msg => <Message key={msg.id} message={msg} />)}
+      <ThinkingIndicator visible={chat.status === 'streaming'} label="Typing..." />
+      <InputBar chat={chat} />
+    </ChatContainer>
+  )
+}
+```

@@ -1,0 +1,106 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Primeros pasos",
+    "description": "The label for category 'Getting Started' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Packages": {
+    "message": "Paquetes",
+    "description": "The label for category 'Packages' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Building Chat UIs": {
+    "message": "Interfaces de chat",
+    "description": "The label for category 'Building Chat UIs' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Running Agents": {
+    "message": "Ejecución de agentes",
+    "description": "The label for category 'Running Agents' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Data Layer": {
+    "message": "Capa de datos",
+    "description": "The label for category 'Data Layer' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Infrastructure": {
+    "message": "Infraestructura",
+    "description": "The label for category 'Infrastructure' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Core Hooks": {
+    "message": "Hooks principales",
+    "description": "The label for category 'Core Hooks' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Contributing": {
+    "message": "Contribuir",
+    "description": "The label for category 'Contributing' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Legacy Reference": {
+    "message": "Referencia heredada",
+    "description": "The label for category 'Legacy Reference' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Examples": {
+    "message": "Ejemplos",
+    "description": "The label for category 'Examples' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.link.Generated API (TypeDoc)": {
+    "message": "API generada (TypeDoc)",
+    "description": "The label for link 'Generated API (TypeDoc)' in sidebar 'docsSidebar', linking to 'pathname:///agentskit/api-reference/'"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/core": {
+    "message": "@agentskit/core",
+    "description": "The label for the doc item '@agentskit/core' in sidebar 'docsSidebar', linking to the doc packages/core"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/templates": {
+    "message": "@agentskit/templates",
+    "description": "The label for the doc item '@agentskit/templates' in sidebar 'docsSidebar', linking to the doc packages/templates"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/react": {
+    "message": "@agentskit/react",
+    "description": "The label for the doc item '@agentskit/react' in sidebar 'docsSidebar', linking to the doc chat-uis/react"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/ink": {
+    "message": "@agentskit/ink",
+    "description": "The label for the doc item '@agentskit/ink' in sidebar 'docsSidebar', linking to the doc chat-uis/ink"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/adapters": {
+    "message": "@agentskit/adapters",
+    "description": "The label for the doc item '@agentskit/adapters' in sidebar 'docsSidebar', linking to the doc data-layer/adapters"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/memory": {
+    "message": "@agentskit/memory",
+    "description": "The label for the doc item '@agentskit/memory' in sidebar 'docsSidebar', linking to the doc data-layer/memory"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/rag": {
+    "message": "@agentskit/rag",
+    "description": "The label for the doc item '@agentskit/rag' in sidebar 'docsSidebar', linking to the doc data-layer/rag"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/runtime": {
+    "message": "@agentskit/runtime",
+    "description": "The label for the doc item '@agentskit/runtime' in sidebar 'docsSidebar', linking to the doc agents/runtime"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/tools": {
+    "message": "@agentskit/tools",
+    "description": "The label for the doc item '@agentskit/tools' in sidebar 'docsSidebar', linking to the doc agents/tools"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/skills": {
+    "message": "@agentskit/skills",
+    "description": "The label for the doc item '@agentskit/skills' in sidebar 'docsSidebar', linking to the doc agents/skills"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/observability": {
+    "message": "@agentskit/observability",
+    "description": "The label for the doc item '@agentskit/observability' in sidebar 'docsSidebar', linking to the doc infrastructure/observability"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/sandbox": {
+    "message": "@agentskit/sandbox",
+    "description": "The label for the doc item '@agentskit/sandbox' in sidebar 'docsSidebar', linking to the doc infrastructure/sandbox"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/eval": {
+    "message": "@agentskit/eval",
+    "description": "The label for the doc item '@agentskit/eval' in sidebar 'docsSidebar', linking to the doc infrastructure/eval"
+  },
+  "sidebar.docsSidebar.doc.@agentskit/cli": {
+    "message": "@agentskit/cli",
+    "description": "The label for the doc item '@agentskit/cli' in sidebar 'docsSidebar', linking to the doc infrastructure/cli"
+  }
+}

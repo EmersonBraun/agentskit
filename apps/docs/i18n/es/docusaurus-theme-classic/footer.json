@@ -1,0 +1,66 @@
+{
+  "link.title.Docs": {
+    "message": "Docs",
+    "description": "The title of the footer links column with title=Docs in the footer"
+  },
+  "link.title.Open Source": {
+    "message": "Código abierto",
+    "description": "The title of the footer links column with title=Open Source in the footer"
+  },
+  "link.title.Connect": {
+    "message": "Conectar",
+    "description": "The title of the footer links column with title=Connect in the footer"
+  },
+  "link.item.label.Start here": {
+    "message": "Empieza aquí",
+    "description": "The label of footer link with label=Start here linking to /docs/getting-started/read-this-first"
+  },
+  "link.item.label.Quick Start": {
+    "message": "Inicio rápido",
+    "description": "The label of footer link with label=Quick Start linking to /docs/getting-started/quick-start"
+  },
+  "link.item.label.Packages overview": {
+    "message": "Resumen de paquetes",
+    "description": "The label of footer link with label=Packages overview linking to /docs/packages/overview"
+  },
+  "link.item.label.For AI Agents": {
+    "message": "Para agentes de IA",
+    "description": "The label of footer link with label=For AI Agents linking to /docs/getting-started/for-ai-agents"
+  },
+  "link.item.label.AI Summary Hub": {
+    "message": "AI Summary Hub",
+    "description": "The label of footer link with label=AI Summary Hub linking to https://emersonbraun.github.io/ai-summary-hub/"
+  },
+  "link.item.label.Skills — Reusable AI skills": {
+    "message": "Skills — habilidades de IA reutilizables",
+    "description": "The label of footer link with label=Skills — Reusable AI skills linking to https://github.com/EmersonBraun/skills"
+  },
+  "link.item.label.All @agentskit packages": {
+    "message": "Todos los paquetes @agentskit",
+    "description": "The label of footer link with label=All @agentskit packages linking to https://www.npmjs.com/search?q=scope%3Aagentskit"
+  },
+  "link.item.label.Website": {
+    "message": "Sitio web",
+    "description": "The label of footer link with label=Website linking to https://emersonbraun.dev/"
+  },
+  "link.item.label.LinkedIn": {
+    "message": "LinkedIn",
+    "description": "The label of footer link with label=LinkedIn linking to https://www.linkedin.com/in/emerson-braun/"
+  },
+  "link.item.label.X / Twitter": {
+    "message": "X / Twitter",
+    "description": "The label of footer link with label=X / Twitter linking to https://x.com/EmersonfBraun"
+  },
+  "link.item.label.Instagram": {
+    "message": "Instagram",
+    "description": "The label of footer link with label=Instagram linking to https://www.instagram.com/emerson.braun.dev/"
+  },
+  "link.item.label.YouTube": {
+    "message": "YouTube",
+    "description": "The label of footer link with label=YouTube linking to https://www.youtube.com/@emerson.braun_dev"
+  },
+  "copyright": {
+    "message": "AgentsKit. Creado por <a href=\"https://emersonbraun.dev/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: inherit; text-decoration: underline;\">Emerson Braun</a>.",
+    "description": "The footer copyright"
+  }
+}

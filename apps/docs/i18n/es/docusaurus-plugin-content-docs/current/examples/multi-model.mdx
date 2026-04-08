@@ -1,0 +1,38 @@
+---
+sidebar_position: 4
+---
+
+import { MultiModelChat } from '@site/src/examples/MultiModelChat'
+
+# Comparación multi-modelo
+
+Compara respuestas de distintos modelos de IA lado a lado. Misma entrada, distintos adaptadores: AgentsKit lo hace trivial.
+
+<MultiModelChat />
+
+## Con AgentsKit
+
+Usa dos hooks `useChat` con adaptadores distintos:
+
+```tsx
+import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react'
+import { anthropic, openai } from '@agentskit/adapters'
+
+function Compare() {
+  const claude = useChat({ adapter: anthropic({ apiKey, model: 'claude-sonnet-4-6' }) })
+  const gpt = useChat({ adapter: openai({ apiKey, model: 'gpt-4o' }) })
+
+  const sendBoth = (text: string) => {
+    claude.send(text)
+    gpt.send(text)
+  }
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+      <ChatContainer>{claude.messages.map(m => <Message key={m.id} message={m} />)}</ChatContainer>
+      <ChatContainer>{gpt.messages.map(m => <Message key={m.id} message={m} />)}</ChatContainer>
+      <InputBar chat={{ ...claude, send: sendBoth }} />
+    </div>
+  )
+}
+```

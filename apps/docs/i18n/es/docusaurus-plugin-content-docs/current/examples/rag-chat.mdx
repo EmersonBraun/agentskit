@@ -1,0 +1,36 @@
+---
+sidebar_position: 7
+---
+
+import { RAGChat } from '@site/src/examples/RAGChat'
+
+# Chat RAG
+
+Generación aumentada por recuperación: chatea con tus documentos. Muestra citas, referencias a fuentes y contexto documental junto a las respuestas del modelo.
+
+<RAGChat />
+
+## Con AgentsKit
+
+```tsx
+import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react'
+
+function RAGChat() {
+  const chat = useChat({
+    adapter: myRAGAdapter,
+    initialMessages: [{
+      id: 'sys', role: 'system',
+      content: 'Answer based on the provided documents. Cite sources.',
+      status: 'complete', createdAt: new Date()
+    }],
+  })
+  return (
+    <ChatContainer>
+      {chat.messages.map(msg => (
+        <Message key={msg.id} message={msg} />
+      ))}
+      <InputBar chat={chat} placeholder="Ask about your documents..." />
+    </ChatContainer>
+  )
+}
+```

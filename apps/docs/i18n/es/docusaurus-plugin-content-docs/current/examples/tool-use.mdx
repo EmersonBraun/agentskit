@@ -1,0 +1,35 @@
+---
+sidebar_position: 3
+---
+
+import { ToolUseChat } from '@site/src/examples/ToolUseChat'
+
+# Uso de herramientas
+
+Asistentes de IA que llaman funciones: consultas del tiempo, búsqueda web, consultas a base de datos. AgentsKit muestra las llamadas a herramientas con tarjetas desplegables que enseñan argumentos y resultados.
+
+<ToolUseChat />
+
+## Con AgentsKit
+
+El componente `ToolCallView` se encarga de todo:
+
+```tsx
+import { useChat, ChatContainer, Message, ToolCallView } from '@agentskit/react'
+
+function Chat() {
+  const chat = useChat({ adapter })
+  return (
+    <ChatContainer>
+      {chat.messages.map(msg => (
+        <div key={msg.id}>
+          <Message message={msg} />
+          {msg.toolCalls?.map(tc => (
+            <ToolCallView key={tc.id} toolCall={tc} />
+          ))}
+        </div>
+      ))}
+    </ChatContainer>
+  )
+}
+```
