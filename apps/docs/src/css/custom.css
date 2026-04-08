@@ -734,6 +734,46 @@ main.ak-page-main > section {
   width: auto;
 }
 
+/* Matches shields.io flat-square gray row next to static npm/github imgs */
+.ak-shield-badge {
+  display: inline-flex;
+  align-items: stretch;
+  height: 20px;
+  line-height: 1;
+  border-radius: 3px;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: #fff;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.ak-shield-badge:hover {
+  text-decoration: none;
+  color: #fff;
+  filter: brightness(1.06);
+}
+
+.ak-shield-badge--downloads .ak-shield-badge__label {
+  background: #64748b;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ak-shield-badge--downloads .ak-shield-badge__value {
+  background: #475569;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  min-width: 1.75rem;
+  justify-content: center;
+}
+
 .social-proof-meta {
   font-size: 12px;
   color: var(--ak-text-muted);

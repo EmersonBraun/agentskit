@@ -9,6 +9,78 @@ const GITHUB_ISSUES = `${GITHUB_URL}/issues`
 const NPM_REACT = 'https://www.npmjs.com/package/@agentskit/react'
 const NPM_ORG = 'https://www.npmjs.com/org/agentskit'
 
+/** All published workspace packages — used for aggregated download counts (npm API has no scoped bulk endpoint). */
+const AGENTSKIT_NPM_PACKAGES = [
+  '@agentskit/adapters',
+  '@agentskit/cli',
+  '@agentskit/core',
+  '@agentskit/eval',
+  '@agentskit/ink',
+  '@agentskit/memory',
+  '@agentskit/observability',
+  '@agentskit/rag',
+  '@agentskit/react',
+  '@agentskit/runtime',
+  '@agentskit/sandbox',
+  '@agentskit/skills',
+  '@agentskit/templates',
+  '@agentskit/tools',
+] as const
+
+async function fetchLastWeekDownloads(pkg: string): Promise<number> {
+  const enc = encodeURIComponent(pkg)
+  const res = await fetch(`https://api.npmjs.org/downloads/point/last-week/${enc}`)
+  if (!res.ok) return 0
+  const data: { downloads?: number; error?: string } = await res.json()
+  if (data.error || typeof data.downloads !== 'number') return 0
+  return data.downloads
+}
+
+function formatCompactCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)}k`
+  return String(n)
+}
+
+/** Weekly downloads summed across all @agentskit/* packages (npm does not expose scope totals in one call). */
+function AggregatedNpmDownloadsBadge() {
+  const [total, setTotal] = useState<number | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const counts = await Promise.all(AGENTSKIT_NPM_PACKAGES.map(p => fetchLastWeekDownloads(p)))
+        if (cancelled) return
+        setTotal(counts.reduce((a, b) => a + b, 0))
+      } catch {
+        if (!cancelled) setFailed(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const label = 'downloads'
+  const message =
+    failed ? '—' : total === null ? '…' : formatCompactCount(total)
+
+  return (
+    <a
+      href={NPM_ORG}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="social-proof-badge ak-shield-badge ak-shield-badge--downloads"
+      title="Sum of last-week npm downloads across all @agentskit packages"
+    >
+      <span className="ak-shield-badge__label">{label}</span>
+      <span className="ak-shield-badge__value">{message}</span>
+    </a>
+  )
+}
+
 // ─── Floating Keywords Background ───
 const KEYWORDS = [
   'useChat()', 'useStream()', 'useReactive()', 'adapter', 'streaming',
@@ -51,14 +123,7 @@ function SocialProofBar() {
           loading="lazy"
         />
       </a>
-      <a href={NPM_REACT} target="_blank" rel="noopener noreferrer" className="social-proof-badge">
-        <img
-          src="https://img.shields.io/npm/dw/@agentskit/react?style=flat-square&label=downloads&color=64748b"
-          alt="Weekly npm downloads for @agentskit/react"
-          height={20}
-          loading="lazy"
-        />
-      </a>
+      <AggregatedNpmDownloadsBadge />
       <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="social-proof-badge">
         <img
           src={`https://img.shields.io/github/stars/${GITHUB_REPO}?style=flat-square&logo=github&label=stars&color=64748b`}
