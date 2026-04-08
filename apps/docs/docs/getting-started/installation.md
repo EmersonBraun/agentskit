@@ -32,6 +32,8 @@ npm install @agentskit/core @agentskit/react @agentskit/adapters @agentskit/runt
 
 ## All Packages
 
+New to the repo? **[Start here (60s)](./read-this-first)** → then the **[Packages overview](../packages/overview)**. API signatures: [TypeDoc](pathname:///agentskit/api-reference/).
+
 | Package | What it does |
 |---------|-------------|
 | `@agentskit/core` | Types, contracts, shared primitives |
@@ -47,6 +49,7 @@ npm install @agentskit/core @agentskit/react @agentskit/adapters @agentskit/runt
 | `@agentskit/observability` | Logging + tracing (console, LangSmith, OpenTelemetry) |
 | `@agentskit/sandbox` | Secure code execution (E2B) |
 | `@agentskit/eval` | Agent evaluation and benchmarking |
+| `@agentskit/templates` | Scaffold tools, skills, and adapters |
 
 ## Peer Dependencies
 
