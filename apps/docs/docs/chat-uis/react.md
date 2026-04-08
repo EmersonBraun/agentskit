@@ -4,7 +4,14 @@ sidebar_position: 1
 
 # @agentskit/react
 
-React chat UI built on `@agentskit/core`. Provides three hooks and seven headless components styled via CSS variables.
+React chat UI built on [`@agentskit/core`](../packages/core). Provides three hooks and seven headless components styled via CSS variables.
+
+## When to use
+
+- Browser **streaming chat** with pluggable LLM adapters and optional tools, memory, RAG, and skills.
+- You want **headless** markup (`data-ak-*`) and your own CSS or design system.
+
+**Consider** [`@agentskit/ink`](./ink) for terminal apps and [`@agentskit/runtime`](../agents/runtime) for headless agents without React.
 
 ## Install
 
@@ -31,6 +38,26 @@ const chat = useChat({
 })
 ```
 
+#### `useChat` configuration (`ChatConfig`)
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `adapter` | `AdapterFactory` | **Required.** Provider factory from `@agentskit/adapters` or custom. |
+| `systemPrompt` | `string` | Prepended as a system message when sending. |
+| `temperature` | `number` | Passed through to the adapter when supported. |
+| `maxTokens` | `number` | Upper bound on completion length when supported. |
+| `tools` | `ToolDefinition[]` | Functions the model may call; results stream back as tool messages. |
+| `skills` | `SkillDefinition[]` | Augment system prompt and inject skill tools before send. |
+| `memory` | `ChatMemory` | Persist and reload `Message[]` across sessions ([Memory](../data-layer/memory)). |
+| `retriever` | `Retriever` | Injects retrieved context each turn ([RAG](../data-layer/rag)). |
+| `initialMessages` | `Message[]` | Seed the transcript before first user message. |
+| `onMessage` | callback | Invoked with each persisted `Message` as the controller updates history. |
+| `onError` | callback | Stream or tool errors. |
+| `onToolCall` | callback | Observe or intercept tool execution ([Tools](../agents/tools)). |
+| `observers` | `Observer[]` | Low-level event stream ([Observability](../infrastructure/observability)). |
+
+The hook also exposes controller methods such as **`approve` / `deny`** for human-in-the-loop tools when the underlying tool definitions request confirmation.
+
 Returns a `ChatReturn` object:
 
 | Property | Type | Description |
@@ -44,6 +71,7 @@ Returns a `ChatReturn` object:
 | `retry()` | `() => void` | Retry the last request |
 | `setInput(val)` | `(val: string) => void` | Update the input value |
 | `clear()` | `() => void` | Clear the conversation |
+| `approve(id)` / `deny(id, reason?)` | | Confirm or reject pending tool calls when applicable. |
 
 ### `useStream`
 
@@ -164,8 +192,26 @@ Every component emits `data-ak-*` attributes so you can style or target them wit
 
 See [Theming](./theming.md) for full CSS variable reference.
 
-## Related
+## Composition
 
-- [Components reference](./components.md)
-- [Theming](./theming.md)
-- [@agentskit/ink](./ink.md)
+- Prefer **small presentational wrappers** around `ChatContainer`, `Message`, and `InputBar` rather than forking internals.
+- Use **`data-ak-*`** for theme tokens; for MUI/shadcn, see [MUI Chat](../examples/mui-chat) and [shadcn Chat](../examples/shadcn-chat).
+- **`ToolCallView`** and **`Markdown`** accept standard props — pair with your router for deep links inside assistant content.
+
+## Production notes
+
+- Keep **API keys on the server** when possible (route handlers, server actions); use [`vercelAI`](../data-layer/adapters) or a thin BFF that returns a stream.
+- Align **`@agentskit/*` versions** on the same minor release to avoid type drift with `core`.
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---------|----------------|
+| Double messages in React Strict Mode | Expected during dev; production should match single mount. If not, ensure a single `useChat` per session id. |
+| Stream stuck on `streaming` | Adapter did not yield `{ type: 'done' }` or network hung; call `stop()` and inspect adapter `abort`. |
+| Tools never invoked | Weak `description` / `schema`; model may ignore. Tighten schema and system prompt. |
+| Styles missing | Import `@agentskit/react/theme` or define CSS variables from [Theming](./theming). |
+
+## See also
+
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/react`) · [Components](./components) · [Theming](./theming) · [Ink](./ink) · [@agentskit/core](../packages/core)

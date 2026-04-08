@@ -6,6 +6,11 @@ sidebar_position: 3
 
 `@agentskit/eval` runs structured evaluation suites against your agents. Results include accuracy, latency, and token usage — suitable for CI/CD gates and regression tracking.
 
+## When to use
+
+- You have a stable **`AgentFn`** (string in → string or structured content out) and want **regression metrics**.
+- You gate releases on **`minAccuracy`** or track token spend across cases.
+
 ## Installation
 
 ```bash
@@ -145,7 +150,14 @@ Example GitHub Actions step:
 
 Keep eval suites small (10–50 cases) for fast CI feedback. Run larger regression suites on a schedule.
 
-## Related
+## Troubleshooting
 
-- [Observability](./observability.md) — trace eval runs for deeper inspection
-- [Sandbox](./sandbox.md) — run code-execution test cases safely
+| Issue | Mitigation |
+|-------|------------|
+| Flaky substring matches | Prefer predicate `expected` functions; avoid over-specific quotes. |
+| Null `totalTokens` | Return `tokenUsage` from `AgentFn` when the adapter exposes usage. |
+| CI timeouts | Reduce suite size, mock network tools, or use a faster model for smoke evals. |
+
+## See also
+
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/eval`) · [Observability](./observability) · [Sandbox](./sandbox) · [Runtime](../agents/runtime) · [@agentskit/core](../packages/core)

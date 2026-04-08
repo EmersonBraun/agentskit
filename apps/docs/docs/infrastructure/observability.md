@@ -4,31 +4,32 @@ sidebar_position: 1
 
 # Observability
 
-`@agentskit/observability` provides pluggable tracing and logging for AgentsKit agents. All observers are lazy-loaded — only the code you use is bundled.
+`@agentskit/observability` provides **pluggable `Observer`** implementations for [`@agentskit/core`](../packages/core) `AgentEvent` streams. Observers are lazy-friendly: import only the backends you wire into [`createRuntime`](../agents/runtime) or [`useChat`](../hooks/use-chat) via `observers` in config.
+
+## When to use
+
+- You need **structured logs** during agent steps (`consoleLogger`).
+- You export traces to **LangSmith** or **OpenTelemetry**-compatible collectors.
 
 ## Installation
 
 ```bash
-npm install @agentskit/observability
+npm install @agentskit/observability @agentskit/core
 ```
 
-## Built-in Observers
+## Built-in observers
 
-### Console Logger
-
-Logs agent events to the terminal in human-readable or structured JSON format.
+### Console logger
 
 ```ts
 import { consoleLogger } from '@agentskit/observability'
 
-const logger = consoleLogger({ format: 'human' }) // or 'json'
+const observer = consoleLogger({ format: 'human' }) // or 'json'
 ```
 
-**Human format** prints colored, indented output for local development. **JSON format** emits newline-delimited JSON suitable for log aggregation pipelines.
+Human: colored, indented stderr. JSON: newline-delimited events for ingestion pipelines.
 
 ### LangSmith
-
-Sends a full trace hierarchy to LangSmith, including nested runs, token usage, and latency.
 
 ```ts
 import { langsmith } from '@agentskit/observability'
@@ -39,85 +40,99 @@ const observer = langsmith({
 })
 ```
 
-Each agent run becomes a root trace in LangSmith. Tool calls, retrieval steps, and sub-agent invocations are recorded as child runs, preserving the full call hierarchy.
-
-### OpenTelemetry
-
-Exports spans using the [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) over OTLP.
+### OpenTelemetry (OTLP)
 
 ```ts
 import { opentelemetry } from '@agentskit/observability'
 
 const observer = opentelemetry({
-  endpoint: 'http://localhost:4318/v1/traces', // OTLP HTTP endpoint
+  endpoint: 'http://localhost:4318/v1/traces',
   serviceName: 'my-agent-service',
 })
 ```
 
-Spans include `gen_ai.system`, `gen_ai.request.model`, `gen_ai.usage.input_tokens`, and `gen_ai.usage.output_tokens` attributes. Compatible with Jaeger, Tempo, Honeycomb, and any OTLP-capable backend.
+Spans follow GenAI semantic conventions where applicable.
 
-## Shared Span Management
+## Attach to runtime
 
-`createTraceTracker` coordinates span context across multiple observers, ensuring parent–child relationships are consistent even when several observers run in parallel.
+```ts
+import { createRuntime } from '@agentskit/runtime'
+import { anthropic } from '@agentskit/adapters'
+import { consoleLogger } from '@agentskit/observability'
+
+const runtime = createRuntime({
+  adapter: anthropic({ apiKey: process.env.ANTHROPIC_API_KEY!, model: 'claude-sonnet-4-6' }),
+  observers: [consoleLogger({ format: 'json' })],
+})
+
+await runtime.run('Hello')
+```
+
+Pass the same `observers` array to [`useChat`](../hooks/use-chat) for browser sessions.
+
+## `createTraceTracker`
+
+Low-level helper that turns `AgentEvent` into start/end span callbacks — use when you need a **custom exporter** but still want consistent parent/child timing.
 
 ```ts
 import { createTraceTracker } from '@agentskit/observability'
+import type { AgentEvent } from '@agentskit/core'
 
-const tracker = createTraceTracker()
+const tracker = createTraceTracker({
+  onSpanStart(span) {
+    /* send span open to your backend */
+  },
+  onSpanEnd(span) {
+    /* close span */
+  },
+})
 
-agent.use(tracker.middleware())
+const bridge = {
+  name: 'trace-bridge',
+  on(event: AgentEvent) {
+    tracker.handle(event)
+  },
+}
 ```
 
-Use this when combining multiple observers so span IDs propagate correctly.
+## `AgentEvent` reference (core)
 
-## Custom Observers
+Events are defined in `@agentskit/core` (not exhaustive here — see TypeDoc):
 
-Implement the observer interface to integrate any tracing backend:
+| Event type | Meaning |
+|------------|---------|
+| `llm:start` / `llm:first-token` / `llm:end` | Model call lifecycle |
+| `tool:start` / `tool:end` | Tool execution |
+| `memory:load` / `memory:save` | Chat memory persistence |
+| `agent:step` | ReAct step marker |
+| `agent:delegate:start` / `agent:delegate:end` | Sub-agent delegation |
+| `error` | Recoverable or fatal error surface |
+
+## Custom observer
+
+Implement `Observer` from `@agentskit/core`:
 
 ```ts
-import type { Observer } from '@agentskit/observability'
+import type { AgentEvent, Observer } from '@agentskit/core'
 
 const myObserver: Observer = {
   name: 'my-backend',
-  on(event) {
-    if (event.type === 'run:start') {
-      myBackend.startTrace({ id: event.runId, input: event.input })
-    }
-    if (event.type === 'run:end') {
-      myBackend.endTrace({ id: event.runId, output: event.output })
+  on(event: AgentEvent) {
+    if (event.type === 'error') {
+      console.error(event.error)
     }
   },
 }
 ```
 
-### Observer Events
+## Troubleshooting
 
-| Event | Payload |
-|-------|---------|
-| `run:start` | `{ runId, input, metadata }` |
-| `run:end` | `{ runId, output, tokenUsage, durationMs }` |
-| `tool:start` | `{ runId, toolName, args }` |
-| `tool:end` | `{ runId, toolName, result, durationMs }` |
-| `error` | `{ runId, error }` |
+| Issue | Mitigation |
+|-------|------------|
+| No spans in LangSmith | Verify `LANGSMITH_API_KEY` and project name; check network egress from CI. |
+| OTLP drops data | Confirm collector URL and HTTP/protobuf mode match your stack. |
+| Double logging | Deduplicate observers — each `on` receives every event. |
 
-## Attaching Observers to an Agent
+## See also
 
-```ts
-import { createAgent } from '@agentskit/core'
-import { consoleLogger, langsmith } from '@agentskit/observability'
-
-const agent = createAgent({
-  adapter,
-  observers: [
-    consoleLogger({ format: 'human' }),
-    langsmith({ apiKey: process.env.LANGSMITH_API_KEY }),
-  ],
-})
-```
-
-Multiple observers can run side-by-side; events are dispatched to all of them.
-
-## Related
-
-- [Eval](./eval.md) — measure agent quality with structured test suites
-- [Runtime](../agents/runtime.md) — agent configuration and lifecycle
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/observability`) · [Eval](./eval) · [Runtime](../agents/runtime) · [@agentskit/core](../packages/core)

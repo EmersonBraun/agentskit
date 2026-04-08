@@ -6,11 +6,34 @@ sidebar_position: 2
 
 `@agentskit/memory` provides pluggable backends for chat history (`ChatMemory`) and semantic vector search (`VectorMemory`). All backends use **lazy imports** — the underlying driver is loaded only when the memory is first used, so unused backends add no runtime cost.
 
+## When to use
+
+- **Persist chat transcripts** across reloads or server restarts (`sqliteChatMemory`, `redisChatMemory`).
+- **Store embeddings** for semantic search, RAG, or custom retrieval (`fileVectorMemory`, `redisVectorMemory`, or a custom `VectorStore`).
+
+For quick tests without persistence, prefer [`createInMemoryMemory`](../packages/core) from `@agentskit/core` (no extra drivers).
+
 ## Install
 
 ```bash
 npm install @agentskit/memory
 ```
+
+[`@agentskit/core`](../packages/core) defines `ChatMemory` and `VectorMemory` (pulled in by UI/runtime/RAG packages).
+
+## Contract overview
+
+**`ChatMemory`** (conceptual): load and save the conversation `Message[]` for a session (conversation id or equivalent is backend-specific).
+
+**`VectorMemory`**: upsert searchable documents with embeddings, query by vector (cosine similarity), delete by id. Used directly or via [`createRAG`](./rag).
+
+## Public exports
+
+| Export | Kind |
+|--------|------|
+| `sqliteChatMemory`, `redisChatMemory` | Chat persistence |
+| `fileVectorMemory`, `redisVectorMemory` | Vector persistence |
+| Types: `SqliteChatMemoryConfig`, `RedisChatMemoryConfig`, `FileVectorMemoryConfig`, `RedisVectorMemoryConfig`, `VectorStore`, `VectorStoreDocument`, `VectorStoreResult`, `RedisClientAdapter`, `RedisConnectionConfig` | Configuration and extension points |
 
 ## Backend Comparison
 
@@ -190,8 +213,15 @@ const memory = redisChatMemory({
 
 All backends load their drivers with a dynamic `import()` or `require()` on first use. This means you only pay the cost of `better-sqlite3`, `redis`, or `vectra` when that backend is actually instantiated — not at module load time.
 
-## Related
+## Troubleshooting
 
-- [Adapters](./adapters.md) — embedder functions used to generate vectors
-- [RAG](./rag.md) — full retrieval-augmented generation pipeline using VectorMemory
-- [useChat hook](../hooks/use-chat.md) — pass `memory` to a chat session
+| Issue | What to check |
+|-------|----------------|
+| `better-sqlite3` install fails | Native addon; use Node LTS and matching architecture, or switch to Redis. |
+| Redis vector errors | Ensure RediSearch / vector module; `dimensions` matches embedder output. |
+| Empty search results | Threshold too high; wrong embedding model between ingest and query. |
+| Multiple users seeing same history | Set distinct `conversationId` per user/session for chat memory. |
+
+## See also
+
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/memory`) · [Adapters](./adapters) · [RAG](./rag) · [useChat](../hooks/use-chat) · [@agentskit/core](../packages/core)

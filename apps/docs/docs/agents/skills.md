@@ -4,13 +4,30 @@ sidebar_position: 3
 
 # Skills
 
-`@agentskit/skills` provides five built-in role-based system prompts that turn the agent into a focused specialist. Skills also carry `tools` hints and `delegates` hints so the runtime knows which tools to activate and which sub-agents to wire up automatically.
+`@agentskit/skills` provides five built-in **`SkillDefinition`** values (system prompts + metadata). Skills carry **`tools`** hints and **`delegates`** hints so the runtime knows which tools to merge and which sub-agents to prefer during delegation.
+
+## When to use
+
+- You want **opinionated personas** (researcher, coder, planner, …) without hand-writing long system prompts.
+- You compose personas with **`composeSkills`** for multi-phase tasks.
+
+Custom skills are plain objects — use [`@agentskit/templates`](../packages/templates) or define `SkillDefinition` in code.
 
 ## Install
 
 ```bash
 npm install @agentskit/skills
 ```
+
+Skill types come from [`@agentskit/core`](../packages/core).
+
+## Public exports
+
+| Export | Role |
+|--------|------|
+| `researcher`, `coder`, `planner`, `critic`, `summarizer` | Built-in `SkillDefinition` objects |
+| `composeSkills(...skills)` | Merge prompts, tool hints, and delegates |
+| `listSkills()` | `SkillMetadata[]` for discovery UIs |
 
 ## Using a skill
 
@@ -149,8 +166,14 @@ export const translator: SkillDefinition = {
 }
 ```
 
-## Related
+## Troubleshooting
 
-- [Runtime](./runtime.md) — how skills are activated per run
-- [Delegation](./delegation.md) — how `delegates` hints wire up multi-agent workflows
-- [Tools](./tools.md) — the tool definitions referenced by `tools` hints
+| Issue | Mitigation |
+|-------|------------|
+| Planner never delegates | Ensure runtime has matching tools and delegation config from [Delegation](./delegation). |
+| Skill tools unused | Register the actual `ToolDefinition[]` (e.g. `webSearch()`) on `createRuntime`; hints alone do not install tools. |
+| Composed prompt too long | Trim source skills or split into separate runs. |
+
+## See also
+
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/skills`) · [Runtime](./runtime) · [Delegation](./delegation) · [Tools](./tools) · [@agentskit/core](../packages/core)

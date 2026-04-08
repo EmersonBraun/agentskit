@@ -6,11 +6,20 @@ sidebar_position: 1
 
 `@agentskit/runtime` is the execution engine for autonomous agents. It runs a ReAct loop — observe, think, act — until the model produces a final answer or a step limit is reached.
 
+## When to use
+
+- **Headless** agents (CLI workers, jobs, tests) with tools, memory, retrieval, and optional delegation.
+- You already use [`@agentskit/adapters`](../data-layer/adapters); the same factories work here.
+
+For interactive terminal chat prefer [`@agentskit/ink`](../chat-uis/ink); for browser UI prefer [`@agentskit/react`](../chat-uis/react).
+
 ## Install
 
 ```bash
 npm install @agentskit/runtime @agentskit/adapters
 ```
+
+[`@agentskit/core`](../packages/core) is included transitively; add it explicitly if you need types without pulling the full runtime graph.
 
 ## Basic usage
 
@@ -130,12 +139,12 @@ When a `memory` is configured, the runtime saves all messages at the end of each
 
 ```ts
 import { createRuntime } from '@agentskit/runtime'
-import { inMemory } from '@agentskit/memory'
+import { createInMemoryMemory } from '@agentskit/core'
 import { anthropic } from '@agentskit/adapters'
 
 const runtime = createRuntime({
   adapter: anthropic({ apiKey: process.env.ANTHROPIC_API_KEY!, model: 'claude-sonnet-4-6' }),
-  memory: inMemory(),
+  memory: createInMemoryMemory(),
 })
 
 await runtime.run('My name is Alice.')
@@ -143,10 +152,27 @@ const result = await runtime.run('What is my name?')
 console.log(result.content) // "Your name is Alice."
 ```
 
+For durable storage use [`sqliteChatMemory` or `redisChatMemory`](../data-layer/memory) from `@agentskit/memory`.
+
 Memory is saved after `RunResult` is assembled — if you abort early, partial messages are still persisted up to the abort point.
 
-## Related
+## Retriever (RAG)
 
-- [Tools](./tools.md) — built-in tool definitions
-- [Skills](./skills.md) — role-based system prompts
-- [Delegation](./delegation.md) — multi-agent coordination
+Pass a `Retriever` (for example from [`createRAG`](../data-layer/rag)) via `retriever` in `RuntimeConfig`. Each loop step can inject retrieved context before the model thinks — same contract as chat UI.
+
+## Observers
+
+`observers` accepts [`Observer`](../packages/core) instances from `@agentskit/core` for low-level events. Pair with [`@agentskit/observability`](../infrastructure/observability) when you need structured traces.
+
+## Troubleshooting
+
+| Symptom | Likely fix |
+|---------|------------|
+| Hits `maxSteps` with no answer | Model keeps calling tools; raise `maxSteps`, tighten tool descriptions, or adjust system prompt. |
+| Tool timeout / hang | Add `signal` with a deadline; ensure tools reject on overload. |
+| No prior context | Confirm `memory` uses the same `conversationId` (for backends that scope by id). |
+| Empty retrieval | Check embedder dimensions match vector store; verify ingest ran for your corpus. |
+
+## See also
+
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/runtime`) · [Tools](./tools) · [Skills](./skills) · [Delegation](./delegation) · [@agentskit/core](../packages/core)

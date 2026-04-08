@@ -4,7 +4,12 @@ sidebar_position: 2
 
 # Sandbox
 
-`@agentskit/sandbox` lets agents execute untrusted code safely. It ships with an E2B integration and a `SandboxBackend` interface for custom runtimes.
+`@agentskit/sandbox` runs **untrusted agent-generated code** in an isolated backend. The default integration targets **E2B**; you can swap a custom `SandboxBackend` for on-prem runtimes.
+
+## When to use
+
+- Agents emit **Python or JavaScript** snippets you must execute with timeouts and resource caps.
+- You expose execution as a **`ToolDefinition`** via **`sandboxTool()`** (recommended for [`createRuntime`](../agents/runtime)).
 
 ## Installation
 
@@ -12,111 +17,102 @@ sidebar_position: 2
 npm install @agentskit/sandbox
 ```
 
-## Creating a Sandbox
+## Creating a sandbox
 
 ```ts
 import { createSandbox } from '@agentskit/sandbox'
 
-const sandbox = createSandbox()
-```
-
-By default the sandbox uses the E2B backend. Pass a custom backend to override.
-
-## Executing Code
-
-```ts
-const result = await sandbox.execute(`print("hello")`, {
-  language: 'python',
-  timeout: 10_000,  // ms — overrides the 30s default
-  maxMemoryMb: 25,  // overrides the 50 MB default
-})
-
-console.log(result.stdout)  // "hello\n"
-console.log(result.stderr)  // ""
-console.log(result.exitCode) // 0
-```
-
-### Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `language` | `'js' \| 'python'` | `'js'` | Runtime to use |
-| `timeout` | `number` | `30000` | Max execution time in ms |
-| `maxMemoryMb` | `number` | `50` | Memory cap in MB |
-| `network` | `boolean` | `false` | Allow outbound network access |
-
-## Security Defaults
-
-Every sandbox session runs with conservative defaults:
-
-- **No network access** — outbound connections are blocked unless `network: true`
-- **30-second timeout** — long-running code is killed automatically
-- **50 MB memory cap** — prevents memory exhaustion attacks
-- **Isolated filesystem** — each session gets a clean ephemeral directory
-
-## Language Support
-
-| Language | Identifier | Runtime |
-|----------|-----------|---------|
-| JavaScript / Node.js | `'js'` | Node 20 |
-| Python | `'python'` | Python 3.12 |
-
-## Using Sandbox as a Tool
-
-`sandboxTool()` wraps the sandbox in an AgentsKit-compatible tool so agents can execute code during a run:
-
-```ts
-import { createAgent } from '@agentskit/core'
-import { createSandbox, sandboxTool } from '@agentskit/sandbox'
-
-const sandbox = createSandbox()
-
-const agent = createAgent({
-  adapter,
-  tools: [sandboxTool(sandbox)],
+const sandbox = createSandbox({
+  apiKey: process.env.E2B_API_KEY!,
+  timeout: 30_000,
+  network: false,
+  language: 'javascript',
 })
 ```
 
-The agent can now call `run_code` during inference. The tool accepts `language` and `code` parameters and returns `stdout`, `stderr`, and `exitCode`.
+Either pass **`apiKey`** (E2B) or a custom **`backend`**.
 
-## Custom Backends
+## Executing code
 
-Implement `SandboxBackend` to bring your own execution environment:
+```ts
+const result = await sandbox.execute('console.log("hello")', {
+  language: 'javascript',
+  timeout: 10_000,
+  network: false,
+  memoryLimit: '128MB',
+})
+
+console.log(result.stdout, result.stderr, result.exitCode, result.durationMs)
+```
+
+### `ExecuteOptions`
+
+| Field | Description |
+|-------|-------------|
+| `language` | `javascript` or `python` |
+| `timeout` | Milliseconds |
+| `network` | Allow outbound network when backend supports it |
+| `memoryLimit` | String cap (e.g. `50MB`) when supported |
+
+## `sandboxTool` (runtime integration)
+
+`SandboxConfig` is passed through — the tool manages its own sandbox lifecycle.
+
+```ts
+import { createRuntime } from '@agentskit/runtime'
+import { anthropic } from '@agentskit/adapters'
+import { sandboxTool } from '@agentskit/sandbox'
+
+const runtime = createRuntime({
+  adapter: anthropic({ apiKey: process.env.ANTHROPIC_API_KEY!, model: 'claude-sonnet-4-6' }),
+  tools: [
+    sandboxTool({
+      apiKey: process.env.E2B_API_KEY!,
+      timeout: 45_000,
+    }),
+  ],
+})
+
+await runtime.run('Run javascript: console.log(1+1)')
+```
+
+The tool is exposed as **`code_execution`** with `code` and optional `language` (`javascript` | `python`).
+
+## Security defaults
+
+- Network off unless explicitly enabled
+- Wall-clock timeout and memory limit strings forwarded to the backend
+- Prefer **`dispose()`** on raw `createSandbox()` handles; `sandboxTool` disposes via tool lifecycle
+
+```ts
+await sandbox.dispose()
+```
+
+## Custom backends
+
+Implement `SandboxBackend`:
 
 ```ts
 import type { SandboxBackend, ExecuteOptions, ExecuteResult } from '@agentskit/sandbox'
 
 const myBackend: SandboxBackend = {
-  async execute(code: string, options: ExecuteOptions): Promise<ExecuteResult> {
-    // spin up your container, VM, or WASM runtime
-    return { stdout: '', stderr: '', exitCode: 0 }
+  async execute(code: string, _options: ExecuteOptions): Promise<ExecuteResult> {
+    return { stdout: '', stderr: '', exitCode: 0, durationMs: 0 }
   },
-  async dispose() {
-    // clean up resources
-  },
+  async dispose() {},
 }
 
 const sandbox = createSandbox({ backend: myBackend })
 ```
 
-## E2B Integration
+## Troubleshooting
 
-The default backend uses [E2B](https://e2b.dev) cloud sandboxes. Set your API key before creating a sandbox:
+| Issue | Mitigation |
+|-------|------------|
+| `Sandbox requires either an apiKey` | Pass `apiKey` for E2B or supply `backend`. |
+| E2B quota / auth | Verify API key and project limits. |
+| Wrong runtime | Use `javascript` or `python` consistently in `execute` and tool args. |
 
-```ts
-const sandbox = createSandbox({
-  e2b: { apiKey: process.env.E2B_API_KEY },
-})
-```
+## See also
 
-E2B sessions are reused across `execute` calls and automatically cleaned up when `sandbox.dispose()` is called.
-
-```ts
-// Always dispose when done to avoid idle billing
-await sandbox.dispose()
-```
-
-## Related
-
-- [Observability](./observability.md) — trace sandbox execution alongside agent runs
-- [Eval](./eval.md) — use sandboxed execution in evaluation test cases
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/sandbox`) · [Observability](./observability) · [Eval](./eval) · [Tools](../agents/tools) · [@agentskit/core](../packages/core)

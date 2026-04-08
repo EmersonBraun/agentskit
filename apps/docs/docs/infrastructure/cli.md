@@ -4,137 +4,120 @@ sidebar_position: 4
 
 # CLI
 
-`@agentskit/cli` provides terminal commands for chatting with agents, scaffolding new projects, and running runtime agents without a UI.
+`@agentskit/cli` provides terminal commands for **interactive chat** (Ink), **one-shot agent runs** (headless runtime), and **starter projects**. It reads optional project config from **`.agentskit.config.json`** via [`loadConfig`](../packages/core).
+
+## When to use
+
+- You want a **quick terminal chat** without building a custom Ink app.
+- You run **automation or CI** tasks with `agentskit run <task>` and flags (no separate script file required).
+- You bootstrap **React or Ink** starters with `agentskit init`.
 
 ## Installation
 
 ```bash
 npm install -g @agentskit/cli
-# or use without installing:
-npx @agentskit/cli <command>
+# or
+npx @agentskit/cli --help
 ```
 
-## Commands
+## Config file (optional)
 
-### `agentskit chat`
+If present, `.agentskit.config.json` is merged into defaults (unless `--no-config`). [`loadConfig`](../packages/core) resolves it from the current working directory.
 
-Start an interactive chat session in the terminal.
+Typical fields include default `provider` and `model` for chat and run commands.
+
+## `agentskit chat`
+
+Interactive terminal UI using `@agentskit/ink`.
 
 ```bash
 agentskit chat [options]
 ```
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--provider` | `string` | `demo` | AI provider: `anthropic`, `openai`, `demo` |
-| `--model` | `string` | Provider default | Model name, e.g. `claude-sonnet-4-6`, `gpt-4o` |
-| `--tools` | `string[]` | `[]` | Tool names to enable, e.g. `--tools search calculator` |
-| `--skill` | `string` | — | Load a pre-built skill by name, e.g. `--skill code-assistant` |
-| `--memory-backend` | `string` | `in-memory` | Memory backend: `in-memory`, `redis`, `postgres` |
+| Option | Description |
+|--------|-------------|
+| `--provider <name>` | `demo`, `anthropic`, `openai`, … (default: `demo`) |
+| `--model <id>` | Model id for the provider |
+| `--api-key <key>` | Override env-based API key |
+| `--base-url <url>` | Custom API base URL |
+| `--system <prompt>` | System prompt |
+| `--memory <path>` | File path for file-backed history (default: `.agentskit-history.json`) |
+| `--memory-backend <backend>` | `file` (default) or `sqlite` |
+| `--tools <list>` | Comma-separated: `web_search`, `filesystem`, `shell` |
+| `--skill <list>` | Comma-separated built-in skill names (see [@agentskit/skills](../agents/skills)) |
+| `--no-config` | Skip `.agentskit.config.json` |
 
-**Examples:**
-
-```bash
-# Chat with Claude using the code-assistant skill
-agentskit chat --provider anthropic --model claude-sonnet-4-6 --skill code-assistant
-
-# Chat with GPT-4o and specific tools
-agentskit chat --provider openai --model gpt-4o --tools search calculator
-
-# Use a persistent Redis memory backend
-agentskit chat --provider anthropic --memory-backend redis
-```
-
-Provider API keys are read from environment variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`).
-
----
-
-### `agentskit init`
-
-Scaffold a new AgentsKit project from a template.
+API keys: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc., depending on provider.
 
 ```bash
-agentskit init [project-name] [options]
+agentskit chat --provider anthropic --model claude-sonnet-4-6 --tools web_search
 ```
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--template` | `'react' \| 'ink'` | `react` | Project template to use |
+## `agentskit run`
 
-**Templates:**
-
-| Template | Description |
-|----------|-------------|
-| `react` | Browser chat app with `@agentskit/react` and Vite |
-| `ink` | Terminal chat app with `@agentskit/ink` and Ink |
-
-**Examples:**
+Execute a **single task** through [`createRuntime`](../agents/runtime) and print the final assistant text to stdout.
 
 ```bash
-# Create a React chat app
-agentskit init my-chat-app --template react
-
-# Create a terminal (Ink) app
-agentskit init my-terminal-agent --template ink
+agentskit run <task> [options]
+agentskit run --task "Summarize this" [options]
 ```
 
-After scaffolding, follow the printed instructions:
+| Option | Description |
+|--------|-------------|
+| `--task <text>` | Task string if not passed as the first positional argument |
+| `--provider`, `--model`, `--api-key`, `--base-url` | Same as chat |
+| `--tools <list>` | Comma-separated tools |
+| `--skill <name>` | Single skill |
+| `--skills <list>` | Comma-separated skills (composed); **mutually exclusive** with `--skill` |
+| `--memory <path>` | Persistence path when using file/sqlite memory |
+| `--memory-backend <backend>` | `file` (default) or `sqlite` |
+| `--system-prompt <text>` | Override default system prompt |
+| `--max-steps <n>` | ReAct cap (default: `10`) |
+| `--verbose` | Log agent events to stderr |
+| `--pretty` | Rich Ink progress UI |
+| `--no-config` | Skip config file |
 
 ```bash
-cd my-chat-app
-npm install
-npm run dev
+agentskit run "What is 2+2?" --provider openai --model gpt-4o --verbose
 ```
 
----
+There is **no** `agentskit run ./script.ts` mode in the current CLI — invoke your own TypeScript entrypoints with `node`/`tsx` and [`createRuntime`](../agents/runtime) instead.
 
-### `agentskit run`
+## `agentskit init`
 
-Execute a runtime agent script directly from the terminal without a UI. Useful for automation, batch jobs, and testing agents in CI.
+Scaffold a starter project.
 
 ```bash
-agentskit run <file> [options]
+agentskit init [options]
 ```
 
-| Flag | Type | Description |
-|------|------|-------------|
-| `--input` | `string` | Initial input to pass to the agent |
-| `--output` | `'text' \| 'json'` | Output format (default: `text`) |
-
-**Example:**
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--template <react\|ink>` | `react` | Stack for the starter |
+| `--dir <path>` | `agentskit-starter` | Output directory (resolved from cwd) |
 
 ```bash
-# Run an agent script with a prompt
-agentskit run ./agents/summarizer.ts --input "Summarize the Q3 report"
-
-# Emit JSON output for pipeline consumption
-agentskit run ./agents/classifier.ts --input "Is this spam?" --output json
+agentskit init --template react --dir my-chat
+cd my-chat && npm install && npm run dev
 ```
 
-The agent file must export a default `AgentFn` or an AgentsKit agent instance:
+## Environment variables
 
-```ts
-// agents/summarizer.ts
-import { createAgent } from '@agentskit/core'
-import { anthropic } from '@agentskit/adapters'
+| Variable | Used for |
+|----------|-----------|
+| `ANTHROPIC_API_KEY` | Anthropic |
+| `OPENAI_API_KEY` | OpenAI |
+| `REDIS_URL` | If you wire Redis memory in custom code (not default CLI file memory) |
 
-export default createAgent({
-  adapter: anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }),
-  system: 'You are a concise summarizer.',
-})
-```
+## Troubleshooting
 
-## Environment Variables
+| Issue | Mitigation |
+|-------|------------|
+| `task is required` | Pass a string after `run` or use `--task`. |
+| `--skill` and `--skills` both set | CLI exits with error — use only one. |
+| Provider auth errors | Export the correct `*_API_KEY` or pass `--api-key`. |
+| Wrong defaults | Check `.agentskit.config.json` or pass `--no-config`. |
 
-| Variable | Description |
-|----------|-------------|
-| `ANTHROPIC_API_KEY` | API key for the Anthropic provider |
-| `OPENAI_API_KEY` | API key for the OpenAI provider |
-| `REDIS_URL` | Connection string for the Redis memory backend |
-| `DATABASE_URL` | Connection string for the Postgres memory backend |
+## See also
 
-## Related
-
-- [Quick Start](../getting-started/quick-start.md) — build your first agent
-- [Eval](./eval.md) — use `agentskit run` in CI eval pipelines
-- [Adapters overview](../adapters/overview.md) — available providers and models
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/cli`) · [Quick Start](../getting-started/quick-start) · [Ink](../chat-uis/ink) · [Runtime](../agents/runtime) · [Eval](./eval)

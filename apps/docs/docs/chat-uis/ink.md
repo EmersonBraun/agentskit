@@ -4,7 +4,14 @@ sidebar_position: 2
 
 # @agentskit/ink
 
-Terminal chat UI built with [Ink](https://github.com/vadimdemedes/ink). Uses the same `@agentskit/core` controller as `@agentskit/react`, so the chat logic is identical — only the renderer differs.
+Terminal chat UI built with [Ink](https://github.com/vadimdemedes/ink). Uses the same [`@agentskit/core`](../packages/core) controller as `@agentskit/react`, so the chat logic is identical — only the renderer differs.
+
+## When to use
+
+- **CLI-style** or SSH-friendly chat without a browser.
+- You want parity with [`useChat`](../hooks/use-chat) from React but with terminal rendering.
+
+Use [`@agentskit/react`](./react) for web; use the [`CLI`](../infrastructure/cli) for zero-code terminal chat.
 
 ## Install
 
@@ -137,7 +144,14 @@ Input is disabled while `chat.status === 'streaming'`.
 | `useReactive` hook | Yes | No |
 | `InputBar` multiline | Shift+Enter | No (single line) |
 
-## Related
+## Troubleshooting
 
-- [@agentskit/react](./react.md)
-- [Components reference](./components.md)
+| Issue | Mitigation |
+|-------|------------|
+| Raw mode / key issues | Ensure stdout is a TTY; avoid piping when debugging input. |
+| Layout overflow | Narrow terminals clip long lines; prefer shorter system prompts or external pager for dumps. |
+| Missing hooks | `useStream` / `useReactive` are **not** bundled in Ink — import patterns from `@agentskit/react` only apply where those hooks exist. |
+
+## See also
+
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/ink`) · [React](./react) · [Components](./components) · [@agentskit/core](../packages/core)

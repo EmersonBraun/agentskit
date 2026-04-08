@@ -6,6 +6,13 @@ sidebar_position: 3
 
 Add knowledge retrieval to your agents with plug-and-play RAG.
 
+## When to use
+
+- You have **documents or knowledge bases** to ground answers beyond the model weights.
+- You already use [`@agentskit/memory`](./memory) **vector** backends and an [`@agentskit/adapters`](./adapters) **embedder**.
+
+`createRAG` wires **chunk → embed → store → retrieve**; you still choose where vectors live (file, Redis, or custom store).
+
 ## Install
 
 ```bash
@@ -38,10 +45,11 @@ const docs = await rag.retrieve('How does AgentsKit work?', { topK: 3 })
 
 ```ts
 import { createRuntime } from '@agentskit/runtime'
+import { openai } from '@agentskit/adapters'
 
 const runtime = createRuntime({
-  adapter: openai({ apiKey, model: 'gpt-4o' }),
-  retriever: rag,  // auto-injects retrieved context into prompts
+  adapter: openai({ apiKey: process.env.OPENAI_API_KEY!, model: 'gpt-4o' }),
+  retriever: rag, // auto-injects retrieved context into prompts
 })
 
 const result = await runtime.run('Explain the AgentsKit architecture')
@@ -51,12 +59,28 @@ const result = await runtime.run('Explain the AgentsKit architecture')
 
 ```ts
 import { useRAGChat } from '@agentskit/rag'
+import { openai } from '@agentskit/adapters'
 
 const chat = useRAGChat({
-  adapter: openai({ apiKey, model: 'gpt-4o' }),
+  adapter: openai({ apiKey: process.env.OPENAI_API_KEY!, model: 'gpt-4o' }),
   rag,
 })
 ```
+
+## Lifecycle: ingest vs retrieve
+
+1. **`ingest(documents)`** — splits text into chunks (see Chunking), embeds each chunk, upserts into `VectorMemory`. Duplicate `id`s are overwritten per backend semantics.
+2. **`retrieve(query, { topK, threshold? })`** — embeds the query, runs vector search, returns ranked chunks for prompting.
+3. **Runtime / `useRAGChat`** — call `retrieve` (or equivalent) on your behalf each turn so the model sees fresh context.
+
+Re-ingest when source documents change; there is no automatic filesystem watcher.
+
+## Public surface (summary)
+
+| Export | Role |
+|--------|------|
+| `createRAG(config)` | Factory returning RAG instance with `ingest`, `retrieve`, and retriever-compatible surface |
+| `useRAGChat` | React hook: chat + automatic retrieval wiring |
 
 ## Chunking
 
@@ -99,8 +123,15 @@ RAG works with any `VectorMemory` from `@agentskit/memory`:
 | `redisVectorMemory` | Production, fast networked access |
 | Custom `VectorStore` | LanceDB, Pinecone, Qdrant, etc. |
 
-## Related
+## Troubleshooting
 
-- [Memory](/docs/data-layer/memory) — vector storage backends
-- [Adapters](/docs/data-layer/adapters) — embedder functions
-- [Runtime](/docs/agents/runtime) — retriever integration
+| Issue | What to check |
+|-------|----------------|
+| No results / low quality | Increase `topK`, lower similarity `threshold`, shorten `chunkSize`, or improve chunk overlap. |
+| Dimension errors | Embedder output size must match vector store `dimensions` (Redis) or first-write inference rules. |
+| Stale answers | Re-run `ingest` after content changes; clear or rotate the vector path/index if needed. |
+| Rate limits on ingest | Batch smaller; backoff between `ingest` calls; use local `ollamaEmbedder` for dev. |
+
+## See also
+
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/rag`) · [Memory](./memory) · [Adapters](./adapters) · [Runtime](../agents/runtime) · [RAG Pipeline example](../examples/rag-pipeline) · [@agentskit/core](../packages/core)

@@ -4,13 +4,31 @@ sidebar_position: 2
 
 # Tools
 
-`@agentskit/tools` provides ready-made tool definitions for web search, filesystem access, and shell execution. Pass them to `createRuntime` or any `runtime.run()` call.
+`@agentskit/tools` provides ready-made **`ToolDefinition`** values for web search, filesystem access, and shell execution. Pass them to [`createRuntime`](./runtime) or [`useChat`](../hooks/use-chat).
+
+## When to use
+
+- You want **batteries-included** tools with JSON Schema already tuned for models.
+- You build a **registry UI** via `listTools()`.
+
+For custom tools in your own npm package, see [`@agentskit/templates`](../packages/templates).
 
 ## Install
 
 ```bash
 npm install @agentskit/tools
 ```
+
+Depends on [`@agentskit/core`](../packages/core) types (via your runtime or `useChat` setup).
+
+## Public exports
+
+| Export | Returns | Notes |
+|--------|---------|--------|
+| `webSearch(config?)` | `ToolDefinition` | Search providers: default DuckDuckGo, optional Serper, or custom `search` |
+| `filesystem(config)` | `ToolDefinition[]` | `read_file`, `write_file`, `list_directory` scoped to `basePath` |
+| `shell(config)` | `ToolDefinition` | Whitelist via `allowed`; timeout and output caps |
+| `listTools()` | `ToolMetadata[]` | Discovery for dashboards and docs |
 
 ## `webSearch`
 
@@ -203,7 +221,14 @@ interface ToolMetadata {
 }
 ```
 
-## Related
+## Troubleshooting
 
-- [Runtime](./runtime.md) — how tools are executed inside the ReAct loop
-- [Skills](./skills.md) — role-based `tools` hints that filter the active tool set
+| Issue | Mitigation |
+|-------|------------|
+| Model never calls `web_search` | Strengthen description; ensure the user question benefits from live data. |
+| Filesystem access denied | Paths are jail-rooted at `basePath`; log resolved paths when debugging. |
+| Shell killed | Hit `timeout` or `maxOutput`; widen limits only in trusted environments. |
+
+## See also
+
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/tools`) · [Runtime](./runtime) · [Skills](./skills) · [@agentskit/core](../packages/core)

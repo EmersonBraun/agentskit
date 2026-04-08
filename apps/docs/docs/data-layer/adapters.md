@@ -6,11 +6,28 @@ sidebar_position: 1
 
 `@agentskit/adapters` normalizes every supported AI provider into a single streaming interface. Swap providers by changing one line — the rest of your app stays the same.
 
+## When to use
+
+- You need a **drop-in `AdapterFactory`** for [`useChat`](../hooks/use-chat), [`createRuntime`](../agents/runtime), or [`createChatController`](../packages/core).
+- You need **embedders** for [`@agentskit/rag`](./rag) or vector memory.
+
+If you only use a hosted route (e.g. Vercel AI SDK handler), `vercelAI` (below) may be enough without other provider packages.
+
 ## Install
 
 ```bash
 npm install @agentskit/adapters
 ```
+
+Peer: [`@agentskit/core`](../packages/core) (pulled in by UI/runtime packages).
+
+## Public surface (summary)
+
+| Category | Exports |
+|----------|---------|
+| Chat adapters | `anthropic`, `openai`, `gemini`, `ollama`, `deepseek`, `grok`, `kimi`, `langchain`, `langgraph`, `vercelAI`, `generic`, `createAdapter` |
+| Embedders | `openaiEmbedder`, `geminiEmbedder`, `ollamaEmbedder`, `deepseekEmbedder`, `grokEmbedder`, `kimiEmbedder`, `createOpenAICompatibleEmbedder` |
+| Types | `CreateAdapterConfig`, `GenericAdapterConfig`, provider-specific `*Config`, embedder configs |
 
 ## Built-in Providers
 
@@ -203,8 +220,21 @@ const embed = createOpenAICompatibleEmbedder({
 
 Pass any embedder directly to `createRAG` — see [RAG](./rag.md).
 
-## Related
+## `createAdapter` pitfalls
 
-- [Memory](./memory.md) — persist chat history and vector indexes
-- [RAG](./rag.md) — retrieval-augmented generation pipeline
-- [useChat hook](../hooks/use-chat.md) — React integration
+- Your **`parse`** generator must eventually yield `{ type: 'done' }` (and tool chunks if the provider streams tool calls) or consumers will hang in `streaming`.
+- **`abort`** should cancel the underlying HTTP request or reader so `stop()` in the UI works.
+- Reuse **`AdapterRequest`** shape: models expect OpenAI-style `messages` plus tool definitions when tools are enabled.
+
+## Troubleshooting
+
+| Issue | What to check |
+|-------|----------------|
+| 401 / 403 | API key env vars and `baseUrl` for self-hosted gateways. |
+| Empty stream | `parse` not decoding SSE or NDJSON; compare with `generic` + known-good route. |
+| Tool JSON errors | Provider-specific tool schema limits; trim `description` length or simplify schema. |
+| Embedder dimension mismatch | Vector index `dimensions` must match the model (e.g. 1536 for many OpenAI embeddings). |
+
+## See also
+
+[Start here](../getting-started/read-this-first) · [Packages](../packages/overview) · [TypeDoc](pathname:///agentskit/api-reference/) (`@agentskit/adapters`) · [Memory](./memory) · [RAG](./rag) · [useChat](../hooks/use-chat) · [@agentskit/core](../packages/core)
