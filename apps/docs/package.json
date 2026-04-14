@@ -26,11 +26,11 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.10.0",
     "@docusaurus/types": "^3.10.0",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "gh-pages": "^6.3.0",
-    "typedoc": "0.28.18",
+    "typedoc": "0.28.19",
     "typescript": "~6.0.2"
   },
   "browserslist": {
