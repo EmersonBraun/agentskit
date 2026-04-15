@@ -29,6 +29,10 @@ export function vercelAI(config: VercelAIConfig): AdapterFactory {
   const { api, headers = {}, retry } = config
 
   return {
+    capabilities: {
+      // Vercel AI routes can do any of these — whether they do depends on
+      // your route handler. Omit the field instead of lying.
+    },
     createSource: (request: AdapterRequest): StreamSource => {
       const body = {
         messages: request.messages.map(message => ({ role: message.role, content: message.content })),

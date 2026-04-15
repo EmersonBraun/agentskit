@@ -41,6 +41,7 @@ export type {
   ChatReturn,
   MemoryRecord,
   AdapterFactory,
+  AdapterCapabilities,
   SkillDefinition,
   VectorDocument,
   VectorMemory,

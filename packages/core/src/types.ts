@@ -6,7 +6,7 @@ export type {
   StreamStatus, StreamToolCallPayload, StreamChunk, StreamSource, UseStreamOptions, UseStreamReturn,
   MessageRole, MessageStatus, Message, MemoryRecord,
   ToolCallStatus, ToolCall, ToolExecutionContext, ToolDefinition, ToolCallHandlerContext,
-  AdapterContext, AdapterRequest, AdapterFactory,
+  AdapterContext, AdapterRequest, AdapterFactory, AdapterCapabilities,
   ChatMemory, VectorDocument, VectorMemory, EmbedFn,
   RetrievedDocument, RetrieverRequest, Retriever,
   ChatConfig, ChatState, ChatController, ChatReturn,

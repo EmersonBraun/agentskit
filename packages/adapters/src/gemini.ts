@@ -12,6 +12,12 @@ export function gemini(config: GeminiConfig): AdapterFactory {
   const { apiKey, model, baseUrl = 'https://generativelanguage.googleapis.com', retry } = config
 
   return {
+    capabilities: {
+      streaming: true,
+      tools: true,
+      multiModal: true,
+      usage: true,
+    },
     createSource: (request: AdapterRequest): StreamSource => {
       const body = {
         contents: request.messages

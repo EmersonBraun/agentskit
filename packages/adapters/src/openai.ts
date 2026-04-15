@@ -12,6 +12,15 @@ export function openai(config: OpenAIConfig): AdapterFactory {
   const { apiKey, model, baseUrl = 'https://api.openai.com', retry } = config
 
   return {
+    capabilities: {
+      streaming: true,
+      tools: true,
+      // o1 / o3 models emit reasoning; older models don't. Accurate per-model
+      // detection would need a model registry; 'true' is the safer default here.
+      reasoning: model.startsWith('o1') || model.startsWith('o3'),
+      multiModal: model.startsWith('gpt-4') || model.startsWith('o'),
+      usage: true,
+    },
     createSource: (request: AdapterRequest): StreamSource => {
       const body = {
         model,

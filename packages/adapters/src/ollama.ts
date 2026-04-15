@@ -11,6 +11,11 @@ export function ollama(config: OllamaConfig): AdapterFactory {
   const { model, baseUrl = 'http://localhost:11434', retry } = config
 
   return {
+    capabilities: {
+      streaming: true,
+      tools: false,   // varies by model; default 'false' — enable via capabilities.extensions if your model supports it
+      multiModal: model.includes('llava') || model.includes('vision'),
+    },
     createSource: (request: AdapterRequest): StreamSource => {
       const body = {
         model,

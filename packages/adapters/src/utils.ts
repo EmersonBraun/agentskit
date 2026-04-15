@@ -378,3 +378,92 @@ export function createStreamSource(
     },
   }
 }
+
+/**
+ * Chunk-splitter that turns one large string into N streamable text chunks.
+ * Useful when a provider returns the full response in one shot and you
+ * want to feed it to a UI that expects streaming.
+ *
+ * Default splits by whitespace boundaries with a target chunk size of ~32
+ * characters.
+ */
+export function chunkText(text: string, targetSize = 32): string[] {
+  if (text.length <= targetSize) return [text]
+  const out: string[] = []
+  let i = 0
+  while (i < text.length) {
+    let end = Math.min(text.length, i + targetSize)
+    // Prefer to cut on whitespace within the next few chars
+    if (end < text.length) {
+      const nextSpace = text.indexOf(' ', end)
+      if (nextSpace !== -1 && nextSpace - end <= 8) end = nextSpace + 1
+    }
+    out.push(text.slice(i, end))
+    i = end
+  }
+  return out
+}
+
+/**
+ * Build a StreamSource from a non-streaming fetch. The adapter is
+ * auto-completing: it fetches once, then yields the text as a sequence
+ * of chunks so UIs see the same streaming shape they'd see from a
+ * native streaming provider.
+ *
+ * Use this when you're wiring a provider that only has a non-streaming
+ * endpoint but you want consumers (useChat, the runtime) to get
+ * identical ergonomics.
+ */
+export function simulateStream(
+  doFetch: (signal: AbortSignal) => Promise<Response>,
+  extractText: (response: Response) => Promise<string>,
+  errorLabel: string,
+  options: { chunkSize?: number; delayMs?: number; retry?: RetryOptions } = {},
+): StreamSource {
+  const { chunkSize = 32, delayMs = 8, retry } = options
+  let abortController: AbortController | null = new AbortController()
+
+  return {
+    stream: async function* (): AsyncIterableIterator<StreamChunk> {
+      try {
+        const response = await fetchWithRetry(doFetch, abortController!.signal, retry ?? {})
+
+        if (!response.ok) {
+          yield { type: 'error', content: `${errorLabel} error: ${response.status}` }
+          return
+        }
+
+        const text = await extractText(response)
+        const chunks = chunkText(text, chunkSize)
+        for (const chunk of chunks) {
+          if (abortController === null) return
+          if (delayMs > 0) {
+            await new Promise<void>((resolve, reject) => {
+              const timer = setTimeout(resolve, delayMs)
+              abortController?.signal.addEventListener(
+                'abort',
+                () => {
+                  clearTimeout(timer)
+                  reject(new DOMException('Aborted', 'AbortError'))
+                },
+                { once: true },
+              )
+            })
+          }
+          yield { type: 'text', content: chunk }
+        }
+        yield { type: 'done' }
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        yield {
+          type: 'error',
+          content: err instanceof Error ? err.message : String(err),
+        }
+      }
+    },
+    abort: () => {
+      abortController?.abort()
+      abortController = null
+    },
+  }
+}

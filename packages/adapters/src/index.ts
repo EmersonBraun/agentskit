@@ -21,7 +21,7 @@ export type { KimiConfig } from './kimi'
 export type { LangChainConfig, LangGraphConfig } from './langchain'
 export type { VercelAIConfig } from './vercel-ai'
 
-export { fetchWithRetry } from './utils'
+export { fetchWithRetry, simulateStream, chunkText } from './utils'
 export type { RetryOptions } from './utils'
 
 export { mockAdapter, recordingAdapter, replayAdapter, inMemorySink } from './mock'

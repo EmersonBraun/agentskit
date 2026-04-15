@@ -62,6 +62,13 @@ export function mockAdapter(options: MockAdapterOptions): AdapterFactory {
   let callIndex = 0
 
   return {
+    capabilities: {
+      streaming: true,
+      tools: true,
+      reasoning: true,
+      multiModal: true,
+      usage: true,
+    },
     createSource: (request: AdapterRequest): StreamSource => {
       history?.push(request)
       const myCall = callIndex++

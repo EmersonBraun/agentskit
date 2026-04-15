@@ -13,6 +13,13 @@ export function anthropic(config: AnthropicConfig): AdapterFactory {
   const { apiKey, model, baseUrl = 'https://api.anthropic.com', maxTokens = 4096, retry } = config
 
   return {
+    capabilities: {
+      streaming: true,
+      tools: true,
+      reasoning: model.includes('sonnet') || model.includes('opus'),
+      multiModal: true,
+      usage: true,
+    },
     createSource: (request: AdapterRequest): StreamSource => {
       const body = {
         model,
