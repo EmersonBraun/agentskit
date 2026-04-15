@@ -25,7 +25,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm build
+      - run: pnpm --filter "./packages/*" build
 
-      - name: Run size-limit
-        run: pnpm exec size-limit
+      - run: pnpm exec size-limit

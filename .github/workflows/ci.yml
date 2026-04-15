@@ -11,36 +11,17 @@ jobs:
     name: Lint, Test, Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
+
       - run: pnpm install --frozen-lockfile
 
-      - name: Type check
-        run: pnpm lint
+      - run: pnpm --filter "./packages/*" lint
 
-      - name: Unit tests
-        run: pnpm test
+      - run: pnpm test
 
-      - name: Build packages
-        run: pnpm build
-
-      - name: Verify bundle sizes
-        run: |
-          check_size() {
-            local pkg=$1 limit=$2
-            local size=$(gzip -c "packages/$pkg/dist/index.js" | wc -c)
-            echo "$pkg gzipped: ${size} bytes (limit: ${limit})"
-            if [ "$size" -gt "$limit" ]; then
-              echo "::error::$pkg bundle exceeds limit (${size} > ${limit} bytes)"
-              exit 1
-            fi
-          }
-
-          check_size core 10240
-          check_size runtime 15360
-          check_size react 20480
-          check_size ink 10240
+      - run: pnpm --filter "./packages/*" build

@@ -1,33 +1,36 @@
-name: Deploy Docs
+name: Docs build
+
+# Build-only validation for apps/docs-next (Fumadocs).
+# Deployment is handled by Vercel's GitHub integration.
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'apps/docs-next/**'
+      - 'packages/**'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/docs-next/**'
+      - 'packages/**'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
+
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @agentskit/docs build
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: apps/docs/build
-      - id: deployment
-        uses: actions/deploy-pages@v5
+
+      - run: pnpm --filter "./packages/*" build
+
+      - run: pnpm --filter @agentskit/docs-next build
