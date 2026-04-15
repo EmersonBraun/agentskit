@@ -3,20 +3,23 @@
 @import 'fumadocs-ui/css/preset.css';
 
 /**
- * AgentsKit brand tokens (direction 1.4 — Triangle / foam monochrome).
- *
- * Palette B (terminal-inspired):
- *   midnight  #0D1117
- *   foam      #E6EDF3
- *   graphite  #8B949E
- *   surface   #161B22
- *   border    #30363D
- *   green     #2EA043  (success / active)
- *   blue      #58A6FF  (links / tool calls)
- *   red       #F85149  (error / destructive)
+ * AgentsKit brand tokens.
+ * Light mode uses a clean inverted palette; dark mode is the original
+ * terminal-inspired palette B.
  */
 
 :root {
+  --ak-midnight: #ffffff;
+  --ak-foam: #0D1117;
+  --ak-graphite: #57606a;
+  --ak-surface: #f6f8fa;
+  --ak-border: #d0d7de;
+  --ak-green: #1a7f37;
+  --ak-blue: #0969da;
+  --ak-red: #cf222e;
+}
+
+.dark {
   --ak-midnight: #0D1117;
   --ak-foam: #E6EDF3;
   --ak-graphite: #8B949E;
@@ -28,14 +31,14 @@
 }
 
 @theme {
-  --color-ak-midnight: #0D1117;
-  --color-ak-foam: #E6EDF3;
-  --color-ak-graphite: #8B949E;
-  --color-ak-surface: #161B22;
-  --color-ak-border: #30363D;
-  --color-ak-green: #2EA043;
-  --color-ak-blue: #58A6FF;
-  --color-ak-red: #F85149;
+  --color-ak-midnight: var(--ak-midnight);
+  --color-ak-foam: var(--ak-foam);
+  --color-ak-graphite: var(--ak-graphite);
+  --color-ak-surface: var(--ak-surface);
+  --color-ak-border: var(--ak-border);
+  --color-ak-green: var(--ak-green);
+  --color-ak-blue: var(--ak-blue);
+  --color-ak-red: var(--ak-red);
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
