@@ -9,7 +9,7 @@ export type {
   AdapterContext, AdapterRequest, AdapterFactory, AdapterCapabilities,
   ChatMemory, VectorDocument, VectorMemory, EmbedFn,
   RetrievedDocument, RetrieverRequest, Retriever,
-  ChatConfig, ChatState, ChatController, ChatReturn,
+  ChatConfig, ChatState, ChatController, ChatReturn, EditOptions,
   SkillDefinition,
   AgentEvent, Observer,
   EvalTestCase, EvalResult, EvalSuite,

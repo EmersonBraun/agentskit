@@ -39,6 +39,7 @@ export type {
   ChatState,
   ChatController,
   ChatReturn,
+  EditOptions,
   MemoryRecord,
   AdapterFactory,
   AdapterCapabilities,

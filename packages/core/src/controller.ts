@@ -329,6 +329,88 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
 
       await startStream([...withoutLast, replacementAssistant], replacementAssistant.id, lastUser.content)
     },
+    async edit(messageId, newContent, opts = {}) {
+      const messages = state.messages
+      const index = messages.findIndex(m => m.id === messageId)
+      if (index === -1) return
+
+      const target = messages[index]
+
+      // Assistant messages: in-place content edit, no regeneration.
+      if (target.role !== 'user') {
+        setState(current => ({
+          ...current,
+          messages: current.messages.map(m =>
+            m.id === messageId ? { ...m, content: newContent } : m,
+          ),
+        }))
+        return
+      }
+
+      // User messages: replace content, drop following turns, optionally
+      // regenerate the assistant response.
+      const regenerate = opts.regenerate !== false
+      const truncated = messages.slice(0, index).concat({ ...target, content: newContent })
+
+      if (!regenerate) {
+        setState(current => ({ ...current, messages: truncated }))
+        return
+      }
+
+      source?.abort()
+      const replacementAssistant = buildMessage({
+        role: 'assistant',
+        content: '',
+        status: 'streaming',
+      })
+
+      const nextMessages = [...truncated, replacementAssistant]
+      setState(current => ({
+        ...current,
+        messages: nextMessages,
+        status: 'streaming',
+        error: null,
+      }))
+
+      await startStream(nextMessages, replacementAssistant.id, newContent)
+    },
+    async regenerate(messageId) {
+      const messages = state.messages
+      if (messages.length < 2) return
+
+      // Find the target assistant message.
+      let targetIndex: number
+      if (messageId) {
+        targetIndex = messages.findIndex(m => m.id === messageId && m.role === 'assistant')
+        if (targetIndex === -1) return
+      } else {
+        targetIndex = messages.length - 1
+        if (messages[targetIndex].role !== 'assistant') return
+      }
+
+      // The preceding user message drives the regeneration.
+      let userIndex = targetIndex - 1
+      while (userIndex >= 0 && messages[userIndex].role !== 'user') userIndex--
+      if (userIndex < 0) return
+
+      source?.abort()
+      const priorTurns = messages.slice(0, targetIndex)
+      const replacementAssistant = buildMessage({
+        role: 'assistant',
+        content: '',
+        status: 'streaming',
+      })
+      const nextMessages = [...priorTurns, replacementAssistant]
+
+      setState(current => ({
+        ...current,
+        messages: nextMessages,
+        status: 'streaming',
+        error: null,
+      }))
+
+      await startStream(nextMessages, replacementAssistant.id, messages[userIndex].content)
+    },
     setInput(value) {
       setState(current => ({ ...current, input: value }))
     },

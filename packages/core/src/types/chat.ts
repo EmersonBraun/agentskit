@@ -31,12 +31,32 @@ export interface ChatState {
   error: Error | null
 }
 
+export interface EditOptions {
+  /**
+   * When editing a user message, also regenerate the assistant response
+   * that followed it (truncating any later turns). Default: true.
+   */
+  regenerate?: boolean
+}
+
 export interface ChatController {
   getState: () => ChatState
   subscribe: (listener: () => void) => () => void
   send: (text: string) => Promise<void>
   stop: () => void
   retry: () => Promise<void>
+  /**
+   * Edit a message by id. For user messages, truncates all subsequent
+   * turns and regenerates (unless opts.regenerate === false).
+   * For assistant messages, updates the content in place.
+   */
+  edit: (messageId: string, newContent: string, opts?: EditOptions) => Promise<void>
+  /**
+   * Regenerate the assistant response. If `messageId` names an assistant
+   * message, that one is replaced. Otherwise regenerates the last
+   * assistant turn (same as retry()).
+   */
+  regenerate: (messageId?: string) => Promise<void>
   setInput: (value: string) => void
   setMessages: (messages: Message[]) => void
   clear: () => Promise<void>
@@ -49,6 +69,8 @@ export interface ChatReturn extends ChatState {
   send: (text: string) => Promise<void>
   stop: () => void
   retry: () => Promise<void>
+  edit: (messageId: string, newContent: string, opts?: EditOptions) => Promise<void>
+  regenerate: (messageId?: string) => Promise<void>
   setInput: (value: string) => void
   clear: () => Promise<void>
   approve: (toolCallId: string) => Promise<void>

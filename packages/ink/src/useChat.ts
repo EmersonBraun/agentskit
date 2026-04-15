@@ -28,6 +28,8 @@ export function useChat(config: ChatConfig): ChatReturn {
     send: controllerRef.current.send,
     stop: controllerRef.current.stop,
     retry: controllerRef.current.retry,
+    edit: controllerRef.current.edit,
+    regenerate: controllerRef.current.regenerate,
     setInput: controllerRef.current.setInput,
     clear: controllerRef.current.clear,
     approve: controllerRef.current.approve,
