@@ -163,7 +163,7 @@ export function HeroDemo() {
           <span className="h-2.5 w-2.5 rounded-full bg-[#f0b429]/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-ak-green/70" />
         </div>
-        <span className="font-mono text-xs text-ak-graphite">chat.agentskit.dev</span>
+        <span className="font-mono text-xs text-ak-graphite">chat.agentskit.io</span>
         <span className="flex items-center gap-1.5 font-mono text-xs text-ak-green">
           <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-ak-green" />
           live

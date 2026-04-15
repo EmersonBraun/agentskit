@@ -7,8 +7,10 @@ import {
 } from 'fumadocs-ui/page'
 import { notFound } from 'next/navigation'
 import { getMDXComponents } from '@/mdx-components'
+import { JsonLd } from '@/components/seo/json-ld'
 
 const REPO = 'EmersonBraun/agentskit'
+const SITE = 'https://agentskit.io'
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>
@@ -23,6 +25,30 @@ export default async function Page(props: {
   const editUrl = `https://github.com/${REPO}/edit/main/${mdxPath}`
   const issueUrl = `https://github.com/${REPO}/issues/new?title=${encodeURIComponent(`docs: ${slugPath}`)}`
 
+  const crumbs = (params.slug ?? []).map((seg, i, arr) => ({
+    '@type': 'ListItem' as const,
+    position: i + 2,
+    name: seg.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+    item: `${SITE}/docs/${arr.slice(0, i + 1).join('/')}`,
+  }))
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Docs', item: `${SITE}/docs` },
+      ...crumbs,
+    ],
+  }
+  const article = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: page.data.title,
+    description: page.data.description,
+    url: slugPath === 'index' ? `${SITE}/docs` : `${SITE}/docs/${slugPath}`,
+    author: { '@type': 'Organization', name: 'AgentsKit', url: SITE },
+    publisher: { '@type': 'Organization', name: 'AgentsKit', url: SITE },
+  }
+
   return (
     <DocsPage
       toc={page.data.toc}
@@ -34,6 +60,8 @@ export default async function Page(props: {
         path: mdxPath,
       }}
     >
+      <JsonLd data={breadcrumb} />
+      <JsonLd data={article} />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
@@ -76,8 +104,23 @@ export async function generateMetadata(props: {
   const page = source.getPage(params.slug)
   if (!page) notFound()
 
+  const slugPath = params.slug?.join('/') ?? ''
+  const canonical = slugPath ? `${SITE}/docs/${slugPath}` : `${SITE}/docs`
+
   return {
     title: page.data.title,
     description: page.data.description,
+    alternates: { canonical },
+    openGraph: {
+      title: page.data.title,
+      description: page.data.description,
+      url: canonical,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: page.data.title,
+      description: page.data.description,
+    },
   }
 }

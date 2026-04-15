@@ -4,6 +4,7 @@ import { InstallCommand } from './_components/install-command'
 import { HeroDemo } from './_components/hero-demo/hero-demo'
 import { ContributorWall } from '@/components/contribute/contributor-wall'
 import { AnimatedLogo } from '@/components/brand/animated-logo'
+import { JsonLd } from '@/components/seo/json-ld'
 
 export const metadata = {
   title: 'AgentsKit — Ship AI agents in JavaScript without gluing 8 libraries',
@@ -40,9 +41,54 @@ const PACKAGE_CARDS = [
   { name: 'eval', href: '/docs/infrastructure/eval' },
 ] as const
 
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://agentskit.io/#org',
+      name: 'AgentsKit',
+      url: 'https://agentskit.io',
+      logo: 'https://agentskit.io/favicon.svg',
+      sameAs: [
+        'https://github.com/EmersonBraun/agentskit',
+        'https://www.npmjs.com/org/agentskit',
+      ],
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': 'https://agentskit.io/#software',
+      name: 'AgentsKit',
+      description:
+        'One toolkit for building AI agents in JavaScript — chat UI, tools, memory, RAG, runtime. Swap OpenAI for Claude, React for terminal, in-memory for vector DB. Nothing breaks.',
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Cross-platform',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      url: 'https://agentskit.io',
+      license: 'https://github.com/EmersonBraun/agentskit/blob/main/LICENSE',
+      author: { '@id': 'https://agentskit.io/#org' },
+      programmingLanguage: 'TypeScript',
+      keywords: 'AI agents, JavaScript, TypeScript, LLM, streaming chat, RAG, tools, React',
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://agentskit.io/#website',
+      url: 'https://agentskit.io',
+      name: 'AgentsKit',
+      publisher: { '@id': 'https://agentskit.io/#org' },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://agentskit.io/docs?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  ],
+}
+
 export default function HomePage() {
   return (
     <main className="flex flex-1 flex-col">
+      <JsonLd data={JSON_LD} />
       <Hero />
       <SocialProofBar />
       <ProblemSection />

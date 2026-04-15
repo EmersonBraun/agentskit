@@ -215,7 +215,7 @@ See the [Phase 1 release notes](./docs/RELEASE-CORE-V1.md) for what shipped, and
 
 AgentsKit is built in the open and ships because contributors show up. Every package, every doc, every example is fair game.
 
-- **[How to contribute →](https://agentskit.dev/docs/contribute)** — start here
+- **[How to contribute →](https://agentskit.io/docs/contribute)** — start here
 - **[Good-first-issues](https://github.com/EmersonBraun/agentskit/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** — curated, tractable tickets
 - **[Help-wanted](https://github.com/EmersonBraun/agentskit/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)** — larger scoped work
 - **[Discussions](https://github.com/EmersonBraun/agentskit/discussions)** — ask, propose, share
