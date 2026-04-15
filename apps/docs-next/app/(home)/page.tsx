@@ -3,6 +3,7 @@ import { SocialProofBar } from './_components/social-proof-bar'
 import { InstallCommand } from './_components/install-command'
 import { HeroDemo } from './_components/hero-demo/hero-demo'
 import { ContributorWall } from '@/components/contribute/contributor-wall'
+import { AnimatedLogo } from '@/components/brand/animated-logo'
 
 export const metadata = {
   title: 'AgentsKit — Ship AI agents in JavaScript without gluing 8 libraries',
@@ -59,6 +60,13 @@ function Hero() {
     <section className="relative overflow-hidden border-b border-ak-border bg-ak-midnight px-6 pt-20 pb-24 md:pt-28 md:pb-32">
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
         <div>
+          <div className="mb-6 flex items-center gap-3">
+            <AnimatedLogo variant="hero" size={44} loop />
+            <span className="font-mono text-xl font-bold tracking-tight text-ak-foam">
+              agentskit
+            </span>
+          </div>
+
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-ak-border bg-ak-surface px-3 py-1 font-mono text-xs text-ak-graphite">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-ak-green" />
             v1.0 · MIT · Built for the agent era
@@ -363,6 +371,9 @@ function FinalCta() {
   return (
     <section className="bg-ak-midnight px-6 py-28">
       <div className="mx-auto max-w-3xl text-center">
+        <div className="mb-6 flex justify-center">
+          <AnimatedLogo variant="hero" size={56} loop />
+        </div>
         <h2 className="mb-5 text-4xl font-bold leading-tight text-ak-foam md:text-6xl">
           Build the agent.{' '}
           <span className="text-ak-graphite">Skip the plumbing.</span>
