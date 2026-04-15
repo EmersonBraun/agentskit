@@ -9,3 +9,6 @@ export type { OpenTelemetryConfig } from './opentelemetry'
 
 export { createTraceTracker } from './trace-tracker'
 export type { TraceSpan, TraceTrackerCallbacks } from './trace-tracker'
+
+export { costGuard, priceFor, computeCost, DEFAULT_PRICES } from './cost-guard'
+export type { CostGuardOptions, TokenPrice } from './cost-guard'
