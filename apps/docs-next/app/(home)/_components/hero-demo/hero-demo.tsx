@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { SCENES, type WidgetKind, type Event } from './scenes'
 import { WeatherCard, PriceCard, OrderTracker, FlightList } from './widgets'
 
@@ -148,6 +148,13 @@ export function HeroDemo() {
     setSceneIdx(i)
   }
 
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollTop = el.scrollHeight
+  }, [frame])
+
   return (
     <div className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-ak-border bg-ak-surface shadow-2xl shadow-black/40">
       <div className="flex items-center justify-between border-b border-ak-border px-4 py-2.5">
@@ -163,7 +170,12 @@ export function HeroDemo() {
         </span>
       </div>
 
-      <div className="flex min-h-[420px] min-w-0 flex-col gap-3 overflow-hidden bg-ak-midnight p-4 font-sans text-sm">
+      <div className="flex h-[460px] min-w-0 flex-col overflow-hidden bg-ak-midnight font-sans text-sm">
+        <div
+          ref={scrollRef}
+          className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-4"
+          style={{ scrollbarWidth: 'thin' }}
+        >
         {frame.userMsg && (
           <div className="flex min-w-0 justify-end">
             <div className="max-w-[80%] break-words rounded-2xl rounded-br-md bg-ak-blue/20 px-3.5 py-2 text-ak-foam">
@@ -225,7 +237,9 @@ export function HeroDemo() {
           </div>
         )}
 
-        <div className="mt-auto flex min-w-0 items-center gap-2 rounded-lg border border-ak-border bg-ak-surface px-3 py-2">
+        </div>
+
+        <div className="flex min-w-0 items-center gap-2 border-t border-ak-border bg-ak-surface px-3 py-2.5">
           <span className="shrink-0 font-mono text-xs text-ak-graphite">›</span>
           <span className="min-w-0 flex-1 truncate text-ak-foam">
             {frame.userDraft}

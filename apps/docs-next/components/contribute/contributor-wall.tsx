@@ -21,7 +21,7 @@ export function ContributorWall({ compact = false }: { compact?: boolean }) {
   const maxShow = compact ? 20 : 30
 
   return (
-    <div className="rounded-2xl border border-ak-border bg-ak-surface/40 p-6 md:p-8">
+    <div className="not-prose rounded-2xl border border-ak-border bg-ak-surface/40 p-6 md:p-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="mb-1 font-mono text-xs uppercase tracking-[0.2em] text-ak-blue">
