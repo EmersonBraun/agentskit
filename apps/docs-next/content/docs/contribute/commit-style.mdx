@@ -1,0 +1,105 @@
+---
+title: Commit style
+description: Conventional commits, changesets, and the PR checklist.
+---
+
+## Conventional commits
+
+Format:
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+[optional footer: closes #nnn]
+```
+
+**Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `ci`, `style`.
+**Scope:** package or area — `core`, `react`, `adapters`, `docs`, `ci`, etc.
+
+**Examples:**
+
+```
+feat(adapters): add Mistral adapter with streaming
+fix(react): useChat stop() races with in-flight token
+docs(recipes): add cost-guarded chat
+refactor(core): split controller events into sub-emitter
+test(ink): cover keyboard navigation across message list
+```
+
+Subject ≤ 72 chars, imperative mood ("add", not "added"). Body wraps at 100.
+
+## Enforcement (planned — good-first-issue available)
+
+Today, commit-message discipline is review-time: maintainers will flag a non-conventional commit and ask you to amend. We want this **automated** — and wiring it up is a perfect first PR.
+
+### Target setup
+
+- **`@commitlint/cli` + `@commitlint/config-conventional`** — validates the message
+- **`commit-msg` git hook** (via husky or lefthook) — blocks invalid commits locally
+- **CI check** — `commitlint` step in `.github/workflows/ci.yml` so bad commits fail the PR
+
+### What a complete PR looks like
+
+1. Add `commitlint.config.cjs`:
+
+   ```js
+   module.exports = { extends: ['@commitlint/config-conventional'] }
+   ```
+
+2. Add devDeps at the **workspace root** `package.json`:
+
+   ```json
+   "@commitlint/cli": "^19.0.0",
+   "@commitlint/config-conventional": "^19.0.0",
+   "husky": "^9.0.0"
+   ```
+
+3. Add `prepare` script + `commit-msg` hook:
+
+   ```bash
+   pnpm exec husky init
+   echo 'pnpm exec commitlint --edit "$1"' > .husky/commit-msg
+   ```
+
+4. Add CI step:
+
+   ```yaml
+   - run: pnpm exec commitlint --from=${{ github.event.pull_request.base.sha }} --to=${{ github.sha }}
+   ```
+
+5. Update this page to reflect reality.
+
+If you want to claim it, comment on issue [`docs(contribute): wire commitlint + husky`](https://github.com/EmersonBraun/agentskit/issues?q=commitlint) (or open one).
+
+### Until then
+
+Eyeball your commit message against the types + examples above. `git commit --amend` is your friend.
+
+## Changesets (for publishable packages)
+
+If your PR changes a package that ships to npm, add a changeset:
+
+```bash
+pnpm changeset
+```
+
+Walk through the prompts. This generates a markdown file describing the change and its semver bump. Commit it.
+
+## PR checklist
+
+Before marking a PR ready for review:
+
+- [ ] `pnpm lint` passes
+- [ ] `pnpm test` passes
+- [ ] New/changed behavior has a test
+- [ ] Public API changes have a docstring + doc example
+- [ ] Changeset added (if a published package changed)
+- [ ] Commit messages follow conventional commits
+- [ ] PR description explains **why**, not just what
+
+## Review cadence
+
+- Draft PRs are fine — open early to show direction.
+- Maintainers triage within 2 business days.
+- Expect 1–3 review rounds. Be kind, we will too.

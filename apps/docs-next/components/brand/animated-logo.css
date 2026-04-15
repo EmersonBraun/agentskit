@@ -1,0 +1,7 @@
+.ak-logo {
+  display: inline-block;
+}
+
+.ak-logo--hero {
+  filter: drop-shadow(0 0 24px rgba(88, 166, 255, 0.12));
+}

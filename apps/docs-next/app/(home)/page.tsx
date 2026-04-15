@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { SocialProofBar } from './_components/social-proof-bar'
 import { InstallCommand } from './_components/install-command'
 import { HeroDemo } from './_components/hero-demo/hero-demo'
+import { ContributorWall } from '@/components/contribute/contributor-wall'
+import { AnimatedLogo } from '@/components/brand/animated-logo'
+import { JsonLd } from '@/components/seo/json-ld'
 
 export const metadata = {
   title: 'AgentsKit — Ship AI agents in JavaScript without gluing 8 libraries',
@@ -38,15 +41,61 @@ const PACKAGE_CARDS = [
   { name: 'eval', href: '/docs/infrastructure/eval' },
 ] as const
 
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://agentskit.io/#org',
+      name: 'AgentsKit',
+      url: 'https://agentskit.io',
+      logo: 'https://agentskit.io/favicon.svg',
+      sameAs: [
+        'https://github.com/EmersonBraun/agentskit',
+        'https://www.npmjs.com/org/agentskit',
+      ],
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': 'https://agentskit.io/#software',
+      name: 'AgentsKit',
+      description:
+        'One toolkit for building AI agents in JavaScript — chat UI, tools, memory, RAG, runtime. Swap OpenAI for Claude, React for terminal, in-memory for vector DB. Nothing breaks.',
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Cross-platform',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      url: 'https://agentskit.io',
+      license: 'https://github.com/EmersonBraun/agentskit/blob/main/LICENSE',
+      author: { '@id': 'https://agentskit.io/#org' },
+      programmingLanguage: 'TypeScript',
+      keywords: 'AI agents, JavaScript, TypeScript, LLM, streaming chat, RAG, tools, React',
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://agentskit.io/#website',
+      url: 'https://agentskit.io',
+      name: 'AgentsKit',
+      publisher: { '@id': 'https://agentskit.io/#org' },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://agentskit.io/docs?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  ],
+}
+
 export default function HomePage() {
   return (
     <main className="flex flex-1 flex-col">
+      <JsonLd data={JSON_LD} />
       <Hero />
       <SocialProofBar />
       <ProblemSection />
       <SolutionSection />
       <BenefitsSection />
       <ProviderStrip />
+      <BuiltInOpenSection />
       <FinalCta />
     </main>
   )
@@ -57,6 +106,13 @@ function Hero() {
     <section className="relative overflow-hidden border-b border-ak-border bg-ak-midnight px-6 pt-20 pb-24 md:pt-28 md:pb-32">
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
         <div>
+          <div className="mb-6 flex items-center gap-3">
+            <AnimatedLogo variant="hero" size={44} loop />
+            <span className="font-mono text-xl font-bold tracking-tight text-ak-foam">
+              agentskit
+            </span>
+          </div>
+
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-ak-border bg-ak-surface px-3 py-1 font-mono text-xs text-ak-graphite">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-ak-green" />
             v1.0 · MIT · Built for the agent era
@@ -231,18 +287,31 @@ function SolutionSection() {
                 @agentskit/core · 10KB · zero deps
               </Link>
             </div>
-            <div className="mx-auto mb-6 h-8 w-px bg-ak-border" />
+            <div className="mx-auto mb-4 h-8 w-px bg-ak-border" />
+            <p className="mb-4 text-center font-mono text-[11px] uppercase tracking-[0.2em] text-ak-graphite">
+              ↓ click any package to open its docs
+            </p>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
               {PACKAGE_CARDS.map(pkg => (
                 <Link
                   key={pkg.name}
                   href={pkg.href}
-                  className="rounded-md border border-ak-border bg-ak-surface px-3 py-2 text-center font-mono text-sm text-ak-foam transition hover:border-ak-blue hover:text-ak-blue"
+                  className="group flex items-center justify-between gap-2 rounded-md border border-ak-border bg-ak-surface px-3 py-2 text-center font-mono text-sm text-ak-foam transition hover:border-ak-blue hover:text-ak-blue hover:shadow-[0_0_0_1px_var(--ak-blue)]"
+                  aria-label={`Open docs for ${pkg.name}`}
                 >
-                  {pkg.name}
+                  <span className="flex-1 text-left">{pkg.name}</span>
+                  <span className="text-xs opacity-0 transition group-hover:opacity-100" aria-hidden="true">
+                    →
+                  </span>
                 </Link>
               ))}
             </div>
+            <p className="mt-4 text-center font-mono text-[11px] text-ak-graphite">
+              every card links to its docs ·{' '}
+              <Link href="/docs" className="underline decoration-dotted underline-offset-2 hover:text-ak-blue">
+                browse all →
+              </Link>
+            </p>
           </div>
         </div>
       </div>
@@ -347,10 +416,23 @@ function ProviderStrip() {
   )
 }
 
+function BuiltInOpenSection() {
+  return (
+    <section className="border-b border-ak-border bg-ak-midnight px-6 py-20">
+      <div className="mx-auto max-w-5xl">
+        <ContributorWall />
+      </div>
+    </section>
+  )
+}
+
 function FinalCta() {
   return (
     <section className="bg-ak-midnight px-6 py-28">
       <div className="mx-auto max-w-3xl text-center">
+        <div className="mb-6 flex justify-center">
+          <AnimatedLogo variant="hero" size={56} loop />
+        </div>
         <h2 className="mb-5 text-4xl font-bold leading-tight text-ak-foam md:text-6xl">
           Build the agent.{' '}
           <span className="text-ak-graphite">Skip the plumbing.</span>
@@ -379,6 +461,12 @@ function FinalCta() {
           >
             Star on GitHub
           </a>
+          <Link
+            href="/docs/contribute"
+            className="inline-flex items-center gap-2 rounded-md border border-ak-border bg-ak-surface px-6 py-3 text-sm font-medium text-ak-foam transition hover:border-ak-blue"
+          >
+            Contribute →
+          </Link>
         </div>
 
         <p className="mt-8 font-mono text-xs text-ak-graphite">

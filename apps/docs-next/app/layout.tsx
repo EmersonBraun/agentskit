@@ -13,10 +13,44 @@ const DESCRIPTION = 'The agent toolkit JavaScript actually deserves.'
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'AgentsKit',
+    default: 'AgentsKit — the agent toolkit JavaScript actually deserves',
     template: '%s | AgentsKit',
   },
   description: DESCRIPTION,
+  keywords: [
+    'AI agents',
+    'JavaScript agent toolkit',
+    'TypeScript AI',
+    'LLM chat UI',
+    'React AI hooks',
+    'OpenAI adapter',
+    'Anthropic adapter',
+    'streaming chat',
+    'agent framework',
+    'RAG toolkit',
+  ],
+  authors: [{ name: 'Emerson Braun', url: 'https://github.com/EmersonBraun' }],
+  creator: 'Emerson Braun',
+  category: 'technology',
+  alternates: {
+    canonical: SITE_URL,
+  },
+  verification: {
+    // Fill after verifying site in Google Search Console + Bing Webmaster:
+    // google: 'YOUR_GSC_META_CONTENT',
+    // other: { 'msvalidate.01': 'YOUR_BING_CONTENT' },
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large' as const,
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -25,9 +59,10 @@ export const metadata = {
   },
   openGraph: {
     type: 'website',
+    locale: 'en_US',
     url: SITE_URL,
     siteName: 'AgentsKit',
-    title: 'AgentsKit',
+    title: 'AgentsKit — the agent toolkit JavaScript actually deserves',
     description: DESCRIPTION,
     images: [
       {
@@ -40,7 +75,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AgentsKit',
+    title: 'AgentsKit — the agent toolkit JavaScript actually deserves',
     description: DESCRIPTION,
     images: ['/api/og'],
   },

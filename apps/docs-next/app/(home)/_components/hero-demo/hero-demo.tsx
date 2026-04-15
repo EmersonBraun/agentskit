@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { SCENES, type WidgetKind, type Event } from './scenes'
 import { WeatherCard, PriceCard, OrderTracker, FlightList } from './widgets'
 
@@ -148,6 +148,13 @@ export function HeroDemo() {
     setSceneIdx(i)
   }
 
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollTop = el.scrollHeight
+  }, [frame])
+
   return (
     <div className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-ak-border bg-ak-surface shadow-2xl shadow-black/40">
       <div className="flex items-center justify-between border-b border-ak-border px-4 py-2.5">
@@ -156,14 +163,19 @@ export function HeroDemo() {
           <span className="h-2.5 w-2.5 rounded-full bg-[#f0b429]/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-ak-green/70" />
         </div>
-        <span className="font-mono text-xs text-ak-graphite">chat.agentskit.dev</span>
+        <span className="font-mono text-xs text-ak-graphite">chat.agentskit.io</span>
         <span className="flex items-center gap-1.5 font-mono text-xs text-ak-green">
           <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-ak-green" />
           live
         </span>
       </div>
 
-      <div className="flex min-h-[420px] min-w-0 flex-col gap-3 overflow-hidden bg-ak-midnight p-4 font-sans text-sm">
+      <div className="flex h-[460px] min-w-0 flex-col overflow-hidden bg-ak-midnight font-sans text-sm">
+        <div
+          ref={scrollRef}
+          className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-4"
+          style={{ scrollbarWidth: 'thin' }}
+        >
         {frame.userMsg && (
           <div className="flex min-w-0 justify-end">
             <div className="max-w-[80%] break-words rounded-2xl rounded-br-md bg-ak-blue/20 px-3.5 py-2 text-ak-foam">
@@ -173,8 +185,8 @@ export function HeroDemo() {
         )}
 
         {(frame.thinking || frame.tool || frame.widget || frame.assistant) && (
-          <div className="flex min-w-0 justify-start">
-            <div className="flex min-w-0 max-w-full flex-col gap-2">
+          <div className="flex w-full min-w-0 justify-start">
+            <div className="flex w-full min-w-0 max-w-[92%] flex-col gap-2">
               {frame.thinking && !frame.widget && (
                 <div className="flex items-center gap-2 text-ak-graphite">
                   <span className="inline-flex gap-1">
@@ -213,7 +225,10 @@ export function HeroDemo() {
               )}
 
               {frame.assistant && (
-                <div className="max-w-full break-words rounded-2xl rounded-bl-md bg-ak-surface px-3.5 py-2 text-ak-foam">
+                <div
+                  className="w-fit max-w-full rounded-2xl rounded-bl-md bg-ak-surface px-3.5 py-2 text-ak-foam"
+                  style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+                >
                   {frame.assistant}
                   <span className="ml-0.5 inline-block h-3.5 w-[2px] translate-y-0.5 animate-pulse bg-ak-blue" />
                 </div>
@@ -222,7 +237,9 @@ export function HeroDemo() {
           </div>
         )}
 
-        <div className="mt-auto flex min-w-0 items-center gap-2 rounded-lg border border-ak-border bg-ak-surface px-3 py-2">
+        </div>
+
+        <div className="flex min-w-0 items-center gap-2 border-t border-ak-border bg-ak-surface px-3 py-2.5">
           <span className="shrink-0 font-mono text-xs text-ak-graphite">›</span>
           <span className="min-w-0 flex-1 truncate text-ak-foam">
             {frame.userDraft}
@@ -237,8 +254,8 @@ export function HeroDemo() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-ak-border bg-ak-surface px-4 py-2.5">
-        <div className="flex gap-1.5">
+      <div className="flex items-center justify-center border-t border-ak-border bg-ak-surface px-4 py-2.5">
+        <div className="flex flex-wrap justify-center gap-1.5">
           {SCENES.map((s, i) => (
             <button
               key={s.id}
@@ -259,9 +276,6 @@ export function HeroDemo() {
             </button>
           ))}
         </div>
-        <span className="font-mono text-[11px] text-ak-graphite">
-          agent renders real components · not markdown
-        </span>
       </div>
     </div>
   )
