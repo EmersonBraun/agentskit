@@ -111,7 +111,7 @@ Sprints de **2 semanas**. Ao longo dos 12 meses, ~26 sprints.
 
 ### Gate Fase 1 → Fase 2
 - [ ] 20 stories da Fase 1 done ou explicitamente descopadas
-- [ ] `npx agentskit init` com ≥1000 downloads/mês
+- [ ] `npx @agentskit/cli init` com ≥1000 downloads/mês
 - [ ] Discord com ≥200 membros
 - [ ] ≥3 usuários externos compartilhando projetos publicamente
 

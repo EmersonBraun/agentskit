@@ -54,7 +54,7 @@ Objetivo: camada comercial sustentável sem comprometer open-source.
 
 ### Fase 1 — Fundação
 
-1. Como dev novato no AgentsKit, quero rodar `npx agentskit init` e escolher template interativamente, para ter um projeto funcionando em menos de 2 minutos.
+1. Como dev novato no AgentsKit, quero rodar `npx @agentskit/cli init` e escolher template interativamente, para ter um projeto funcionando em menos de 2 minutos.
 2. Como dev, quero rodar `agentskit doctor` e ver env vars faltando, versões incompatíveis e keys inválidas, para não perder tempo debugando config.
 3. Como dev, quero `agentskit dev` com hot-reload de prompts/tools/memory, para iterar rápido sem reiniciar.
 4. Como dev, quero `agentskit tunnel` para expor meu agente local com URL pública temporária, para testar webhooks.

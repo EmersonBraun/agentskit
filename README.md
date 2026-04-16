@@ -144,7 +144,7 @@ Pick what you need. Every package works alone. Combinations work without glue co
 | [`@agentskit/eval`](packages/eval) | Agent evaluation and benchmarking | beta |
 | [`@agentskit/templates`](packages/templates) | Authoring toolkit for skills/tools | stable |
 
-The whole catalog is one `pnpm dlx agentskit init` away.
+The whole catalog is one `npx @agentskit/cli init` away.
 
 ---
 

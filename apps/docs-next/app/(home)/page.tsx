@@ -103,29 +103,29 @@ export default function HomePage() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-ak-border bg-ak-midnight px-6 pt-20 pb-24 md:pt-28 md:pb-32">
-      <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-        <div>
-          <div className="mb-6 flex items-center gap-3">
+    <section className="relative overflow-hidden border-b border-ak-border bg-ak-midnight px-4 pt-14 pb-16 sm:px-6 sm:pt-20 sm:pb-24 md:pt-28 md:pb-32">
+      <div className="mx-auto grid max-w-6xl gap-8 sm:gap-10 md:gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+        <div className="min-w-0">
+          <div className="mb-5 flex items-center gap-3 sm:mb-6">
             <AnimatedLogo variant="hero" size={44} loop />
-            <span className="font-mono text-xl font-bold tracking-tight text-ak-foam">
+            <span className="font-mono text-lg font-bold tracking-tight text-ak-foam sm:text-xl">
               agentskit
             </span>
           </div>
 
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-ak-border bg-ak-surface px-3 py-1 font-mono text-xs text-ak-graphite">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-ak-border bg-ak-surface px-3 py-1 font-mono text-[11px] text-ak-graphite sm:mb-5 sm:text-xs">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-ak-green" />
             v1.0 · MIT · Built for the agent era
           </div>
 
-          <h1 className="mb-6 max-w-2xl text-4xl font-bold leading-[1.05] tracking-tight text-ak-foam md:text-6xl">
+          <h1 className="mb-5 max-w-2xl text-[2rem] font-bold leading-[1.08] tracking-tight text-ak-foam sm:mb-6 sm:text-4xl md:text-5xl lg:text-6xl">
             Ship AI agents in JavaScript.
             <span className="block text-ak-graphite">
               Without gluing 8 libraries together.
             </span>
           </h1>
 
-          <p className="mb-8 max-w-xl text-lg leading-relaxed text-ak-graphite">
+          <p className="mb-7 max-w-xl text-base leading-relaxed text-ak-graphite sm:mb-8 sm:text-lg">
             AgentsKit gives you chat UI, tools, memory, RAG, and runtime — one
             toolkit, zero lock-in. Swap{' '}
             <span className="text-ak-foam">OpenAI for Claude</span>, React for
@@ -135,30 +135,30 @@ function Hero() {
 
           <InstallCommand />
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-2.5 sm:mt-6 sm:gap-3">
             <Link
               href="/docs"
-              className="inline-flex items-center gap-2 rounded-md bg-ak-foam px-5 py-2.5 text-sm font-semibold text-ak-midnight transition hover:bg-white"
+              className="inline-flex items-center gap-2 rounded-md bg-ak-foam px-4 py-2.5 text-sm font-semibold text-ak-midnight transition hover:bg-white sm:px-5"
             >
               Install in 30 seconds →
             </Link>
             <Link
               href="/docs/examples"
-              className="inline-flex items-center gap-2 rounded-md border border-ak-border bg-ak-surface px-5 py-2.5 text-sm font-medium text-ak-foam transition hover:border-ak-blue"
+              className="inline-flex items-center gap-2 rounded-md border border-ak-border bg-ak-surface px-4 py-2.5 text-sm font-medium text-ak-foam transition hover:border-ak-blue sm:px-5"
             >
               See a live agent
             </Link>
           </div>
 
-          <p className="mt-4 font-mono text-xs text-ak-graphite">
+          <p className="mt-4 font-mono text-[11px] leading-relaxed text-ak-graphite sm:text-xs">
             MIT · Works with OpenAI, Anthropic, Gemini, Ollama, Vercel AI SDK,
             LangChain
           </p>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <HeroDemo />
-          <p className="mt-3 text-center font-mono text-xs text-ak-graphite">
+          <p className="mt-3 text-center font-mono text-[11px] leading-relaxed text-ak-graphite sm:text-xs">
             Agent renders real React components — not markdown.{' '}
             <Link href="/docs/examples/agent-actions" className="text-ak-blue hover:underline">
               See how →
@@ -224,15 +224,15 @@ function _HeroCodeDemo() {
 
 function ProblemSection() {
   return (
-    <section className="border-b border-ak-border bg-ak-midnight px-6 py-24">
+    <section className="border-b border-ak-border bg-ak-midnight px-4 py-16 sm:px-6 sm:py-20 md:py-24">
       <div className="mx-auto max-w-4xl">
-        <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-ak-red">
+        <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ak-red sm:mb-4 sm:text-xs">
           The problem
         </p>
-        <h2 className="mb-8 text-3xl font-bold leading-tight text-ak-foam md:text-5xl">
+        <h2 className="mb-6 text-[1.75rem] font-bold leading-[1.15] text-ak-foam sm:mb-8 sm:text-3xl md:text-4xl lg:text-5xl">
           Building agents in JS today is a glue job.
         </h2>
-        <div className="grid gap-4 text-lg leading-relaxed text-ak-graphite md:grid-cols-2 md:gap-6">
+        <div className="grid gap-4 text-base leading-relaxed text-ak-graphite sm:text-lg md:grid-cols-2 md:gap-6">
           <Pain>
             LangChain is bloated. Vercel AI SDK hits walls past a chat box.
           </Pain>
@@ -263,15 +263,15 @@ function Pain({ children }: { children: React.ReactNode }) {
 
 function SolutionSection() {
   return (
-    <section className="border-b border-ak-border bg-ak-surface/40 px-6 py-24">
+    <section className="border-b border-ak-border bg-ak-surface/40 px-4 py-16 sm:px-6 sm:py-20 md:py-24">
       <div className="mx-auto max-w-5xl">
-        <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-ak-green">
+        <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ak-green sm:mb-4 sm:text-xs">
           The fix
         </p>
-        <h2 className="mb-5 max-w-3xl text-3xl font-bold leading-tight text-ak-foam md:text-5xl">
+        <h2 className="mb-4 max-w-3xl text-[1.75rem] font-bold leading-[1.15] text-ak-foam sm:mb-5 sm:text-3xl md:text-4xl lg:text-5xl">
           One toolkit. Twelve packages. Pick what you need.
         </h2>
-        <p className="mb-12 max-w-2xl text-lg text-ak-graphite">
+        <p className="mb-8 max-w-2xl text-base text-ak-graphite sm:mb-12 sm:text-lg">
           A 10KB zero-dependency core defines six contracts. Every adapter,
           tool, skill, memory, retriever, and runtime is substitutable — so
           your code survives provider changes, UI changes, and scale.
@@ -353,15 +353,15 @@ function BenefitsSection() {
     },
   ]
   return (
-    <section className="border-b border-ak-border bg-ak-midnight px-6 py-24">
+    <section className="border-b border-ak-border bg-ak-midnight px-4 py-16 sm:px-6 sm:py-20 md:py-24">
       <div className="mx-auto max-w-6xl">
-        <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-ak-blue">
+        <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ak-blue sm:mb-4 sm:text-xs">
           Why teams ship with it
         </p>
-        <h2 className="mb-14 max-w-2xl text-3xl font-bold leading-tight text-ak-foam md:text-5xl">
+        <h2 className="mb-10 max-w-2xl text-[1.75rem] font-bold leading-[1.15] text-ak-foam sm:mb-14 sm:text-3xl md:text-4xl lg:text-5xl">
           Built for the code you&apos;ll still want to own in 12 months.
         </h2>
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
           {benefits.map(b => (
             <div
               key={b.title}
@@ -396,12 +396,12 @@ function ProviderStrip() {
     'Vercel AI SDK',
   ]
   return (
-    <section className="border-b border-ak-border bg-ak-surface/30 px-6 py-16">
+    <section className="border-b border-ak-border bg-ak-surface/30 px-4 py-12 sm:px-6 sm:py-16">
       <div className="mx-auto max-w-6xl text-center">
-        <p className="mb-8 font-mono text-xs uppercase tracking-[0.2em] text-ak-graphite">
+        <p className="mb-6 font-mono text-[11px] uppercase tracking-[0.2em] text-ak-graphite sm:mb-8 sm:text-xs">
           Works with what you already use
         </p>
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-3">
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-3 sm:gap-x-8">
           {providers.map(p => (
             <span
               key={p}
@@ -418,7 +418,7 @@ function ProviderStrip() {
 
 function BuiltInOpenSection() {
   return (
-    <section className="border-b border-ak-border bg-ak-midnight px-6 py-20">
+    <section className="border-b border-ak-border bg-ak-midnight px-4 py-14 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-5xl">
         <ContributorWall />
       </div>
@@ -428,16 +428,16 @@ function BuiltInOpenSection() {
 
 function FinalCta() {
   return (
-    <section className="bg-ak-midnight px-6 py-28">
+    <section className="bg-ak-midnight px-4 py-20 sm:px-6 sm:py-24 md:py-28">
       <div className="mx-auto max-w-3xl text-center">
-        <div className="mb-6 flex justify-center">
+        <div className="mb-5 flex justify-center sm:mb-6">
           <AnimatedLogo variant="hero" size={56} loop />
         </div>
-        <h2 className="mb-5 text-4xl font-bold leading-tight text-ak-foam md:text-6xl">
+        <h2 className="mb-4 text-[2rem] font-bold leading-[1.1] text-ak-foam sm:mb-5 sm:text-4xl md:text-5xl lg:text-6xl">
           Build the agent.{' '}
           <span className="text-ak-graphite">Skip the plumbing.</span>
         </h2>
-        <p className="mx-auto mb-10 max-w-xl text-lg text-ak-graphite">
+        <p className="mx-auto mb-8 max-w-xl text-base text-ak-graphite sm:mb-10 sm:text-lg">
           30 seconds to install. First streaming agent in under 10 lines. No
           credit card, no signup, no lock-in.
         </p>
@@ -446,10 +446,10 @@ function FinalCta() {
           <InstallCommand />
         </div>
 
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3">
           <Link
             href="/docs"
-            className="inline-flex items-center gap-2 rounded-md bg-ak-foam px-6 py-3 text-sm font-semibold text-ak-midnight transition hover:bg-white"
+            className="inline-flex items-center gap-2 rounded-md bg-ak-foam px-5 py-3 text-sm font-semibold text-ak-midnight transition hover:bg-white sm:px-6"
           >
             Read the docs →
           </Link>
@@ -457,13 +457,13 @@ function FinalCta() {
             href={GITHUB}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-md border border-ak-border bg-ak-surface px-6 py-3 text-sm font-medium text-ak-foam transition hover:border-ak-blue"
+            className="inline-flex items-center gap-2 rounded-md border border-ak-border bg-ak-surface px-5 py-3 text-sm font-medium text-ak-foam transition hover:border-ak-blue sm:px-6"
           >
             Star on GitHub
           </a>
           <Link
             href="/docs/contribute"
-            className="inline-flex items-center gap-2 rounded-md border border-ak-border bg-ak-surface px-6 py-3 text-sm font-medium text-ak-foam transition hover:border-ak-blue"
+            className="inline-flex items-center gap-2 rounded-md border border-ak-border bg-ak-surface px-5 py-3 text-sm font-medium text-ak-foam transition hover:border-ak-blue sm:px-6"
           >
             Contribute →
           </Link>
