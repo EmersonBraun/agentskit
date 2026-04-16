@@ -34,4 +34,8 @@ jobs:
           commit: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # setup-node's registry-url writes .npmrc referencing
+          # ${NODE_AUTH_TOKEN}; that is the name npm publish reads.
+          # Pass the secret under both names so changeset publish works.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
