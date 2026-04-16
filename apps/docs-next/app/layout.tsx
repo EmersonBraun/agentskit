@@ -3,6 +3,7 @@ import { RootProvider } from 'fumadocs-ui/provider/next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
@@ -91,6 +92,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex flex-col min-h-screen font-sans">
         <RootProvider>{children}</RootProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
