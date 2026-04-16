@@ -170,7 +170,7 @@ export function HeroDemo() {
         </span>
       </div>
 
-      <div className="flex h-[460px] min-w-0 flex-col overflow-hidden bg-ak-midnight font-sans text-sm">
+      <div className="flex h-[380px] min-w-0 flex-col overflow-hidden bg-ak-midnight font-sans text-sm sm:h-[440px] md:h-[460px]">
         <div
           ref={scrollRef}
           className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-4"

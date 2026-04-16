@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-const SCAFFOLD = 'npx agentskit init'
+const SCAFFOLD = 'npx @agentskit/cli init'
 const ADD = 'npm install @agentskit/core @agentskit/adapters'
 
 export function InstallCommand() {
@@ -62,12 +62,14 @@ function Card({
       <button
         type="button"
         onClick={copy}
-        className="group inline-flex items-center gap-3 rounded-md border border-ak-border bg-ak-midnight px-3 py-2 font-mono text-sm text-ak-foam transition hover:border-ak-blue"
+        className="group flex w-full items-center gap-2 rounded-md border border-ak-border bg-ak-midnight px-3 py-2 text-left font-mono text-[13px] text-ak-foam transition hover:border-ak-blue sm:gap-3 sm:text-sm"
       >
-        <span className="text-ak-green">$</span>
-        <span className="flex-1 truncate">{command}</span>
+        <span className="shrink-0 text-ak-green">$</span>
+        <span className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {command}
+        </span>
         <span
-          className={`rounded border border-ak-border px-2 py-0.5 text-xs transition ${
+          className={`shrink-0 rounded border border-ak-border px-2 py-0.5 text-[11px] transition sm:text-xs ${
             copied ? 'border-ak-green text-ak-green' : 'text-ak-graphite'
           }`}
         >
