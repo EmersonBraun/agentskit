@@ -11,7 +11,7 @@ The maintainer is responsible for:
 - Final decisions on roadmap, scope, and architectural direction
 - Merging PRs
 - Cutting releases
-- Curating the public [roadmap board](https://github.com/users/EmersonBraun/projects/1)
+- Curating the public [roadmap board](https://github.com/orgs/AgentsKit-io/projects/1)
 - Enforcing the [Manifesto](./MANIFESTO.md) and contracts pinned to ADRs
 
 ### Contributor
