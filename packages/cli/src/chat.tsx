@@ -119,10 +119,14 @@ export function ChatApp(options: ChatCommandOptions) {
     void chat.approve(toolCallId)
   }
 
-  // Update session metadata on every message change so `--list-sessions`
-  // shows accurate preview, counts, and last-updated time. Best-effort;
-  // failures are swallowed so a read-only fs never breaks the UI.
+  // Persist session metadata when the message count changes — not on every
+  // token update. Writing synchronously to disk on each streamed chunk
+  // blocks the event loop and makes the UI stutter. Keying the effect on
+  // length + first message id keeps it to one write per new turn.
   const sessionCreatedAtRef = useRef<string | undefined>(undefined)
+  const messageCount = chat.messages.length
+  const firstUserContent = chat.messages.find(m => m.role === 'user')?.content ?? ''
+
   useEffect(() => {
     const sessionId = options.sessionId
     if (!sessionId || sessionId === 'custom') return
@@ -135,7 +139,7 @@ export function ChatApp(options: ChatCommandOptions) {
         cwd: process.cwd(),
         createdAt: sessionCreatedAtRef.current,
         updatedAt: new Date().toISOString(),
-        messageCount: chat.messages.length,
+        messageCount,
         preview: derivePreview(chat.messages),
         provider: runtime.provider,
         model: runtime.model,
@@ -143,7 +147,10 @@ export function ChatApp(options: ChatCommandOptions) {
     } catch {
       // ignore
     }
-  }, [options.sessionId, chat.messages, runtime.provider, runtime.model])
+    // derivePreview reads chat.messages but only produces the first user
+    // message's content — safe to key on its length + the first user text.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.sessionId, messageCount, firstUserContent, runtime.provider, runtime.model])
 
   const turns = useMemo(() => groupIntoTurns(chat.messages), [chat.messages])
   const toolNames = options.tools ? options.tools.split(',').map(s => s.trim()).filter(Boolean) : []
