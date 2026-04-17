@@ -13,4 +13,5 @@ export type {
   SkillDefinition,
   AgentEvent, Observer,
   EvalTestCase, EvalResult, EvalSuite,
+  TokenCounter, TokenCounterOptions, TokenCountResult,
 } from './types/index'

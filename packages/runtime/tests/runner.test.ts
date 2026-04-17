@@ -209,10 +209,10 @@ describe('createRuntime', () => {
 
       expect(result.content).toBe('I see the tool failed, let me try another way.')
       expect(result.toolCalls[0].status).toBe('error')
-      expect(result.toolCalls[0].error).toBe('API timeout')
+      expect(result.toolCalls[0].error).toContain('API timeout')
       // Tool error injected as message
       const toolMsg = result.messages.find(m => m.role === 'tool')
-      expect(toolMsg?.content).toBe('Error: API timeout')
+      expect(toolMsg?.content).toContain('API timeout')
     })
 
     it('injects error for missing tool', async () => {

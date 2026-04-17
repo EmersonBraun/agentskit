@@ -1,4 +1,12 @@
 export { createChatController } from './controller'
+export {
+  AgentsKitError,
+  AdapterError,
+  ToolError,
+  MemoryError,
+  ConfigError,
+  ErrorCodes,
+} from './errors'
 export { createInMemoryMemory, createLocalStorageMemory, serializeMessages, deserializeMessages } from './memory'
 export { createStaticRetriever, formatRetrievedDocuments } from './rag'
 export {
@@ -55,4 +63,7 @@ export type {
   EvalTestCase,
   EvalResult,
   EvalSuite,
+  TokenCounter,
+  TokenCounterOptions,
+  TokenCountResult,
 } from './types'
