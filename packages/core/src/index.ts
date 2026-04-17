@@ -52,4 +52,7 @@ export type {
   EvalTestCase,
   EvalResult,
   EvalSuite,
+  TokenCounter,
+  TokenCounterOptions,
+  TokenCountResult,
 } from './types'
