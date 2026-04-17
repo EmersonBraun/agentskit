@@ -19,7 +19,7 @@ Open a **[Feature request](https://github.com/AgentsKit-io/agentskit/issues/new?
 **Do not open a public issue.** Follow [SECURITY.md](./SECURITY.md) — report privately via GitHub Security Advisories.
 
 ## I want to contribute
-Start with [CONTRIBUTING.md](./CONTRIBUTING.md). Read [AGENTS.md](./AGENTS.md) and the relevant package's `CONVENTIONS.md` before coding. The roadmap is public: **[Roadmap →](https://github.com/users/EmersonBraun/projects/1)**.
+Start with [CONTRIBUTING.md](./CONTRIBUTING.md). Read [AGENTS.md](./AGENTS.md) and the relevant package's `CONVENTIONS.md` before coding. The roadmap is public: **[Roadmap →](https://github.com/orgs/AgentsKit-io/projects/1)**.
 
 ## Commercial / enterprise support
 Not available today. AgentsKit.js is maintainer-led OSS.
