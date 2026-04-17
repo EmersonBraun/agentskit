@@ -18,6 +18,7 @@ export {
   safeParseArgs,
   createToolLifecycle,
 } from './primitives'
+export { defineTool } from './types/tool'
 export type { ConsumeStreamHandlers } from './primitives'
 export { buildToolMap, activateSkills, executeSafeTool } from './agent-loop'
 export type { ActivateSkillsResult, ToolExecResult, ExecuteSafeToolOptions } from './agent-loop'
@@ -38,6 +39,8 @@ export type {
   ToolExecutionContext,
   ToolDefinition,
   ToolCallHandlerContext,
+  InferSchemaType,
+  DefineToolConfig,
   ChatMemory,
   RetrieverRequest,
   Retriever,
