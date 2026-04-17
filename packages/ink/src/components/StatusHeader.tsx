@@ -41,15 +41,15 @@ export function StatusHeader({
         ✦ {title}
       </Text>
       {segments.length > 0 ? (
-        <Box>
+        <Text wrap="truncate-end">
           {segments.map((seg, i) => (
-            <Box key={seg.label}>
+            <React.Fragment key={seg.label}>
               {i > 0 ? <Text dimColor>  ·  </Text> : null}
               <Text dimColor>{seg.label}=</Text>
               <Text color={seg.color ?? 'white'}>{seg.value}</Text>
-            </Box>
+            </React.Fragment>
           ))}
-        </Box>
+        </Text>
       ) : null}
     </Box>
   )
