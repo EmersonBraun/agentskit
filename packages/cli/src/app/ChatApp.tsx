@@ -24,6 +24,9 @@ import type { AgentsKitConfig } from '../config'
 import { useRuntime } from '../runtime/use-runtime'
 import { useToolPermissions } from '../runtime/use-tool-permissions'
 import { useSessionMeta } from '../runtime/use-session-meta'
+import { HookDispatcher } from '../extensibility/hooks'
+import type { HookHandler } from '../extensibility/plugins'
+import { useEffect } from 'react'
 
 export interface ChatCommandOptions {
   provider: string
@@ -47,6 +50,8 @@ export interface ChatCommandOptions {
   extraTools?: ToolDefinition[]
   /** Extra skills contributed by plugins — merged into the resolved skill set. */
   extraSkills?: SkillDefinition[]
+  /** Hook handlers — from plugins + config. Fire on lifecycle events. */
+  hookHandlers?: HookHandler[]
 }
 
 function groupIntoTurns(messages: ChatMessage[]): ChatMessage[][] {
@@ -116,6 +121,27 @@ export function ChatApp(options: ChatCommandOptions) {
 
   const [feedback, setFeedback] = useState<{ message: string; kind: FeedbackKind } | null>(null)
 
+  const hookDispatcher = useMemo(
+    () => new HookDispatcher(options.hookHandlers ?? []),
+    [options.hookHandlers],
+  )
+
+  useEffect(() => {
+    void hookDispatcher.dispatch('SessionStart', {
+      event: 'SessionStart',
+      sessionId: options.sessionId,
+      provider: runtime.provider,
+      model: runtime.model,
+    })
+    return () => {
+      void hookDispatcher.dispatch('SessionEnd', {
+        event: 'SessionEnd',
+        sessionId: options.sessionId,
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hookDispatcher])
+
   const slashCommands = useMemo<SlashCommand[]>(
     () => [...builtinSlashCommands, ...(options.slashCommands ?? [])],
     [options.slashCommands],
@@ -125,6 +151,17 @@ export function ChatApp(options: ChatCommandOptions) {
   const handleSubmitInput = async (raw: string): Promise<boolean> => {
     const parsed = parseSlashCommand(raw)
     if (!parsed) {
+      const hookResult = await hookDispatcher.dispatch('UserPromptSubmit', {
+        event: 'UserPromptSubmit',
+        prompt: raw,
+      })
+      if (hookResult.blocked) {
+        setFeedback({
+          message: `Prompt blocked: ${hookResult.reason ?? 'hook refused'}`,
+          kind: 'warn',
+        })
+        return true
+      }
       setFeedback(null)
       return false
     }

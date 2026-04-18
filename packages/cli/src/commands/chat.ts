@@ -6,6 +6,8 @@ import { ChatApp, renderChatHeader } from '../app/ChatApp'
 import { listSessions, resolveSession } from '../sessions'
 import { mergeWithConfig } from './shared'
 import { loadPlugins } from '../extensibility/plugins'
+import { configHooksToHandlers } from '../extensibility/hooks'
+import type { ConfigHooksMap } from '../extensibility/hooks'
 
 export function registerChatCommand(program: Command): void {
   program
@@ -66,6 +68,9 @@ export function registerChatCommand(program: Command): void {
         pluginDirs: (options.pluginDir as string[]) ?? [],
       })
 
+      const configHooks = configHooksToHandlers(config?.hooks as ConfigHooksMap | undefined)
+      const hookHandlers = [...configHooks, ...pluginBundle.hooks]
+
       const chatOptions = {
         apiKey: (merged.apiKey ?? options.apiKey) as string | undefined,
         baseUrl: (merged.baseUrl ?? options.baseUrl) as string | undefined,
@@ -81,6 +86,7 @@ export function registerChatCommand(program: Command): void {
         slashCommands: pluginBundle.slashCommands,
         extraTools: pluginBundle.tools,
         extraSkills: pluginBundle.skills,
+        hookHandlers,
       }
       process.stdout.write(`${renderChatHeader(chatOptions)}\n`)
       const instance = render(React.createElement(ChatApp, chatOptions))

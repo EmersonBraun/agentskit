@@ -34,6 +34,10 @@ export interface AgentsKitConfig {
    * a relative/absolute path to a module exporting a `Plugin`.
    */
   plugins?: string[]
+  /**
+   * Shell-based hooks keyed by event name. See `extensibility/hooks`.
+   */
+  hooks?: Record<string, Array<{ run: string; matcher?: string; timeout?: number }>>
 }
 
 async function loadJsonConfig(path: string): Promise<AgentsKitConfig | undefined> {
