@@ -1,6 +1,6 @@
 {
   "name": "@agentskit/observability",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Logging and tracing layer for AgentsKit agents.",
   "keywords": [
     "agentskit",
