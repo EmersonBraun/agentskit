@@ -18,6 +18,9 @@
     "eval-suite",
     "deterministic-replay",
     "prompt-snapshots",
-    "prompt-diff"
+    "prompt-diff",
+    "time-travel-debug",
+    "token-budget",
+    "speculative-execution"
   ]
 }

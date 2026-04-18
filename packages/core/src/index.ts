@@ -19,6 +19,12 @@ export {
   createToolLifecycle,
 } from './primitives'
 export { defineTool } from './types/tool'
+export { compileBudget, approximateCounter } from './budget'
+export type {
+  BudgetStrategy,
+  CompileBudgetInput,
+  CompileBudgetResult,
+} from './budget'
 export type { ConsumeStreamHandlers } from './primitives'
 export { buildToolMap, activateSkills, executeSafeTool } from './agent-loop'
 export type { ActivateSkillsResult, ToolExecResult, ExecuteSafeToolOptions } from './agent-loop'
