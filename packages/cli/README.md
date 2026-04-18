@@ -55,8 +55,13 @@ agentskit run --help
 - `agentskit doctor` — diagnose your environment, packages, and provider config
 - `agentskit dev` — hot-reload agent development
 - `agentskit tunnel` — expose local agent via public URL
-- Provider flags: `--provider`, `--model`, `--system`, `--skill`, `--memory`
+- `agentskit rag index` — chunk + embed files into a file-backed vector store
+- `agentskit config` — print merged config or scaffold a template
+- **Extensibility** — plugins (slash commands, tools, skills, providers, hooks, MCP servers), permission policy with modes, lifecycle hooks (shell or JS), MCP stdio bridge, session rename + fork, `/usage` + `/cost`
+- Provider flags: `--provider`, `--model`, `--system`, `--skill`, `--memory`, `--mode`, `--plugin-dir`
 - Env-var based key injection — works seamlessly in CI and scripts
+
+Full reference: [docs/infrastructure/cli](https://www.agentskit.io/docs/infrastructure/cli) · [ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ### agentskit doctor
 
