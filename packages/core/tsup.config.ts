@@ -5,6 +5,7 @@ export default defineConfig({
     index: 'src/index.ts',
     'agent-schema': 'src/agent-schema.ts',
     'prompt-experiments': 'src/prompt-experiments.ts',
+    'auto-summarize': 'src/auto-summarize.ts',
   },
   format: ['esm', 'cjs'],
   dts: { compilerOptions: { ignoreDeprecations: "6.0" } },

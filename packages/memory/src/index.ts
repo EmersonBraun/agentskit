@@ -14,3 +14,10 @@ export type { FileVectorMemoryConfig } from './file-vector'
 
 export type { VectorStore, VectorStoreDocument, VectorStoreResult } from './vector-store'
 export type { RedisClientAdapter, RedisConnectionConfig } from './redis-client'
+
+export { createHierarchicalMemory } from './hierarchical'
+export type {
+  HierarchicalMemory,
+  HierarchicalMemoryOptions,
+  HierarchicalRecall,
+} from './hierarchical'

@@ -33,6 +33,10 @@
     "devtools-server",
     "trace-viewer",
     "evals-ci",
-    "prompt-experiments"
+    "prompt-experiments",
+    "replay-different-model",
+    "hierarchical-memory",
+    "auto-summarize",
+    "rag-reranking"
   ]
 }

@@ -41,6 +41,11 @@
       "types": "./dist/prompt-experiments.d.ts",
       "import": "./dist/prompt-experiments.js",
       "require": "./dist/prompt-experiments.cjs"
+    },
+    "./auto-summarize": {
+      "types": "./dist/auto-summarize.d.ts",
+      "import": "./dist/auto-summarize.js",
+      "require": "./dist/auto-summarize.cjs"
     }
   },
   "files": [
