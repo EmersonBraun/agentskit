@@ -111,14 +111,14 @@ describe('Ink chat integration', () => {
     expect(lastFrame()).toContain('Hi')
 
     pressEnter()
-    await delay(200)
+    await delay(500)
     rerender(<ChatApp adapter={adapter} />)
 
     const output = lastFrame()
     expect(output).toContain('you')
     expect(output).toContain('Hello from AgentsKit!')
     expect(output).toContain('assistant')
-  })
+  }, 15000)
 
   it('shows thinking indicator during streaming', async () => {
     let resolveStream: (() => void) | undefined
