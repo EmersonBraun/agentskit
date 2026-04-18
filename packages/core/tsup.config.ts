@@ -7,6 +7,7 @@ export default defineConfig({
     'prompt-experiments': 'src/prompt-experiments.ts',
     'auto-summarize': 'src/auto-summarize.ts',
     hitl: 'src/hitl.ts',
+    security: 'src/security/index.ts',
   },
   format: ['esm', 'cjs'],
   dts: { compilerOptions: { ignoreDeprecations: "6.0" } },

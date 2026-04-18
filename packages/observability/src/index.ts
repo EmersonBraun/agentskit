@@ -23,6 +23,19 @@ export {
 } from './trace-viewer'
 export type { TraceReport, FileTraceSink } from './trace-viewer'
 
+export {
+  createSignedAuditLog,
+  createInMemoryAuditStore,
+} from './audit-log'
+export type {
+  AuditEntry,
+  AuditLogStore,
+  AuditLogOptions,
+  SignedAuditLog,
+  AppendAuditInput,
+  AuditVerifyResult,
+} from './audit-log'
+
 export { createDevtoolsServer, toSseFrame } from './devtools'
 export type {
   DevtoolsServer,

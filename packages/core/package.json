@@ -51,6 +51,11 @@
       "types": "./dist/hitl.d.ts",
       "import": "./dist/hitl.js",
       "require": "./dist/hitl.cjs"
+    },
+    "./security": {
+      "types": "./dist/security.d.ts",
+      "import": "./dist/security.js",
+      "require": "./dist/security.cjs"
     }
   },
   "files": [
