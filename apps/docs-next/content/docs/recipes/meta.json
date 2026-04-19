@@ -54,6 +54,8 @@
     "personalization",
     "doc-loaders",
     "skill-marketplace",
+    "integrations",
+    "more-integrations",
     "self-debug",
     "vector-adapters",
     "encrypted-memory"
