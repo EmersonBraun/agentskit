@@ -49,6 +49,10 @@
     "mandatory-sandbox",
     "more-providers",
     "mcp-bridge",
-    "tool-composer"
+    "tool-composer",
+    "graph-memory",
+    "personalization",
+    "doc-loaders",
+    "skill-marketplace"
   ]
 }
