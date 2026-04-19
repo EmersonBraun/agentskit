@@ -49,6 +49,9 @@
     "mandatory-sandbox",
     "more-providers",
     "mcp-bridge",
-    "tool-composer"
+    "tool-composer",
+    "self-debug",
+    "vector-adapters",
+    "encrypted-memory"
   ]
 }
