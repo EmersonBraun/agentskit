@@ -50,6 +50,7 @@
     "more-providers",
     "mcp-bridge",
     "tool-composer",
-    "integrations"
+    "integrations",
+    "more-integrations"
   ]
 }
