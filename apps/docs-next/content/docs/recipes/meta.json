@@ -51,7 +51,7 @@
     "mcp-bridge",
     "tool-composer",
     "integrations",
-    "more-integrations"
+    "more-integrations",
     "self-debug",
     "vector-adapters",
     "encrypted-memory"
