@@ -46,6 +46,7 @@
     "prompt-injection",
     "audit-log",
     "rate-limiting",
-    "mandatory-sandbox"
+    "mandatory-sandbox",
+    "more-providers"
   ]
 }
