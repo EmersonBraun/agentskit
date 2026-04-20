@@ -1,0 +1,28 @@
+---
+title: RAG
+description: Plug-and-play retrieval. Chunk, embed, search, rerank, loaders.
+---
+
+## Core pipeline
+
+- `createRAG({ embed, store })` — one-liner ingest + retrieve + search.
+- `chunkText({ chunkSize, chunkOverlap, split })` — standalone splitter.
+
+## Reranking + hybrid
+
+- `createRerankedRetriever` — plug in Cohere Rerank, BGE, or the built-in BM25.
+- `createHybridRetriever` — vector + BM25 blend with weighted normalization.
+- [Recipe: RAG reranking](/docs/recipes/rag-reranking).
+
+## Document loaders
+
+- `loadUrl`, `loadGitHubFile`, `loadGitHubTree`, `loadNotionPage`, `loadConfluencePage`, `loadGoogleDriveFile`, `loadPdf` (BYO parser).
+- [Recipe: Document loaders](/docs/recipes/doc-loaders).
+
+*Per-loader + per-reranker deep dives land in step 4 of the docs IA rollout.*
+
+## Related
+
+- [Concepts: Retriever](/docs/concepts/retriever)
+- [Package: @agentskit/rag](/docs/packages/rag)
+- [For agents: rag](/docs/for-agents/rag)

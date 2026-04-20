@@ -1,0 +1,32 @@
+---
+title: UI + hooks
+description: Every AgentsKit UI binding exposes the same contract. Pick the framework; the API stays the same.
+---
+
+One hook, seven bindings. Every framework package mirrors
+`@agentskit/react`'s contract — same `useChat` return shape, same
+headless component data-attributes, same action methods.
+
+## Bindings
+
+| Package | Primitive | Peer dep |
+|---|---|---|
+| `@agentskit/react` | `useChat` + `<ChatContainer>` | `react ^18\|^19` |
+| `@agentskit/ink` | `useChat` + `<ChatContainer>` (terminal) | `ink ^5` |
+| `@agentskit/vue` | `useChat` composable + `<ChatContainer>` | `vue ^3.4` |
+| `@agentskit/svelte` | `createChatStore` | `svelte ^5` |
+| `@agentskit/solid` | `useChat` | `solid-js ^1.8` |
+| `@agentskit/react-native` | `useChat` (Metro-safe) | `react` + `react-native` |
+| `@agentskit/angular` | `AgentskitChat` service (Signal + RxJS) | `@angular/core ^18\|^19\|^20` |
+
+## Deep dives
+
+- Legacy home: [chat-uis](/docs/chat-uis) · [components](/docs/components) · [hooks](/docs/hooks) — redirected here.
+
+*Sub-pages will land in step 3 of the docs IA rollout: per-component matrices (ChatContainer, Message, InputBar, ToolCallView, ThinkingIndicator) + per-hook documentation across every framework.*
+
+## Related
+
+- [Concepts: Runtime](/docs/concepts/runtime)
+- [Packages: React](/docs/packages/react) · [Vue](/docs/packages/vue) · [Svelte](/docs/packages/svelte) · [Solid](/docs/packages/solid) · [Angular](/docs/packages/angular) · [React Native](/docs/packages/react-native) · [Ink](/docs/packages/ink)
+- [Theming](/docs/ui/theming)

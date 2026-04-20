@@ -1,0 +1,5 @@
+{
+  "title": "CLI",
+  "description": "agentskit init / chat / run / dev / doctor / ai / tunnel / rag / config.",
+  "pages": ["index"]
+}

@@ -1,0 +1,5 @@
+{
+  "title": "UI + hooks",
+  "description": "Framework bindings (React, Vue, Svelte, Solid, RN, Angular, Ink) share the same contract — useChat + headless components.",
+  "pages": ["index"]
+}

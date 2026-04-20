@@ -1,0 +1,36 @@
+---
+title: Memory
+description: Chat memory + vector stores + wrappers that make long-running agents practical.
+---
+
+## Chat memory (ordered history)
+
+- `createInMemoryMemory` — default, zero deps.
+- `createLocalStorageMemory` — browser-persisted.
+- `fileChatMemory` — JSON file.
+- `sqliteChatMemory` — SQLite-backed.
+- `redisChatMemory` — Redis-backed.
+
+## Vector memory
+
+- `fileVectorMemory` — pure JS, file-persisted.
+- `redisVectorMemory` — Redis Vector.
+- `pgvector` — BYO SQL runner. [Recipe](/docs/recipes/vector-adapters).
+- `pinecone` / `qdrant` / `chroma` / `upstashVector` — HTTP-backed managed stores.
+
+## Higher-order wrappers
+
+- `createVirtualizedMemory` — hot window + cold retriever. [Recipe](/docs/recipes/virtualized-memory).
+- `createHierarchicalMemory` — MemGPT working / recall / archival. [Recipe](/docs/recipes/hierarchical-memory).
+- `createAutoSummarizingMemory` — fold oldest into a summary. [Recipe](/docs/recipes/auto-summarize).
+- `createEncryptedMemory` — AES-GCM over any `ChatMemory`. [Recipe](/docs/recipes/encrypted-memory).
+- `createInMemoryGraph` — knowledge graph (nodes + edges). [Recipe](/docs/recipes/graph-memory).
+- `createInMemoryPersonalization` — per-subject profile. [Recipe](/docs/recipes/personalization).
+
+*Per-backend deep dives land in step 4 of the docs IA rollout.*
+
+## Related
+
+- [Concepts: Memory](/docs/concepts/memory)
+- [Package: @agentskit/memory](/docs/packages/memory)
+- [For agents: memory](/docs/for-agents/memory)

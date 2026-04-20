@@ -1,0 +1,30 @@
+---
+title: Providers
+description: 20+ LLM chat + embedder adapters, plus higher-order adapters that compose candidates.
+---
+
+## Hosted chat adapters
+
+`anthropic` · `openai` · `gemini` · `grok` · `deepseek` · `kimi` · `mistral` · `cohere` · `together` · `groq` · `fireworks` · `openrouter` · `huggingface` · `langchain` · `langgraph` · `vercelAI` · `generic`
+
+## Local runtimes
+
+`ollama` · `lmstudio` · `vllm` · `llamacpp`
+
+## Embedders
+
+`openaiEmbedder` · `geminiEmbedder` · `ollamaEmbedder` · `deepseekEmbedder` · `grokEmbedder` · `kimiEmbedder` · `createOpenAICompatibleEmbedder`
+
+## Higher-order adapters
+
+- `createRouter` — auto-pick by cost / latency / tags / custom. [Recipe](/docs/recipes/adapter-router).
+- `createEnsembleAdapter` — fan-out + merge. [Recipe](/docs/recipes/adapter-ensemble).
+- `createFallbackAdapter` — ordered try-next. [Recipe](/docs/recipes/fallback-chain).
+
+*Per-provider pages land in step 4 of the docs IA rollout.*
+
+## Related
+
+- [Concepts: Adapter](/docs/concepts/adapter)
+- [Package: @agentskit/adapters](/docs/packages/adapters)
+- [For agents: adapters](/docs/for-agents/adapters)

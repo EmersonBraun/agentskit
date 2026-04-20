@@ -1,0 +1,5 @@
+{
+  "title": "Security",
+  "description": "PII redaction, prompt injection detection, rate limits, audit, sandbox policy.",
+  "pages": ["index"]
+}
