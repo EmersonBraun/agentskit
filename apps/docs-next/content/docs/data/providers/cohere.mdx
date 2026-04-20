@@ -1,0 +1,41 @@
+---
+title: cohere
+description: Cohere Command — enterprise-focused RAG-friendly models with citations.
+---
+
+```ts
+import { cohere } from '@agentskit/adapters'
+
+const adapter = cohere({
+  apiKey: process.env.COHERE_API_KEY!,
+  model: 'command-r-plus',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.cohere.com/v2` |
+| `fetch` | `typeof fetch` | global |
+
+## Model examples
+
+`command-r-plus` · `command-r` · `command`.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `COHERE_API_KEY` | API key |
+
+## Notes
+
+- Native citations in responses when `documents` are passed — pairs with [RAG](/docs/data/rag).
+- Cohere also provides [rerankers](/docs/data/rag/rerank).
+
+## Related
+
+- [Providers overview](./) · [RAG reranking recipe](/docs/reference/recipes/rag-reranking)

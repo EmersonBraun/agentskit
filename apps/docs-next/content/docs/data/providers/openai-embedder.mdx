@@ -1,0 +1,38 @@
+---
+title: openaiEmbedder
+description: OpenAI text embeddings — text-embedding-3-small / -large. Default choice for most RAG stacks.
+---
+
+```ts
+import { openaiEmbedder } from '@agentskit/adapters'
+
+const embed = openaiEmbedder({
+  apiKey: process.env.OPENAI_API_KEY!,
+  model: 'text-embedding-3-small',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | `text-embedding-3-small` |
+| `dimensions` | `number` | model default |
+| `baseUrl` | `string` | `https://api.openai.com/v1` |
+| `fetch` | `typeof fetch` | global |
+
+## Models
+
+- `text-embedding-3-small` — 1536 dims, fast + cheap.
+- `text-embedding-3-large` — 3072 dims, best quality.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `OPENAI_API_KEY` | API key |
+
+## Related
+
+- [Embedders overview](./embedders) · [createRAG](/docs/data/rag/create-rag)

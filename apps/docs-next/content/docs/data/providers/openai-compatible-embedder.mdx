@@ -1,0 +1,33 @@
+---
+title: createOpenAICompatibleEmbedder
+description: Escape hatch for any OpenAI-compatible `/v1/embeddings` endpoint — LMS, vLLM, Cerebras, Voyage, Jina, internal gateways.
+---
+
+```ts
+import { createOpenAICompatibleEmbedder } from '@agentskit/adapters'
+
+const embed = createOpenAICompatibleEmbedder({
+  apiKey: process.env.VOYAGE_API_KEY!,
+  baseUrl: 'https://api.voyageai.com/v1',
+  model: 'voyage-3-large',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required (unless the endpoint is keyless) |
+| `baseUrl` | `string` | required |
+| `model` | `string` | required |
+| `dimensions` | `number` | — |
+| `fetch` | `typeof fetch` | global |
+
+## Use cases
+
+- Voyage, Jina, Cerebras, Cohere (via compat), Mistral embed, any private gateway.
+- Local servers (vLLM, LM Studio, llama.cpp) that expose `/v1/embeddings`.
+
+## Related
+
+- [Embedders overview](./embedders) · Issue #466 — [voyage + jina rerankers](https://github.com/AgentsKit-io/agentskit/issues/466)

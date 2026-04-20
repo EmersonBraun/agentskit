@@ -1,0 +1,28 @@
+---
+title: vercelAI
+description: Wrap a Vercel AI SDK `LanguageModel` as an AgentsKit adapter.
+---
+
+```ts
+import { vercelAI } from '@agentskit/adapters'
+import { openai as vercelOpenAI } from '@ai-sdk/openai'
+
+const adapter = vercelAI({
+  model: vercelOpenAI('gpt-4o'),
+})
+```
+
+## Options
+
+| Option | Type |
+|---|---|
+| `model` | `LanguageModel` (from `ai` SDK) |
+
+## Why vercelAI
+
+- Migrate from Vercel AI SDK incrementally.
+- Keep your existing `@ai-sdk/*` provider choices.
+
+## Related
+
+- [Providers overview](./) · [Migrating → Vercel AI SDK](/docs/get-started/migrating/from-vercel-ai-sdk)

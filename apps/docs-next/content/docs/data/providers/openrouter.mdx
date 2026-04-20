@@ -1,0 +1,42 @@
+---
+title: openrouter
+description: OpenRouter — one API to route across 100+ providers with transparent pricing.
+---
+
+```ts
+import { openrouter } from '@agentskit/adapters'
+
+const adapter = openrouter({
+  apiKey: process.env.OPENROUTER_API_KEY!,
+  model: 'anthropic/claude-sonnet-4',
+  appUrl: 'https://www.agentskit.io',
+  appName: 'AgentsKit',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://openrouter.ai/api/v1` |
+| `appUrl` | `string` | — (optional attribution) |
+| `appName` | `string` | — |
+| `fetch` | `typeof fetch` | global |
+
+## Why openrouter
+
+- Single key, many providers. Good for experimentation.
+- Transparent per-model pricing; automatic fallbacks.
+- Pair with [`createFallbackAdapter`](./higher-order) for extra resilience.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `OPENROUTER_API_KEY` | API key |
+
+## Related
+
+- [Providers overview](./) · [higher-order adapters](./higher-order)

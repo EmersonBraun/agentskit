@@ -1,0 +1,41 @@
+---
+title: kimi
+description: Moonshot AI Kimi — long-context, OpenAI-compatible.
+---
+
+```ts
+import { kimi } from '@agentskit/adapters'
+
+const adapter = kimi({
+  apiKey: process.env.KIMI_API_KEY!,
+  model: 'moonshot-v1-128k',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.moonshot.cn/v1` |
+| `fetch` | `typeof fetch` | global |
+
+## Model examples
+
+`moonshot-v1-8k` · `moonshot-v1-32k` · `moonshot-v1-128k` · `kimi-k2-0905`.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `KIMI_API_KEY` | API key |
+
+## Notes
+
+- Popular in APAC. OpenAI-compatible surface.
+- 128k-context variants for long-doc workflows.
+
+## Related
+
+- [Providers overview](./) · [Embedders → kimi](./kimi-embedder)

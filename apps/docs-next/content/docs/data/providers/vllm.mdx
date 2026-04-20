@@ -1,0 +1,30 @@
+---
+title: vllm
+description: vLLM — high-throughput self-hosted inference with OpenAI-compatible API. For production workloads on your own GPUs.
+---
+
+```ts
+import { vllm } from '@agentskit/adapters'
+
+const adapter = vllm({
+  model: 'meta-llama/Llama-3.3-70B-Instruct',
+  url: 'http://localhost:8000/v1',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `model` | `string` | required |
+| `url` | `string` | `http://localhost:8000/v1` |
+| `fetch` | `typeof fetch` | global |
+
+## Why vllm
+
+- PagedAttention + continuous batching → best-in-class throughput.
+- OpenAI-compatible; cluster-friendly.
+
+## Related
+
+- [Providers overview](./) · [ollama](./ollama) · [llamacpp](./llamacpp)

@@ -1,0 +1,32 @@
+---
+title: generic
+description: Turn any `ReadableStream` into an AgentsKit adapter — the lowest-level escape hatch.
+---
+
+```ts
+import { generic } from '@agentskit/adapters'
+
+const adapter = generic({
+  stream: async ({ messages }) => {
+    const res = await fetch('https://my-llm.example.com/v1/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages }),
+    })
+    return res.body! // ReadableStream<Uint8Array>
+  },
+  parseChunk: (bytes) => {
+    // Convert provider bytes to { type: 'text'|'tool-call'|'done', ... }
+    return parseMyProviderSse(bytes)
+  },
+})
+```
+
+## When to reach for it
+
+- Provider has no off-the-shelf adapter.
+- Internal LLM gateway with custom protocol.
+- Proxying through your own backend that already reshapes chunks.
+
+## Related
+
+- [Providers overview](./) · Recipe: [custom-adapter](/docs/reference/recipes/custom-adapter)

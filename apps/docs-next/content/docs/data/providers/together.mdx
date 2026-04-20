@@ -1,0 +1,38 @@
+---
+title: together
+description: Together AI — hosts 200+ open models behind one OpenAI-compatible API.
+---
+
+```ts
+import { together } from '@agentskit/adapters'
+
+const adapter = together({
+  apiKey: process.env.TOGETHER_API_KEY!,
+  model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.together.xyz/v1` |
+| `fetch` | `typeof fetch` | global |
+
+## Why together
+
+- Cheapest hosted path to Llama / Qwen / DeepSeek / Mixtral.
+- OpenAI-compatible — swap from openai in one line.
+- Good for price-sensitive batch workloads.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `TOGETHER_API_KEY` | API key |
+
+## Related
+
+- [Providers overview](./) · [groq](./groq) · [fireworks](./fireworks) · [openrouter](./openrouter)

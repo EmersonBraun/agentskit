@@ -1,0 +1,37 @@
+---
+title: huggingface
+description: Hugging Face Inference Endpoints + Serverless — run any HF-hosted chat model.
+---
+
+```ts
+import { huggingface } from '@agentskit/adapters'
+
+const adapter = huggingface({
+  apiKey: process.env.HF_TOKEN!,
+  model: 'meta-llama/Meta-Llama-3-70B-Instruct',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api-inference.huggingface.co` |
+| `fetch` | `typeof fetch` | global |
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `HF_TOKEN` | Read token from hf.co/settings/tokens |
+
+## Notes
+
+- Serverless tier has cold starts. Pin a dedicated Inference Endpoint for production latency.
+- For open weights locally see [ollama](./ollama) · [vllm](./vllm) · [llamacpp](./llamacpp).
+
+## Related
+
+- [Providers overview](./)

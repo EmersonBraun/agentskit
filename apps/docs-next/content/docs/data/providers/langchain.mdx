@@ -1,0 +1,28 @@
+---
+title: langchain
+description: Wrap any LangChain.js `ChatModel` as an AgentsKit adapter.
+---
+
+```ts
+import { langchain } from '@agentskit/adapters'
+import { ChatAnthropic } from '@langchain/anthropic'
+
+const adapter = langchain({
+  model: new ChatAnthropic({ model: 'claude-sonnet-4-6' }),
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `model` | `ChatModel` | required |
+
+## Why langchain
+
+- Reuse LangChain model instances in AgentsKit runtimes.
+- Migrate incrementally — swap one layer at a time.
+
+## Related
+
+- [Providers overview](./) · [langgraph](./langgraph) · [vercelAI](./vercel-ai) · [Migrating → LangChain.js](/docs/get-started/migrating/from-langchain)

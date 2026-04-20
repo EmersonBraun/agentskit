@@ -1,0 +1,41 @@
+---
+title: mistral
+description: Mistral — open-weights-friendly family including Mistral Large, Codestral, Mixtral.
+---
+
+```ts
+import { mistral } from '@agentskit/adapters'
+
+const adapter = mistral({
+  apiKey: process.env.MISTRAL_API_KEY!,
+  model: 'mistral-large-latest',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.mistral.ai/v1` |
+| `fetch` | `typeof fetch` | global |
+
+## Model examples
+
+`mistral-large-latest` · `mistral-small-latest` · `codestral-latest` · `mixtral-8x22b`.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `MISTRAL_API_KEY` | API key |
+
+## Notes
+
+- Codestral is code-specialized; pair with [coder](/docs/agents/skills/coder) skill.
+- Open-weights variants available — see [llama.cpp](./llamacpp) for self-hosted.
+
+## Related
+
+- [Providers overview](./)

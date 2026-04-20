@@ -1,0 +1,28 @@
+---
+title: llamacpp
+description: llama.cpp server — run GGUF models on CPU or GPU with minimal overhead.
+---
+
+```ts
+import { llamacpp } from '@agentskit/adapters'
+
+const adapter = llamacpp({
+  url: 'http://localhost:8080',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `url` | `string` | `http://localhost:8080` |
+| `fetch` | `typeof fetch` | global |
+
+## Why llamacpp
+
+- Runs everywhere, including Raspberry Pi + embedded.
+- GGUF quantizations from 4-bit to 16-bit.
+
+## Related
+
+- [Providers overview](./) · [ollama](./ollama) · [vllm](./vllm)

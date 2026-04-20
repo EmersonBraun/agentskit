@@ -1,0 +1,24 @@
+---
+title: kimiEmbedder
+description: Moonshot Kimi embedding model.
+---
+
+```ts
+import { kimiEmbedder } from '@agentskit/adapters'
+
+const embed = kimiEmbedder({
+  apiKey: process.env.KIMI_API_KEY!,
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | provider default |
+| `baseUrl` | `string` | `https://api.moonshot.cn/v1` |
+
+## Related
+
+- [Embedders overview](./embedders) · [kimi](./kimi)

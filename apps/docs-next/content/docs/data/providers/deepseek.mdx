@@ -1,0 +1,41 @@
+---
+title: deepseek
+description: DeepSeek — cost-efficient reasoning + chat models. OpenAI-compatible API.
+---
+
+```ts
+import { deepseek } from '@agentskit/adapters'
+
+const adapter = deepseek({
+  apiKey: process.env.DEEPSEEK_API_KEY!,
+  model: 'deepseek-chat',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.deepseek.com` |
+| `fetch` | `typeof fetch` | global |
+
+## Model examples
+
+`deepseek-chat` · `deepseek-reasoner`.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `DEEPSEEK_API_KEY` | API key |
+
+## Notes
+
+- Strong price/performance for agents that tool-call heavily.
+- Reasoner variant exposes chain-of-thought via separate field.
+
+## Related
+
+- [Providers overview](./) · [Embedders → deepseek](./deepseek-embedder)

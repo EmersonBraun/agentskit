@@ -1,0 +1,37 @@
+---
+title: groq
+description: Groq — ultra-low-latency inference on custom LPU hardware. Llama + Mixtral + Gemma.
+---
+
+```ts
+import { groq } from '@agentskit/adapters'
+
+const adapter = groq({
+  apiKey: process.env.GROQ_API_KEY!,
+  model: 'llama-3.3-70b-versatile',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.groq.com/openai/v1` |
+| `fetch` | `typeof fetch` | global |
+
+## Why groq
+
+- Sub-100 ms first-token latency — best for realtime voice + chat.
+- OpenAI-compatible.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `GROQ_API_KEY` | API key |
+
+## Related
+
+- [Providers overview](./) · [voice mode component (issue #479)](https://github.com/AgentsKit-io/agentskit/issues/479)

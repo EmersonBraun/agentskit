@@ -1,0 +1,30 @@
+---
+title: ollamaEmbedder
+description: Ollama-hosted embedding models — nomic-embed-text, mxbai-embed-large, all-minilm.
+---
+
+```ts
+import { ollamaEmbedder } from '@agentskit/adapters'
+
+const embed = ollamaEmbedder({
+  model: 'nomic-embed-text',
+  url: 'http://localhost:11434',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `model` | `string` | required |
+| `url` | `string` | `http://localhost:11434` |
+
+## Recommended models
+
+- `nomic-embed-text` — 768 dims, fast.
+- `mxbai-embed-large` — 1024 dims, higher quality.
+- `all-minilm` — 384 dims, tiny + fast.
+
+## Related
+
+- [Embedders overview](./embedders) · [ollama](./ollama)

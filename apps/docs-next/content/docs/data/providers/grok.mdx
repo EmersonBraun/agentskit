@@ -1,0 +1,41 @@
+---
+title: grok
+description: xAI Grok — streaming chat + tool calls. OpenAI-compatible API surface.
+---
+
+```ts
+import { grok } from '@agentskit/adapters'
+
+const adapter = grok({
+  apiKey: process.env.XAI_API_KEY!,
+  model: 'grok-4',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.x.ai/v1` |
+| `fetch` | `typeof fetch` | global |
+
+## Model examples
+
+`grok-4` · `grok-code-fast-1` · `grok-4-fast`.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `XAI_API_KEY` | API key from x.ai |
+
+## Notes
+
+- OpenAI-compatible `/chat/completions` endpoint — works with many OpenAI SDK idioms.
+- Streaming via SSE.
+
+## Related
+
+- [Providers overview](./) · [Embedders → grok](./grok-embedder)

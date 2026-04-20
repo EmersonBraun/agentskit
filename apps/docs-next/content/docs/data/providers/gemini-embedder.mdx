@@ -1,0 +1,29 @@
+---
+title: geminiEmbedder
+description: Google Gemini embeddings — text-embedding-004. Strong multilingual.
+---
+
+```ts
+import { geminiEmbedder } from '@agentskit/adapters'
+
+const embed = geminiEmbedder({
+  apiKey: process.env.GOOGLE_API_KEY!,
+  model: 'text-embedding-004',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | `text-embedding-004` |
+| `baseUrl` | `string` | `https://generativelanguage.googleapis.com` |
+
+## Models
+
+- `text-embedding-004` — 768 dims, multilingual.
+
+## Related
+
+- [Embedders overview](./embedders)

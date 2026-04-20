@@ -1,0 +1,43 @@
+---
+title: anthropic
+description: Anthropic chat adapter — Claude Opus / Sonnet / Haiku. Streaming, tool-calls, vision, long-context.
+---
+
+```ts
+import { anthropic } from '@agentskit/adapters'
+
+const adapter = anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY!,
+  model: 'claude-sonnet-4-6',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.anthropic.com` |
+| `version` | `string` | `2023-06-01` |
+| `fetch` | `typeof fetch` | global |
+
+## Model examples
+
+`claude-opus-4-7` · `claude-sonnet-4-6` · `claude-haiku-4-5-20251001` · `claude-3-5-haiku` · `claude-3-5-sonnet`.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `ANTHROPIC_API_KEY` | API key |
+
+## Notes
+
+- Streaming via SSE; `content_block_delta` events → `text` and `tool_use` chunks.
+- Vision: pass `{ type: 'image', source: { ... } }` content parts.
+- Long-context: Sonnet supports 1M-token context when `anthropic-beta: context-1m-2025-08-07` set via `headers`.
+
+## Related
+
+- [Providers overview](./) · [AWS Bedrock](https://github.com/AgentsKit-io/agentskit/issues/426) for Claude on AWS

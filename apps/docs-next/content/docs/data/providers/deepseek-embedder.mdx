@@ -1,0 +1,24 @@
+---
+title: deepseekEmbedder
+description: DeepSeek embedding model. Compatible with createOpenAICompatibleEmbedder under the hood.
+---
+
+```ts
+import { deepseekEmbedder } from '@agentskit/adapters'
+
+const embed = deepseekEmbedder({
+  apiKey: process.env.DEEPSEEK_API_KEY!,
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | provider default |
+| `baseUrl` | `string` | `https://api.deepseek.com` |
+
+## Related
+
+- [Embedders overview](./embedders) · [deepseek](./deepseek)

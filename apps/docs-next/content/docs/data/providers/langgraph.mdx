@@ -1,0 +1,27 @@
+---
+title: langgraph
+description: Wrap a LangGraph graph as an AgentsKit adapter — streamEvents surfaced as chunks.
+---
+
+```ts
+import { langgraph } from '@agentskit/adapters'
+import { graph } from './my-langgraph-graph'
+
+const adapter = langgraph({ graph })
+```
+
+## Options
+
+| Option | Type |
+|---|---|
+| `graph` | LangGraph-compiled graph |
+| `streamMode` | `'values' \| 'updates' \| 'messages'` |
+
+## Why langgraph
+
+- Use existing LangGraph orchestration inside AgentsKit UI/runtime.
+- Surface `streamEvents` as standard adapter chunks.
+
+## Related
+
+- [Providers overview](./) · [langchain](./langchain)

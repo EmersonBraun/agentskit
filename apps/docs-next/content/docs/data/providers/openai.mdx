@@ -1,0 +1,46 @@
+---
+title: openai
+description: OpenAI chat adapter — GPT-4o, o-series, GPT-5. Streaming, tool-calls, parallel tools, multimodal.
+---
+
+```ts
+import { openai } from '@agentskit/adapters'
+
+const adapter = openai({
+  apiKey: process.env.OPENAI_API_KEY!,
+  model: 'gpt-4o',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.openai.com/v1` |
+| `organization` | `string` | — |
+| `project` | `string` | — |
+| `fetch` | `typeof fetch` | global |
+
+## Model examples
+
+`gpt-4o` · `gpt-4o-mini` · `gpt-5` · `o1` · `o3-mini` · `gpt-4.1`.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `OPENAI_API_KEY` | API key (standard or session key) |
+
+## Notes
+
+- Streaming via SSE; emits `text` + `tool-call` + `done` chunks.
+- Parallel tool calling enabled by default.
+- Multimodal: pass `{ type: 'image', url }` content parts.
+- Azure OpenAI users should use [azureOpenAIAdapter](https://github.com/AgentsKit-io/agentskit/issues/428) — different routing.
+
+## Related
+
+- [Providers overview](./) · [Hosted](./hosted) · [Embedders](./embedders) — `openaiEmbedder`
+- Recipe: [custom-adapter](/docs/reference/recipes/custom-adapter)

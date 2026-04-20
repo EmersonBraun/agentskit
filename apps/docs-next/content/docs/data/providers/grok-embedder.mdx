@@ -1,0 +1,24 @@
+---
+title: grokEmbedder
+description: xAI embedding model.
+---
+
+```ts
+import { grokEmbedder } from '@agentskit/adapters'
+
+const embed = grokEmbedder({
+  apiKey: process.env.XAI_API_KEY!,
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | provider default |
+| `baseUrl` | `string` | `https://api.x.ai/v1` |
+
+## Related
+
+- [Embedders overview](./embedders) · [grok](./grok)

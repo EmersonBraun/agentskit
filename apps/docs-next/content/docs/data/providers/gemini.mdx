@@ -1,0 +1,43 @@
+---
+title: gemini
+description: Google Gemini chat adapter — Gemini 2.5 Pro / Flash. Streaming, tool-calls, vision, 1M+ context.
+---
+
+```ts
+import { gemini } from '@agentskit/adapters'
+
+const adapter = gemini({
+  apiKey: process.env.GOOGLE_API_KEY!,
+  model: 'gemini-2.5-flash',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://generativelanguage.googleapis.com` |
+| `apiVersion` | `string` | `v1beta` |
+| `fetch` | `typeof fetch` | global |
+
+## Model examples
+
+`gemini-2.5-pro` · `gemini-2.5-flash` · `gemini-2.5-flash-8b` · `gemini-2.0-flash-exp`.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `GOOGLE_API_KEY` | API key from aistudio.google.com |
+
+## Notes
+
+- Streaming via SSE `streamGenerateContent`.
+- Multimodal: inline image data or URI parts.
+- For Vertex AI (IAM + GCP billing) use the forthcoming [vertexAdapter](https://github.com/AgentsKit-io/agentskit/issues/427).
+
+## Related
+
+- [Providers overview](./) · [Embedders → gemini](./gemini-embedder)

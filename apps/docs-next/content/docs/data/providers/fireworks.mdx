@@ -1,0 +1,32 @@
+---
+title: fireworks
+description: Fireworks AI — fast open-model inference with fine-tuning + function-calling support.
+---
+
+```ts
+import { fireworks } from '@agentskit/adapters'
+
+const adapter = fireworks({
+  apiKey: process.env.FIREWORKS_API_KEY!,
+  model: 'accounts/fireworks/models/llama-v3p3-70b-instruct',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required |
+| `baseUrl` | `string` | `https://api.fireworks.ai/inference/v1` |
+| `fetch` | `typeof fetch` | global |
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `FIREWORKS_API_KEY` | API key |
+
+## Related
+
+- [Providers overview](./) · [together](./together)
