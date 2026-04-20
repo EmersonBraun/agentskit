@@ -1,0 +1,31 @@
+---
+title: Self-debug
+description: Agents that read their own traces, diagnose failures, retry with corrections.
+---
+
+## Pattern
+
+1. Run fails or produces low-confidence output.
+2. Feed the trace (steps, tool calls, errors) back to the agent.
+3. Agent proposes a fix (different tool, different arg, smaller step).
+4. Retry with the fix applied.
+
+## Sketch
+
+```ts
+import { createDurableRunner } from '@agentskit/runtime'
+
+const res = await durable.run({ runId, input })
+if (res.status === 'error') {
+  const trace = await durable.getTrace(runId)
+  const fix = await debuggerRuntime.run({
+    input: `Trace failed. Diagnose and suggest fix.\n\n${JSON.stringify(trace)}`,
+  })
+  await durable.run({ runId: `${runId}-retry`, input: fix.output })
+}
+```
+
+## Related
+
+- [Durable](./durable) · [Recipe: self-debug](/docs/recipes/self-debug)
+- [Recipe: time-travel debug](/docs/recipes/time-travel-debug)

@@ -1,0 +1,38 @@
+---
+title: Human-in-the-loop
+description: Gate tool calls behind approval. Surface reviews to humans before execution.
+---
+
+## Gate a tool
+
+```ts
+import { makeTool } from '@agentskit/tools'
+
+const deployTool = makeTool({
+  name: 'deploy',
+  description: 'Deploy to production',
+  schema: z.object({ service: z.string() }),
+  requiresConfirmation: true,
+  execute: async ({ service }) => deploy(service),
+})
+```
+
+Runtime pauses on invocation and emits
+`tool.awaiting-approval`. Resume with `chat.approve(toolCallId)` or
+`chat.deny(toolCallId, reason)`.
+
+## UI
+
+- [ToolConfirmation](/docs/ui/tool-confirmation) — drop-in React / Vue / etc.
+
+## Patterns
+
+- **Auto-approve low risk:** approve if cost under threshold; gate the rest.
+- **Review queue:** persist `awaiting-approval` to a DB; humans approve from dashboard.
+- **Double-sign:** require two approvers; track via shared context.
+
+## Related
+
+- [Recipe: HITL approvals](/docs/recipes/hitl-approvals)
+- [Recipe: confirmation-gated tool](/docs/recipes/confirmation-gated-tool)
+- [Security → mandatory sandbox](/docs/security/mandatory-sandbox)

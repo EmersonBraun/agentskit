@@ -1,0 +1,73 @@
+---
+title: Topologies
+description: Four proven multi-agent patterns — supervisor, swarm, hierarchical, blackboard.
+---
+
+## supervisor
+
+One planner routes tasks to specialists. Specialists return; planner
+decides next step.
+
+```ts
+import { supervisor } from '@agentskit/runtime'
+
+const team = supervisor({
+  planner: { runtime: plannerRuntime, name: 'planner' },
+  workers: {
+    coder: { runtime: coderRuntime },
+    reviewer: { runtime: reviewerRuntime },
+  },
+})
+await team.run('Ship a new auth endpoint')
+```
+
+## swarm
+
+Peer agents pass control directly via handoff tools. No central
+planner.
+
+```ts
+import { swarm } from '@agentskit/runtime'
+
+const team = swarm({
+  agents: {
+    triage: { runtime: triageRuntime, handoffsTo: ['billing', 'tech'] },
+    billing: { runtime: billingRuntime, handoffsTo: ['tech'] },
+    tech: { runtime: techRuntime, handoffsTo: ['billing'] },
+  },
+  entry: 'triage',
+})
+```
+
+## hierarchical
+
+Tree of supervisors. Great for large problem decomposition.
+
+```ts
+import { hierarchical } from '@agentskit/runtime'
+
+const org = hierarchical({
+  root: { runtime: ceo },
+  children: [
+    { runtime: engLead, children: [{ runtime: backend }, { runtime: frontend }] },
+    { runtime: designLead },
+  ],
+})
+```
+
+## blackboard
+
+Shared scratchpad. Agents read + write to a common context; triggers
+based on state.
+
+```ts
+import { blackboard, createSharedContext } from '@agentskit/runtime'
+
+const context = createSharedContext({ todo: [], done: [] })
+const board = blackboard({ context, agents: { ... } })
+```
+
+## Related
+
+- [Recipe: multi-agent topologies](/docs/recipes/multi-agent-topologies)
+- [Delegation](./delegation) · [Durable](./durable)

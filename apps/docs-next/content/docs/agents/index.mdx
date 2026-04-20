@@ -1,0 +1,31 @@
+---
+title: Agents
+description: Everything that runs the loop — runtime, tools, skills, delegation, durable execution, topologies, background agents, HITL, self-debug.
+---
+
+The runtime is the engine. Everything else plugs into it.
+
+## Core
+
+- [Runtime](./runtime) — `createRuntime`, ReAct loop, events, cost + token accounting.
+- [Tools](./tools) — how tools are invoked, parallelism, confirmation.
+- [Skills](./skills) — prompts + behaviors bundled into reusable personas.
+- [Delegation](./delegation) — sub-agents, handoffs, shared context.
+
+## Scale
+
+- [Durable execution](./durable) — persist steps, replay, resume.
+- [Topologies](./topologies) — supervisor · swarm · hierarchical · blackboard.
+- [Background agents](./background) — cron + webhook triggers.
+- [Speculate](./speculate) — run N candidates, pick best.
+
+## Production
+
+- [Human-in-the-loop](./hitl) — approvals, gated tool calls, review queues.
+- [Self-debug](./self-debug) — agents that read their own traces and retry.
+
+## Related
+
+- [Package: runtime](/docs/packages/runtime)
+- [For agents: runtime](/docs/for-agents/runtime)
+- [Concepts: runtime](/docs/concepts/runtime)

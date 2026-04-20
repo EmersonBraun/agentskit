@@ -1,9 +1,16 @@
 {
   "title": "Agents",
   "pages": [
+    "index",
     "runtime",
     "tools",
     "skills",
-    "delegation"
+    "delegation",
+    "durable",
+    "topologies",
+    "background",
+    "speculate",
+    "hitl",
+    "self-debug"
   ]
 }
