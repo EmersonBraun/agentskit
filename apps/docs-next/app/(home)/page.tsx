@@ -5,6 +5,7 @@ import { HeroDemo } from './_components/hero-demo/hero-demo'
 import { ContributorWall } from '@/components/contribute/contributor-wall'
 import { AnimatedLogo } from '@/components/brand/animated-logo'
 import { JsonLd } from '@/components/seo/json-ld'
+import { FadeIn, Stagger, StaggerItem } from '@/components/motion/fade-in'
 
 export const metadata = {
   title: 'AgentsKit.js — Ship AI agents in JavaScript without gluing 8 libraries',
@@ -127,13 +128,18 @@ function Hero() {
             v1.0 · MIT · Built for the agent era
           </div>
 
-          <h1 className="mb-5 max-w-2xl text-[2rem] font-bold leading-[1.08] tracking-tight text-ak-foam sm:mb-6 sm:text-4xl md:text-5xl lg:text-6xl">
-            Ship AI agents in JavaScript.
-            <span className="block text-ak-graphite">
-              Without gluing 8 libraries together.
-            </span>
-          </h1>
+          <FadeIn>
+            <h1 className="mb-5 max-w-2xl text-[2rem] font-bold leading-[1.08] tracking-tight text-ak-foam sm:mb-6 sm:text-4xl md:text-5xl lg:text-6xl">
+              <span className="bg-gradient-to-r from-ak-foam via-ak-blue to-ak-foam bg-clip-text text-transparent">
+                Ship AI agents in JavaScript.
+              </span>
+              <span className="block text-ak-graphite">
+                Without gluing 8 libraries together.
+              </span>
+            </h1>
+          </FadeIn>
 
+          <FadeIn delay={0.1}>
           <p className="mb-7 max-w-xl text-base leading-relaxed text-ak-graphite sm:mb-8 sm:text-lg">
             AgentsKit gives you chat UI, tools, memory, RAG, and runtime — one
             toolkit, zero lock-in. Swap{' '}
@@ -141,8 +147,11 @@ function Hero() {
             terminal, in-memory for vector DB.{' '}
             <span className="text-ak-foam">Nothing breaks.</span>
           </p>
+          </FadeIn>
 
-          <InstallCommand />
+          <FadeIn delay={0.2}>
+            <InstallCommand />
+          </FadeIn>
 
           <div className="mt-5 flex flex-wrap items-center gap-2.5 sm:mt-6 sm:gap-3">
             <Link
@@ -322,12 +331,12 @@ function SolutionSection() {
             <p className="mb-4 text-center font-mono text-[11px] uppercase tracking-[0.2em] text-ak-graphite">
               ↓ click any package to open its docs
             </p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+            <Stagger className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4" stagger={0.04}>
               {PACKAGE_CARDS.map(pkg => (
+                <StaggerItem key={pkg.name}>
                 <Link
-                  key={pkg.name}
                   href={pkg.href}
-                  className="group flex min-w-0 items-center justify-between gap-1.5 rounded-md border border-ak-border bg-ak-surface px-2.5 py-2 text-center font-mono text-[12px] text-ak-foam transition hover:border-ak-blue hover:text-ak-blue hover:shadow-[0_0_0_1px_var(--ak-blue)] sm:gap-2 sm:px-3 sm:text-sm"
+                  className="group flex min-w-0 items-center justify-between gap-1.5 rounded-md border border-ak-border bg-ak-surface px-2.5 py-2 text-center font-mono text-[12px] text-ak-foam transition hover:-translate-y-0.5 hover:border-ak-blue hover:text-ak-blue hover:shadow-[0_0_0_1px_var(--ak-blue)] sm:gap-2 sm:px-3 sm:text-sm"
                   aria-label={`Open docs for ${pkg.name}`}
                 >
                   <span className="min-w-0 flex-1 truncate text-left">{pkg.name}</span>
@@ -335,8 +344,9 @@ function SolutionSection() {
                     →
                   </span>
                 </Link>
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
             <p className="mt-4 text-center font-mono text-[11px] text-ak-graphite">
               every card links to its docs ·{' '}
               <Link href="/docs" className="underline decoration-dotted underline-offset-2 hover:text-ak-blue">
@@ -482,12 +492,12 @@ function EcosystemStats() {
         <h2 className="mb-8 max-w-3xl text-[1.75rem] font-bold leading-[1.15] text-ak-foam sm:mb-10 sm:text-3xl md:text-4xl">
           Everything you need. Nothing you don&apos;t.
         </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+        <Stagger className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4" stagger={0.05}>
           {stats.map((s) => (
+            <StaggerItem key={s.label}>
             <Link
-              key={s.label}
               href={s.href}
-              className="group rounded-xl border border-ak-border bg-ak-surface p-5 transition hover:border-ak-blue"
+              className="group block rounded-xl border border-ak-border bg-ak-surface p-5 transition hover:-translate-y-0.5 hover:border-ak-blue hover:shadow-[0_0_0_1px_var(--ak-blue)]"
             >
               <div className="mb-1 font-mono text-2xl font-bold text-ak-foam transition group-hover:text-ak-blue sm:text-3xl">
                 {s.value}
@@ -496,8 +506,9 @@ function EcosystemStats() {
                 {s.label}
               </div>
             </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
         <p className="mt-6 text-sm text-ak-graphite">
           Every number above is a click-through. Install what you need; the core stays under 10 KB gzipped.
         </p>
