@@ -1,0 +1,47 @@
+---
+title: Durable execution
+description: Persist every step. Resume after crash. Replay deterministically.
+---
+
+```ts
+import {
+  createRuntime,
+  createDurableRunner,
+  createFileStepLog,
+} from '@agentskit/runtime'
+
+const runtime = createRuntime({ adapter, tools })
+const durable = createDurableRunner({
+  runtime,
+  store: createFileStepLog({ path: '.agentskit/steps.jsonl' }),
+})
+
+await durable.run({ runId: 'r-42', input: 'refactor auth middleware' })
+// Crash → restart → resume from last completed step
+await durable.resume('r-42')
+```
+
+## Step log contract
+
+```ts
+type StepRecord = {
+  runId: string
+  seq: number
+  kind: 'llm' | 'tool' | 'event'
+  at: number
+  input: unknown
+  output?: unknown
+  error?: string
+}
+```
+
+## Stores
+
+- `createInMemoryStepLog()` — tests.
+- `createFileStepLog({ path })` — JSONL on disk.
+- BYO: implement `StepLogStore` (Redis, Postgres, S3, etc.).
+
+## Related
+
+- [Recipe: durable execution](/docs/recipes/durable-execution)
+- [Topologies](./topologies) · [Self-debug](./self-debug)

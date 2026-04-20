@@ -1,0 +1,28 @@
+---
+title: Speculate
+description: Run N candidates in parallel. Pick the best by a user-defined scorer.
+---
+
+```ts
+import { speculate } from '@agentskit/runtime'
+
+const { best, candidates } = await speculate({
+  candidates: [
+    { name: 'gpt-4o', run: () => runtime1.run(task) },
+    { name: 'claude', run: () => runtime2.run(task) },
+    { name: 'gemini', run: () => runtime3.run(task) },
+  ],
+  pick: (results) => results.reduce((a, b) => (b.score > a.score ? b : a)),
+})
+```
+
+## When to use
+
+- Cross-model reliability on hard prompts.
+- Latency reduction (fire all, take first success).
+- Cost/quality trade-offs evaluated per run.
+
+## Related
+
+- [Recipe: speculative execution](/docs/recipes/speculative-execution)
+- [createFallbackAdapter](/docs/data/providers/higher-order)
