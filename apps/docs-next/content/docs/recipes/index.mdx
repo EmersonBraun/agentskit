@@ -1,31 +1,85 @@
 ---
 title: Recipes
-description: Copy-paste solutions for common scenarios. Each recipe is end-to-end and runs as written.
+description: Copy-paste solutions grouped by theme. Every recipe end-to-end, runs as written.
 ---
 
-Recipes are short, complete, runnable. Each one is a single page that contains everything you need: install, code, run.
+60+ recipes. Each one: single page, install line, code, run. No
+dependency between recipes — every page stands alone.
 
-Pick the closest match to what you're building, copy, adjust the API key, run.
+## Getting started
 
-| Recipe | What you get | Time |
-|---|---|---|
-| [Chat with RAG](/docs/recipes/rag-chat) | A streaming React chat answering from your own docs | 5 min |
-| [PDF Q&A](/docs/recipes/pdf-qa) | Ask questions about a local PDF | 8 min |
-| [Code reviewer](/docs/recipes/code-reviewer) | An agent that reviews a diff and posts comments | 10 min |
-| [Discord bot](/docs/recipes/discord-bot) | A Discord bot that talks back, with tools | 12 min |
-| [Multi-agent research team](/docs/recipes/research-team) | Planner + researcher + writer | 15 min |
-| [Cost-guarded chat](/docs/recipes/cost-guarded-chat) | Chat that aborts when it costs too much (UI-level) | 5 min |
-| [Cost guard](/docs/recipes/cost-guard) | Enforce a dollar budget with the `costGuard` observer | 5 min |
-| [Persistent memory](/docs/recipes/persistent-memory) | Chat that remembers across sessions | 5 min |
-| [Confirmation-gated tool](/docs/recipes/confirmation-gated-tool) | Dangerous tool that asks before acting | 5 min |
-| [Custom adapter](/docs/recipes/custom-adapter) | Wrap any LLM API as an AgentsKit adapter | 10 min |
-| [Wrap a non-streaming endpoint](/docs/recipes/simulate-stream) | Fake streaming for one-shot providers | 5 min |
-| [Edit + regenerate messages](/docs/recipes/edit-and-regenerate) | Let users edit prompts and re-run specific turns | 5 min |
-| [Eval suite for an agent](/docs/recipes/eval-suite) | Score an agent's quality in CI | 10 min |
+- [Custom adapter](./custom-adapter) — wrap any LLM API
+- [More providers](./more-providers) — OpenAI, Anthropic, Gemini, local
+- [Simulate stream](./simulate-stream) — fake streaming for one-shot providers
+- [Framework adapters](./framework-adapters) — React / Vue / Svelte / Solid / Ink / RN / Angular
 
-## Conventions used in recipes
+## Chat UI
 
-- Replace `KEY` with your actual API key (use `process.env.X_API_KEY` in real code)
-- Code is TypeScript; recipes work in plain JavaScript by removing types
-- Each recipe declares its `npm install` line at the top
-- Recipes don't depend on each other — every page stands alone
+- [RAG chat](./rag-chat) · [PDF Q&A](./pdf-qa)
+- [Cost-guarded chat](./cost-guarded-chat) · [Persistent memory](./persistent-memory)
+- [Edit + regenerate](./edit-and-regenerate) · [Progressive tool calls](./progressive-tool-calls)
+- [Multi-modal](./multi-modal) · [Generative UI](./generative-ui)
+
+## RAG + retrieval
+
+- [RAG chat](./rag-chat) · [PDF Q&A](./pdf-qa)
+- [RAG reranking](./rag-reranking) · [Doc loaders](./doc-loaders)
+- [Vector adapters](./vector-adapters)
+
+## Memory
+
+- [Persistent memory](./persistent-memory) · [Hierarchical memory](./hierarchical-memory)
+- [Auto-summarize](./auto-summarize) · [Virtualized memory](./virtualized-memory)
+- [Graph memory](./graph-memory) · [Personalization](./personalization)
+- [Encrypted memory](./encrypted-memory)
+
+## Adapter composition
+
+- [Adapter router](./adapter-router) · [Ensemble](./adapter-ensemble)
+- [Fallback chain](./fallback-chain)
+
+## Tools + integrations
+
+- [Integrations](./integrations) · [More integrations](./more-integrations)
+- [MCP bridge](./mcp-bridge) · [Tool composer](./tool-composer)
+- [Self-debug](./self-debug)
+
+## Multi-agent + orchestration
+
+- [Multi-agent topologies](./multi-agent-topologies) · [Research team](./research-team)
+- [Durable execution](./durable-execution) · [Background agents](./background-agents)
+- [Speculative execution](./speculative-execution)
+
+## Observability + cost
+
+- [Cost guard](./cost-guard) · [Token budget](./token-budget)
+- [Trace viewer](./trace-viewer) · [Devtools server](./devtools-server)
+- [Audit log](./audit-log)
+
+## Security
+
+- [PII redaction](./pii-redaction) · [Prompt injection](./prompt-injection)
+- [Rate limiting](./rate-limiting) · [Mandatory sandbox](./mandatory-sandbox)
+- [HITL approvals](./hitl-approvals) · [Confirmation-gated tool](./confirmation-gated-tool)
+
+## Evaluation
+
+- [Eval suite](./eval-suite) · [Evals CI](./evals-ci)
+- [Deterministic replay](./deterministic-replay) · [Replay different model](./replay-different-model)
+- [Prompt snapshots](./prompt-snapshots) · [Prompt diff](./prompt-diff)
+- [Prompt experiments](./prompt-experiments) · [Time-travel debug](./time-travel-debug)
+
+## Apps + bots
+
+- [Code reviewer](./code-reviewer) · [Discord bot](./discord-bot)
+- [Schema-first agent](./schema-first-agent) · [agentskit ai](./agentskit-ai)
+
+## Skills + specs
+
+- [Skill marketplace](./skill-marketplace) · [Open specs](./open-specs)
+
+## Conventions
+
+- Replace `KEY` with your actual API key (use `process.env.X_API_KEY` in real code).
+- TypeScript; remove types for plain JS.
+- Each recipe declares its `npm install` line at the top.
