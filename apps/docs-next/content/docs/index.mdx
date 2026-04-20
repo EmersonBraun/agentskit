@@ -1,33 +1,53 @@
 ---
-title: Welcome to AgentsKit.js
-description: The agent toolkit JavaScript actually deserves.
+title: AgentsKit.js
+description: The agent toolkit the JavaScript ecosystem finally has — small packages, one contract, everything composes.
 ---
 
-AgentsKit.js is a family of small, plug-and-play packages that cover the entire agent lifecycle in JavaScript: chat UIs, autonomous runtimes, tools, skills, memory, RAG, observability.
+Agents shouldn't be a monolith. AgentsKit.js is a family of small,
+plug-and-play packages covering the whole agent lifecycle in
+JavaScript: chat UIs, autonomous runtimes, tools, skills, memory,
+RAG, observability, evaluation, sandboxing. Install what you need.
+Everything else stays out of your bundle.
 
-## Where to go next
+## Start here
 
-- **[Quick start](/docs/getting-started/quickstart)** — a working chat in under 10 lines
-- **[Concepts](/docs/concepts/mental-model)** — the mental model behind every package
-- **[Recipes](/docs/recipes)** — 60+ copy-paste solutions for common scenarios
-- **[For agents](/docs/for-agents)** — dense LLM-friendly reference per package
-- **[Examples](/docs/examples)** — live interactive demos
-- **[Comparison](/docs/comparison)** — AgentsKit vs. LangChain / Vercel AI / Mastra / LlamaIndex
-- **[Migrating from another framework](/docs/migrating)** — Vercel AI SDK, LangChain.js, Mastra
-- **[Contribute →](/docs/contribute)** — AgentsKit.js is built in the open. Your PR helps.
-- **[Join the Discord →](https://discord.gg/zx6z2p4jVb)** — Office Hours every Friday, direct line to maintainers.
+Pick a path by what you're shipping.
+
+- **Just want a chat UI?** → [Quick start](/docs/getting-started/quickstart) · [React](/docs/packages/react) · [Vue](/docs/packages/vue) · [Svelte](/docs/packages/svelte) · [Solid](/docs/packages/solid) · [Angular](/docs/packages/angular) · [React Native](/docs/packages/react-native) · [Ink](/docs/packages/ink)
+- **Building an autonomous agent?** → [Runtime](/docs/agents/runtime) · [Tools](/docs/tools) · [Skills](/docs/skills) · [Multi-agent topologies](/docs/agents/topologies)
+- **Need RAG?** → [createRAG](/docs/data/rag/create-rag) · [Loaders](/docs/data/rag/loaders) · [Reranking](/docs/data/rag/rerank)
+- **Shipping to production?** → [Observability](/docs/observability) · [Security](/docs/security) · [Evals](/docs/evals) · [Durable execution](/docs/agents/durable)
 
 ## The substrate
 
-Six core contracts (formalized as ADRs) define how every package composes:
+Six stable contracts. Every package is an implementation of one.
 
-| Contract | Role |
-| --- | --- |
-| Adapter | LLM provider seam |
-| Tool | Function the model calls |
-| Memory | Chat history + vector store |
-| Retriever | Context fetching |
-| Skill | Declarative persona |
-| Runtime | The loop that composes them all |
+| Contract | Role | Deep dive |
+|---|---|---|
+| **Adapter** | LLM provider seam | [concept](/docs/concepts/adapter) · [implementations](/docs/data/providers) |
+| **Tool** | Function the model calls | [concept](/docs/concepts/tool) · [implementations](/docs/tools) |
+| **Skill** | Declarative persona | [concept](/docs/concepts/skill) · [implementations](/docs/skills) |
+| **Memory** | Chat history + vector state | [concept](/docs/concepts/memory) · [implementations](/docs/data/memory) |
+| **Retriever** | Context fetching | [concept](/docs/concepts/retriever) · [implementations](/docs/data/rag) |
+| **Runtime** | The loop that composes them all | [concept](/docs/concepts/runtime) · [implementations](/docs/agents) |
 
-If you understand these six, you understand AgentsKit.js.
+Learn the six once; swap implementations forever. The
+[mental model](/docs/concepts/mental-model) walks through how they
+compose.
+
+## What's inside
+
+- **21 packages** under `@agentskit/*` — foundation, providers, UI bindings, runtime, capabilities, observability, infrastructure. [Full index](/docs/packages/overview).
+- **7 framework bindings** sharing one `useChat` contract. [UI matrix](/docs/ui).
+- **20+ provider adapters** (hosted + local + embedders). [Providers](/docs/data/providers).
+- **60+ recipes** grouped by theme. [Recipes](/docs/recipes).
+- **Open specs** — A2A, Manifest, Eval Format, AgentSchema — portable JSON. [Specs](/docs/specs).
+
+## Keep reading
+
+- **[Comparison](/docs/comparison)** — AgentsKit vs LangChain, Vercel AI, Mastra, LlamaIndex.
+- **[Migrating](/docs/migrating)** — port from Vercel AI SDK, LangChain.js, Mastra.
+- **[For agents](/docs/for-agents)** — dense LLM-friendly reference per contract.
+- **[Examples](/docs/examples)** — live interactive demos.
+- **[Contribute](/docs/contribute)** — built in the open. Your PR helps.
+- **[Discord](https://discord.gg/zx6z2p4jVb)** — Office Hours every Friday; direct line to maintainers.
