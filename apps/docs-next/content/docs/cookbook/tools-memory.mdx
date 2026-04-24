@@ -1,0 +1,50 @@
+---
+title: Tools + memory together
+description: The "chat with state and actions" loop — persistent memory plus tool execution.
+---
+
+Most real agent apps need both **memory** (recall past turns) and **tools** (perform actions). Here's the minimum viable wiring.
+
+```tsx
+import { useChat } from '@agentskit/react'
+import { openai } from '@agentskit/adapters/openai'
+import { defineTool } from '@agentskit/tools'
+import { sqliteMemory } from '@agentskit/memory/sqlite'
+
+const adapter = openai({ model: 'gpt-4o-mini' })
+
+const getOrders = defineTool({
+  name: 'get_orders',
+  description: 'List orders for the current user',
+  schema: { userId: 'string' },
+  async execute({ userId }) {
+    return db.query('select * from orders where user_id = ?', [userId])
+  },
+})
+
+const memory = sqliteMemory({ path: './threads.sqlite' })
+
+export function Support() {
+  const { messages, input, setInput, send } = useChat({
+    adapter,
+    memory,
+    tools: [getOrders],
+    threadId: 'user-123',
+  })
+  // …render as in the Streaming recipe
+}
+```
+
+<Pitfall>
+Do not pass a fresh `sqliteMemory(...)` inline to `useChat`. Create the memory once at the module level — otherwise you'll open a new database handle on every render.
+</Pitfall>
+
+<Compare
+  good={<pre>{`const memory = sqliteMemory({ path: './threads.sqlite' })
+// …
+useChat({ adapter, memory })`}</pre>}
+  bad={<pre>{`useChat({
+  adapter,
+  memory: sqliteMemory({ path: './threads.sqlite' }), // new handle every render
+})`}</pre>}
+/>

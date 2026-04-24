@@ -5,6 +5,140 @@ description: Embeddable components available inside every .mdx file — Stackbli
 
 Every MDX page under `/docs` has access to these components. No import required.
 
+## `<Playground />`
+
+Inline runnable playground. Runs in-browser via Sandpack — no remote cold-start.
+
+```mdx
+<Playground preset="basic-chat" />
+```
+
+Custom files:
+
+```mdx
+<Playground
+  title="Custom demo"
+  entry="/App.tsx"
+  files={{
+    '/App.tsx': `export default function App() { return <h1>hi</h1> }`,
+  }}
+/>
+```
+
+| Prop | Type | Default |
+|---|---|---|
+| `preset` | `'basic-chat' \| 'tool-call'` | — |
+| `files` | `Record<string, string>` | overrides preset |
+| `entry` | `string` | `/App.tsx` |
+| `dependencies` | `Record<string, string>` | — |
+| `eager` | `boolean` | `false` (click-to-load) |
+| `title` | `string` | — |
+
+Presets live in `components/mdx/playground-presets.ts`. Add new ones by exporting another entry.
+
+<Playground preset="basic-chat" />
+
+## `<FrameworkTabs />`
+
+Framework picker with **global persistence**. Pick React once; every tab on every page switches automatically.
+
+````mdx
+<FrameworkTabs defaultValue="react">
+  <Framework name="react">
+    ```tsx
+    import { useChat } from '@agentskit/react'
+    ```
+  </Framework>
+  <Framework name="vue">
+    ```ts
+    import { useChat } from '@agentskit/vue'
+    ```
+  </Framework>
+  <Framework name="svelte">
+    ```ts
+    import { useChat } from '@agentskit/svelte'
+    ```
+  </Framework>
+</FrameworkTabs>
+````
+
+Known `name` values: `react`, `vue`, `svelte`, `solid`, `angular`, `react-native`, `ink`, `node`, `cli`. Unknown names accepted — label falls back to the raw `name`. Override the label per framework with `<Framework label="…" />`.
+
+Preference persists in `localStorage` under `ak:framework` and syncs across every mounted tab group via a custom event.
+
+## Callouts
+
+Pick the right one and the reader's eye will land on it.
+
+```mdx
+<Tip>Caching the adapter result is usually safe.</Tip>
+<Warning>The runtime aborts on the first unhandled tool error.</Warning>
+<Pitfall>Do not mutate the `messages` prop. Clone it first.</Pitfall>
+<Performance>Stream chunks on `requestAnimationFrame` for 60fps.</Performance>
+<Security>Never render tool output as raw HTML.</Security>
+<Info>Accepted in all runtimes since v0.3.</Info>
+<Success>Shipped in v0.6.</Success>
+```
+
+<Tip>Caching the adapter result is usually safe.</Tip>
+<Warning>The runtime aborts on the first unhandled tool error.</Warning>
+<Pitfall>Do not mutate the `messages` prop. Clone it first.</Pitfall>
+<Performance>Stream chunks on `requestAnimationFrame` for 60fps.</Performance>
+<Security>Never render tool output as raw HTML.</Security>
+
+## `<Compare />`
+
+Side-by-side do-vs-don't.
+
+```mdx
+<Compare
+  good={<pre>{`useChat({ adapter, memory })`}</pre>}
+  bad={<pre>{`useChat({ adapter, memory: new Memory() }) // new ref each render`}</pre>}
+/>
+```
+
+## `<Since />`
+
+Version badge for APIs.
+
+```mdx
+### useChat <Since v="0.4.0" pkg="react" />
+```
+
+## `<ArchDiagram />`
+
+Interactive package dependency graph. Click any node to pin it; hover to explore neighbors.
+
+```mdx
+<ArchDiagram />
+```
+
+<ArchDiagram />
+
+## `<RunCode />`
+
+Wrap any fenced code block to get a "Run ▶" button in its top-right corner. Clicking swaps the snippet for a live Sandpack playground using a preset or inline files.
+
+````mdx
+<RunCode preset="basic-chat">
+```tsx
+import { useChat } from '@agentskit/react'
+
+export function App() {
+  const { messages } = useChat()
+  return messages.map((m) => <p key={m.id}>{m.content}</p>)
+}
+```
+</RunCode>
+````
+
+| Prop | Type | Default |
+|---|---|---|
+| `preset` | `'basic-chat' \| 'tool-call'` | — |
+| `files` | `Record<string, string>` | overrides preset |
+| `entry` | `string` | `/App.tsx` |
+| `dependencies` | `Record<string, string>` | — |
+
 ## `<StackblitzEmbed />`
 
 Live editable sandbox for any GitHub path.

@@ -3,14 +3,19 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "prebuild": "node scripts/gen-api.mjs && node scripts/gen-changelog.mjs && node scripts/gen-performance.mjs",
+    "gen:changelog": "node scripts/gen-changelog.mjs",
+    "gen:performance": "node scripts/gen-performance.mjs",
     "build": "next build",
     "dev": "next dev --turbo",
     "docs": "next dev --turbo",
     "start": "next start",
     "lint": "tsc --noEmit",
+    "gen:api": "node scripts/gen-api.mjs",
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {
+    "@codesandbox/sandpack-react": "^2.20.0",
     "@tailwindcss/postcss": "^4.0.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
@@ -30,6 +35,8 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "typedoc": "^0.28.19",
+    "typedoc-plugin-markdown": "^4.11.0",
     "typescript": "^6.0.3"
   }
 }

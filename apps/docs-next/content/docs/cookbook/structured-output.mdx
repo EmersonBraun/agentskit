@@ -1,0 +1,30 @@
+---
+title: Structured output
+description: Validated JSON responses with zod. No more regex-parsing the model's guess.
+---
+
+When you need a data payload, don't parse prose. Give the model a schema and let the adapter enforce it.
+
+```ts
+import { z } from 'zod'
+import { runtime } from '@agentskit/runtime'
+
+const Ticket = z.object({
+  priority: z.enum(['low', 'medium', 'high', 'urgent']),
+  summary: z.string().max(140),
+  tags: z.array(z.string()).max(5),
+})
+
+const result = await runtime.run(userMessage, {
+  responseFormat: Ticket,
+})
+// result.data is fully typed — z.infer<typeof Ticket>
+```
+
+<Info>
+Providers that support structured output natively (OpenAI `response_format`, Anthropic `tool_use`, Gemini `responseSchema`) get first-class treatment. Others fall back to zod validation on the generated text with automatic retry on parse failure.
+</Info>
+
+<Pitfall>
+Keep schemas **flat** when you can. Deeply nested objects increase the chance of parse failures on smaller models, which forces retries and burns tokens.
+</Pitfall>

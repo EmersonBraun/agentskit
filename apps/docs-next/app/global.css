@@ -40,6 +40,50 @@
   --color-ak-blue: var(--ak-blue);
   --color-ak-red: var(--ak-red);
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: 'Space Grotesk', var(--font-sans, Inter), system-ui, sans-serif;
+}
+
+/* Gradient wordmark + display typography */
+.ak-wordmark {
+  background: linear-gradient(120deg, #58A6FF 0%, #A371F7 45%, #F778BA 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Give docs headings a display feel without overriding body text */
+article h1,
+article h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Polish code blocks: subtle gradient border + tighter padding rhythm */
+.prose pre,
+pre[data-language] {
+  position: relative;
+  border-radius: 10px;
+  border: 1px solid var(--ak-border);
+  background: var(--ak-midnight);
+}
+.prose pre::before,
+pre[data-language]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(88, 166, 255, 0.35), rgba(163, 113, 247, 0.25), rgba(247, 120, 186, 0.2));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 @keyframes ak-fade-in {

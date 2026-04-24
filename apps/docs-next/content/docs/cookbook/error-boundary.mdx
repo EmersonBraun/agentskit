@@ -1,0 +1,41 @@
+---
+title: Error boundary
+description: Surface LLM and tool errors without crashing the UI or silently hiding failures.
+---
+
+Agents fail in interesting ways: timeouts, malformed tool args, provider outages, budget exceeded. Show the user something useful instead of a spinning loader that never ends.
+
+```tsx
+import { useChat, type ChatError } from '@agentskit/react'
+
+export function Chat() {
+  const { messages, error, retry } = useChat({ adapter })
+
+  return (
+    <>
+      {messages.map((m) => (
+        <p key={m.id}>{m.content}</p>
+      ))}
+      {error ? <ErrorBox error={error} onRetry={retry} /> : null}
+    </>
+  )
+}
+
+function ErrorBox({ error, onRetry }: { error: ChatError; onRetry: () => void }) {
+  if (error.code === 'budget_exceeded') {
+    return <p>You hit your daily token limit. Resets at midnight UTC.</p>
+  }
+  if (error.code === 'tool_failed') {
+    return (
+      <p>
+        Action <code>{error.toolName}</code> couldn't run. <button onClick={onRetry}>Try again</button>
+      </p>
+    )
+  }
+  return <p>Something went wrong. <button onClick={onRetry}>Retry</button></p>
+}
+```
+
+<Tip>
+`ChatError` is a **discriminated union**. Let TypeScript narrow each branch — never `catch (e: any)` and render `String(e)`.
+</Tip>

@@ -18,11 +18,15 @@ export const baseOptions: BaseLayoutProps = {
     title: (
       <span className="flex items-center gap-2">
         <AnimatedLogo variant="nav" loop />
-        <span className="font-mono font-bold tracking-tight">agentskit<span className="text-ak-graphite">.js</span></span>
+        <span className="font-display text-base font-bold tracking-tight">
+          <span className="ak-wordmark">agentskit</span>
+          <span className="text-ak-graphite">.js</span>
+        </span>
       </span>
     ),
   },
   links: [
+    { text: 'Learn', url: '/learn' },
     { text: 'Documentation', url: '/docs' },
     { text: 'For agents', url: '/docs/for-agents' },
     { text: 'Examples', url: '/docs/reference/examples' },

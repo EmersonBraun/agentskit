@@ -1,12 +1,13 @@
 import './global.css'
 import { RootProvider } from 'fumadocs-ui/provider/next'
-import { Inter, JetBrains_Mono } from 'next/font/google'
+import { Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google'
 import type { ReactNode } from 'react'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display', display: 'swap' })
 
 const SITE_URL = 'https://www.agentskit.io'
 const DESCRIPTION = 'The agent toolkit JavaScript actually deserves.'
@@ -86,7 +87,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable}`}
       suppressHydrationWarning
     >
       <head>
@@ -94,7 +95,21 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="alternate" type="text/plain" href="/llms-full.txt" title="Full docs for LLM ingestion" />
       </head>
       <body className="flex min-h-screen flex-col overflow-x-clip font-sans">
-        <RootProvider>{children}</RootProvider>
+        <RootProvider
+          search={{
+            options: {
+              allowClear: true,
+              tags: [
+                { name: 'Guides', value: 'guides' },
+                { name: 'API', value: 'api' },
+                { name: 'Examples', value: 'examples' },
+                { name: 'Packages', value: 'packages' },
+              ],
+            },
+          }}
+        >
+          {children}
+        </RootProvider>
         <Analytics />
         <SpeedInsights />
       </body>

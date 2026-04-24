@@ -1,0 +1,32 @@
+---
+title: Auth in tool calls
+description: Scope tool execution to the current authenticated user. Never trust the model with who is calling.
+---
+
+Tools run with the permissions of whoever invokes them. The LLM can suggest a `userId` — it should never decide one. Bind the current user in the execution context.
+
+```ts
+import { defineTool, createRunContext } from '@agentskit/tools'
+
+const getOrders = defineTool({
+  name: 'get_orders',
+  description: 'List the current user\'s orders',
+  schema: {}, // no userId from the model
+  async execute(_args, ctx) {
+    const userId = ctx.get('userId')
+    if (!userId) throw new Error('unauthenticated')
+    return db.query('select * from orders where user_id = ?', [userId])
+  },
+})
+
+// In your route handler
+export async function POST(req: Request) {
+  const userId = await getSessionUserId(req)
+  const ctx = createRunContext({ userId })
+  return runtime.run(userMessage, { tools: [getOrders], ctx })
+}
+```
+
+<Security>
+Never include `userId`, tenant, or role fields in the **tool schema**. The model will hallucinate them. Always read those from a trusted server-side context.
+</Security>

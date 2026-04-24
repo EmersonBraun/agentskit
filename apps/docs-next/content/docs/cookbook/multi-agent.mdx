@@ -1,0 +1,39 @@
+---
+title: Multi-agent delegation
+description: Planner → worker → reviewer. Three focused agents beat one over-prompted one.
+---
+
+One agent with fifteen tools and a mega-prompt usually loses the plot. Decompose by role.
+
+```ts
+import { runtime, defineAgent } from '@agentskit/runtime'
+import { webSearch, fileRead } from '@agentskit/tools'
+
+const planner = defineAgent({
+  role: 'planner',
+  systemPrompt: 'Break the user goal into 3–5 concrete steps.',
+})
+
+const researcher = defineAgent({
+  role: 'researcher',
+  systemPrompt: 'Execute one step. Use tools. Return findings.',
+  tools: [webSearch, fileRead],
+})
+
+const reviewer = defineAgent({
+  role: 'reviewer',
+  systemPrompt: 'Verify findings against the plan. Flag gaps.',
+})
+
+export async function run(userGoal: string) {
+  const plan = await runtime.run(userGoal, { agent: planner })
+  const findings = await Promise.all(
+    plan.steps.map((step) => runtime.run(step, { agent: researcher })),
+  )
+  return runtime.run({ plan, findings }, { agent: reviewer })
+}
+```
+
+<Tip>
+Each agent gets its **own memory scope** by default — the reviewer doesn't see the researcher's internal thoughts, only its findings. This keeps context windows tight and prevents prompt bleed.
+</Tip>
