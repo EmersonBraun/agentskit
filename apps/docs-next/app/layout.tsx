@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google'
 import type { ReactNode } from 'react'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { alternatesFor } from '@/lib/locales'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
@@ -36,6 +37,7 @@ export const metadata = {
   category: 'technology',
   alternates: {
     canonical: SITE_URL,
+    languages: alternatesFor('/'),
   },
   verification: {
     // Fill after verifying site in Google Search Console + Bing Webmaster:

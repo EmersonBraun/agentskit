@@ -1,0 +1,56 @@
+---
+title: Translating the docs
+description: How the AgentsKit docs ship in multiple languages — current status, adding a page, promoting a locale from planned to seed to partial to full.
+---
+
+AgentsKit docs default to **English**. Extra locales live as **sibling routes** so canonical SEO stays put and each language can ship at its own pace.
+
+## Current status
+
+| Locale | Code | Status | Notes |
+|---|---|---|---|
+| English | `/` | full | Source of truth. |
+| Português (BR) | `/pt` | seed | Landing page only. Help wanted on every docs page. |
+| Español | `/es` | planned | Not yet mounted. |
+| 中文 (简体) | `/zh` | planned | Not yet mounted. |
+
+The registry that drives the language switcher and `alternates` metadata lives in [`lib/locales.ts`](https://github.com/AgentsKit-io/agentskit/blob/main/apps/docs-next/lib/locales.ts).
+
+## Status rollout
+
+Each locale moves through these states. The `<LanguageToggle>` reads them at render time.
+
+| State | Meaning | Switcher behaviour |
+|---|---|---|
+| `planned` | Locale registered but no routes yet. | Shown greyed out; link disabled. |
+| `seed` | Landing page exists; docs tree still points to EN. | Linked; sends users to the translated landing, then EN for deep pages. |
+| `partial` | Some docs pages translated, others fall back to EN. | Linked; translated paths preferred when present. |
+| `full` | Every EN page has a mirror in this locale. | Linked everywhere. |
+
+## Adding a new locale
+
+1. Add an entry to `LOCALES` in `lib/locales.ts` with `status: 'planned'`.
+2. When you have a translated landing ready, copy `app/pt/layout.tsx` + `app/pt/page.tsx` to `app/<code>/` and adjust the content. Flip status to `seed`.
+3. Translate docs pages by mirroring their path under the locale prefix (e.g. `/docs/get-started/quickstart` → `/<code>/docs/get-started/quickstart`). Keep frontmatter keys identical.
+4. When every docs page has a mirror, flip status to `full`.
+
+<Tip>
+Translation contributions are welcome in any state. Open a PR touching only the pages you want to translate — partial coverage is fine and the switcher handles the fallback.
+</Tip>
+
+## Conventions
+
+- **Frontmatter keys stay in English** (`title`, `description`, `date`, …). The *values* are translated.
+- **Keep `alternates.languages`** on locale landing pages so Google knows about the siblings.
+- **One source of truth for diagrams**: SVG/Mermaid sources stay in English; only the inline captions are translated.
+- **Do not translate code.** Keep identifiers, package names, and CLI output verbatim.
+
+## Why not fumadocs i18n?
+
+Fumadocs supports a formal i18n mode with middleware and per-locale trees. We deliberately picked **sibling routes** because:
+
+- Existing English canonicals and inbound SEO stay put.
+- Each locale can ship at its own cadence without blocking the default docs.
+- Contributors don't need to learn a new routing model — just copy an MDX file into a sibling directory.
+
+Once any locale reaches `full`, we can revisit and migrate to fumadocs i18n without changing user-facing URLs.

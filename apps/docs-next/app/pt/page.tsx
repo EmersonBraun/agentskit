@@ -1,10 +1,15 @@
 import Link from 'next/link'
 
+import { alternatesFor } from '@/lib/locales'
+
 export const metadata = {
   title: 'AgentsKit.js — o toolkit de agentes que o JavaScript merece',
   description:
     'Família de pacotes pequenos e plug-and-play que cobrem todo o ciclo de vida de agentes IA em JavaScript: chat UI, runtime autônomo, ferramentas, skills, memória, RAG, observabilidade, avaliação.',
-  alternates: { canonical: 'https://www.agentskit.io/pt', languages: { en: '/', 'pt-BR': '/pt' } },
+  alternates: {
+    canonical: 'https://www.agentskit.io/pt',
+    languages: alternatesFor('/pt'),
+  },
 }
 
 const BLOCKS = [
