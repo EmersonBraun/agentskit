@@ -8,7 +8,12 @@ on:
 
 permissions:
   contents: read
+  deployments: read
   pull-requests: write
+
+concurrency:
+  group: lighthouse-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   lighthouse:
@@ -17,32 +22,70 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Wait for Vercel preview deployment
+      # Vercel previews may have Deployment Protection enabled, which makes the
+      # public URL return 401 for unauthenticated pollers. Read the URL straight
+      # from the GitHub deployments API instead of HTTP-probing, then pass the
+      # VERCEL_AUTOMATION_BYPASS_SECRET through as a query param so Lighthouse
+      # gets a 200 (and the auto-set cookie keeps subresources authenticated).
+      - name: Resolve Vercel preview URL
         id: preview
-        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          max_timeout: 600
-          check_interval: 15
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eu
+          for i in $(seq 1 60); do
+            deployment=$(gh api "repos/${GITHUB_REPOSITORY}/deployments?sha=${SHA}&per_page=50" \
+              --jq '[.[] | select((.environment // "") | test("[Pp]review"))] | .[0]' 2>/dev/null || echo '{}')
+            statuses_url=$(printf '%s' "$deployment" | jq -r '.statuses_url // empty')
+            if [ -n "$statuses_url" ]; then
+              target=$(gh api "$statuses_url" \
+                --jq '[.[] | select(.state=="success") | .environment_url] | .[0] // empty' 2>/dev/null || echo "")
+              if [ -n "$target" ]; then
+                echo "url=$target" >> "$GITHUB_OUTPUT"
+                echo "found preview: $target"
+                exit 0
+              fi
+            fi
+            echo "attempt $i: preview not ready yet"
+            sleep 15
+          done
+          echo "::warning::No Vercel preview deployment resolved within 15 minutes — skipping Lighthouse."
+          exit 0
+
+      - name: Build Lighthouse URL list
+        id: urls
+        if: steps.preview.outputs.url != ''
+        env:
+          BASE: ${{ steps.preview.outputs.url }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -eu
+          suffix=""
+          if [ -n "$BYPASS" ]; then
+            suffix="?x-vercel-protection-bypass=${BYPASS}&x-vercel-set-bypass-cookie=true"
+          fi
+          paths="/ /docs /docs/get-started/getting-started/quickstart /stack /showcase"
+          {
+            echo "urls<<EOF"
+            for p in $paths; do
+              echo "${BASE}${p}${suffix}"
+            done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Run Lighthouse CI
+        if: steps.preview.outputs.url != ''
         uses: treosh/lighthouse-ci-action@v12
         id: lhci
-        env:
-          PREVIEW_URL: ${{ steps.preview.outputs.url }}
         with:
-          urls: |
-            ${{ steps.preview.outputs.url }}
-            ${{ steps.preview.outputs.url }}/docs
-            ${{ steps.preview.outputs.url }}/docs/get-started/getting-started/quickstart
-            ${{ steps.preview.outputs.url }}/stack
-            ${{ steps.preview.outputs.url }}/showcase
+          urls: ${{ steps.urls.outputs.urls }}
           runs: 1
           uploadArtifacts: true
           temporaryPublicStorage: true
 
       - name: Post Lighthouse summary
-        if: always()
+        if: always() && steps.preview.outputs.url != ''
         uses: actions/github-script@v7
         env:
           LH_MANIFEST: ${{ steps.lhci.outputs.manifest }}
@@ -60,10 +103,11 @@ jobs:
               console.log('Could not parse manifest:', err.message)
               return
             }
+            const redact = (u) => String(u).replace(/([?&])x-vercel-protection-bypass=[^&]+/g, '$1x-vercel-protection-bypass=<redacted>')
+            const pct = (n) => (typeof n === 'number' ? Math.round(n * 100) : '—')
             const rows = entries.map((e) => {
               const s = e.summary ?? {}
-              const pct = (n) => (typeof n === 'number' ? Math.round(n * 100) : '—')
-              return `| ${e.url} | ${pct(s.performance)} | ${pct(s.accessibility)} | ${pct(s['best-practices'])} | ${pct(s.seo)} |`
+              return `| ${redact(e.url)} | ${pct(s.performance)} | ${pct(s.accessibility)} | ${pct(s['best-practices'])} | ${pct(s.seo)} |`
             })
             const body = [
               '## Lighthouse',
