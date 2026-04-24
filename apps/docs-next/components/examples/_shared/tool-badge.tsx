@@ -11,7 +11,6 @@ export function ToolBadge({ call }: { call: ToolCall }) {
   const done = call.status === 'complete' || call.status === 'error'
   const error = call.status === 'error'
   const args = formatArgs(call.args)
-  const ms = call.durationMs
 
   return (
     <div
@@ -31,9 +30,6 @@ export function ToolBadge({ call }: { call: ToolCall }) {
         {call.name}
         {args ? `(${args})` : '()'}
       </span>
-      {done && typeof ms === 'number' ? (
-        <span className="shrink-0 text-ak-graphite">{ms}ms</span>
-      ) : null}
     </div>
   )
 }

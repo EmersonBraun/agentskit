@@ -116,7 +116,12 @@ export const PACKAGE_MANAGERS: { value: PackageManager; label: string; add: stri
   { value: 'bun', label: 'bun', add: 'bun add', run: 'bunx' },
 ]
 
-type Key<T> = { key: string; event: string; isValid: (v: string) => v is T; fallback: T }
+type Key<T extends string> = {
+  key: string
+  event: string
+  isValid: (v: string) => v is T
+  fallback: T
+}
 
 const FRAMEWORK: Key<Framework> = {
   key: 'ak:framework',
@@ -156,7 +161,7 @@ function subscribe(event: string) {
   }
 }
 
-function read<T>(k: Key<T>): T {
+function read<T extends string>(k: Key<T>): T {
   if (typeof window === 'undefined') return k.fallback
   try {
     const raw = window.localStorage.getItem(k.key)
@@ -172,13 +177,13 @@ function write<T extends string>(k: Key<T>, value: T) {
   window.dispatchEvent(new CustomEvent(k.event))
 }
 
-function useKey<T>(k: Key<T>): [T, (value: T) => void] {
+function useKey<T extends string>(k: Key<T>): [T, (value: T) => void] {
   const value = useSyncExternalStore(
     subscribe(k.event),
     () => read(k),
     () => k.fallback,
   )
-  return [value, (v: T) => write(k as Key<string>, v as string)]
+  return [value, (v: T) => write(k, v)]
 }
 
 export const useFramework = () => useKey(FRAMEWORK)

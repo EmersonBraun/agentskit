@@ -303,7 +303,7 @@ export function SupportBot() {
 
   const adapter = useMemo(() => createStepAdapter(stepRef, pendingToolRef), [])
   const tools = useMemo(() => buildTools(), [])
-  const memory = useMemo(() => createLocalStorageMemory({ key: 'ak:example:support' }), [])
+  const memory = useMemo(() => createLocalStorageMemory('ak:example:support'), [])
 
   const chat = useChat({
     adapter,
