@@ -15,4 +15,15 @@ export const blog = defineCollections({
   }),
 })
 
-export default defineConfig()
+export default defineConfig({
+  mdxOptions: {
+    rehypeCodeOptions: {
+      // Shiki dual themes; CSS in global.css swaps via `.dark` scope.
+      themes: {
+        light: 'github-light-default',
+        dark: 'github-dark-default',
+      },
+      inline: 'tailing-curly-colon',
+    },
+  },
+})

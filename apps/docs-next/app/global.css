@@ -30,6 +30,20 @@
   --ak-red: #F85149;
 }
 
+/* Shiki dual-theme resolver: picks light/dark colors written inline as custom properties. */
+code[data-line] span,
+pre[data-language] span,
+.shiki span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+.dark code[data-line] span,
+.dark pre[data-language] span,
+.dark .shiki span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
 @theme {
   --color-ak-midnight: var(--ak-midnight);
   --color-ak-foam: var(--ak-foam);
@@ -142,6 +156,27 @@ pre[data-language]::before {
   animation: ak-fade-in 320ms ease-out both;
 }
 
+/* Fumadocs theme tokens — light (default) */
+:root {
+  --color-fd-background: #ffffff;
+  --color-fd-foreground: #0D1117;
+  --color-fd-muted: #f6f8fa;
+  --color-fd-muted-foreground: #57606a;
+  --color-fd-popover: #ffffff;
+  --color-fd-popover-foreground: #0D1117;
+  --color-fd-card: #f6f8fa;
+  --color-fd-card-foreground: #0D1117;
+  --color-fd-border: #d0d7de;
+  --color-fd-primary: #0969da;
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-secondary: #eaeef2;
+  --color-fd-secondary-foreground: #0D1117;
+  --color-fd-accent: #ddf4ff;
+  --color-fd-accent-foreground: #0969da;
+  --color-fd-ring: #0969da;
+}
+
+/* Fumadocs theme tokens — dark */
 .dark {
   --color-fd-background: #0D1117;
   --color-fd-foreground: #E6EDF3;

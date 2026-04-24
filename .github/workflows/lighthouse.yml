@@ -1,0 +1,84 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    paths:
+      - 'apps/docs-next/**'
+      - '.github/workflows/lighthouse.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for Vercel preview deployment
+        id: preview
+        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max_timeout: 600
+          check_interval: 15
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        id: lhci
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.url }}
+        with:
+          urls: |
+            ${{ steps.preview.outputs.url }}
+            ${{ steps.preview.outputs.url }}/docs
+            ${{ steps.preview.outputs.url }}/docs/get-started/getting-started/quickstart
+            ${{ steps.preview.outputs.url }}/stack
+            ${{ steps.preview.outputs.url }}/showcase
+          runs: 1
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Post Lighthouse summary
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          LH_MANIFEST: ${{ steps.lhci.outputs.manifest }}
+        with:
+          script: |
+            const manifest = process.env.LH_MANIFEST
+            if (!manifest) {
+              console.log('No Lighthouse manifest; nothing to post.')
+              return
+            }
+            let entries
+            try {
+              entries = JSON.parse(manifest)
+            } catch (err) {
+              console.log('Could not parse manifest:', err.message)
+              return
+            }
+            const rows = entries.map((e) => {
+              const s = e.summary ?? {}
+              const pct = (n) => (typeof n === 'number' ? Math.round(n * 100) : '—')
+              return `| ${e.url} | ${pct(s.performance)} | ${pct(s.accessibility)} | ${pct(s['best-practices'])} | ${pct(s.seo)} |`
+            })
+            const body = [
+              '## Lighthouse',
+              '',
+              '| URL | Performance | Accessibility | Best practices | SEO |',
+              '|---|---|---|---|---|',
+              ...rows,
+              '',
+              '_Run by `.github/workflows/lighthouse.yml`._',
+            ].join('\n')
+            const prNumber = context.payload.pull_request?.number
+            if (!prNumber) return
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body,
+            })

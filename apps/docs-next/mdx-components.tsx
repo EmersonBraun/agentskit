@@ -14,6 +14,7 @@ import { HeadingAnchor } from '@/components/docs/heading-anchor'
 import { Verified } from '@/components/mdx/verified'
 import { LiveAdapter } from '@/components/mdx/live-adapter'
 import { StackBuilder } from '@/components/mdx/stack-builder'
+import { MigrationDiff } from '@/components/mdx/migration-diff'
 
 type HeadingProps = React.DetailedHTMLProps<
   React.HTMLAttributes<HTMLHeadingElement>,
@@ -59,6 +60,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     Verified,
     LiveAdapter,
     StackBuilder,
+    MigrationDiff,
     ...components,
   }
 }
