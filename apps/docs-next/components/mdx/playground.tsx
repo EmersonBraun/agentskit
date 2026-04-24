@@ -14,7 +14,7 @@ const SandpackLazy = lazy(async () => {
       const { Sandpack } = mod
       return (
         <Sandpack
-          template="react"
+          template="react-ts"
           theme="dark"
           files={props.files}
           options={{
@@ -24,9 +24,13 @@ const SandpackLazy = lazy(async () => {
             activeFile: props.entry,
           }}
           customSetup={{
+            entry: props.entry,
             dependencies: {
               react: '^19.0.0',
               'react-dom': '^19.0.0',
+              '@agentskit/core': '^1.6.1',
+              '@agentskit/react': '^0.5.8',
+              '@agentskit/tools': '^0.7.1',
               ...(props.dependencies ?? {}),
             },
           }}
@@ -95,7 +99,7 @@ export function Playground({
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-graphite">
           Live playground · runs in your browser
         </div>
-        <div className="font-display text-lg font-semibold text-white">{resolved.name}</div>
+        <div className="font-display text-lg font-semibold text-ak-foam">{resolved.name}</div>
         {resolved.description ? (
           <p className="max-w-md text-sm text-ak-foam">{resolved.description}</p>
         ) : null}

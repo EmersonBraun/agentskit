@@ -15,7 +15,7 @@ export default function CommunityPage() {
     <main className="mx-auto w-full max-w-5xl px-4 py-12">
       <div className="mb-8">
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-foam">Community</div>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-white">
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ak-foam">
           Built with <span className="ak-wordmark">AgentsKit</span>
         </h1>
         <p className="mt-3 max-w-2xl text-ak-graphite">
@@ -47,7 +47,7 @@ export default function CommunityPage() {
               <div className="font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
                 by {p.by}
               </div>
-              <h3 className="mt-1 font-display text-lg font-semibold text-white group-hover:text-ak-foam">
+              <h3 className="mt-1 font-display text-lg font-semibold text-ak-foam group-hover:text-ak-foam">
                 {p.name}
               </h3>
               <p className="mt-2 text-sm text-ak-graphite">{p.description}</p>

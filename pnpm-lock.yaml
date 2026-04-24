@@ -59,6 +59,15 @@ importers:
 
   apps/docs-next:
     dependencies:
+      '@agentskit/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@agentskit/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      '@agentskit/tools':
+        specifier: workspace:*
+        version: link:../../packages/tools
       '@codesandbox/sandpack-react':
         specifier: ^2.20.0
         version: 2.20.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)

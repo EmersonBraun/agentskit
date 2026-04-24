@@ -1,14 +1,21 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock'
+import {
+  FRAMEWORKS,
+  PROVIDERS,
+  MEMORIES,
+  PACKAGE_MANAGERS,
+  useFramework,
+  useProvider,
+  useMemory,
+  usePackageManager,
+  type Framework,
+  type Provider,
+  type Memory,
+} from '@/lib/stack-state'
 
-const STACK_KEY = 'ak:stack'
-const FRAMEWORK_KEY = 'ak:framework'
-const FRAMEWORK_EVENT = 'ak:framework-change'
-
-type Framework = 'react' | 'vue' | 'svelte' | 'solid' | 'angular' | 'react-native' | 'ink' | 'node'
-type Provider = 'openai' | 'anthropic' | 'gemini' | 'openrouter' | 'ollama'
-type Memory = 'in-memory' | 'file' | 'sqlite' | 'redis'
 type Capability = 'tools' | 'rag' | 'observability'
 
 type Stack = {
@@ -16,40 +23,11 @@ type Stack = {
   provider: Provider
   memory: Memory
   capabilities: Capability[]
+  packageManager: (typeof PACKAGE_MANAGERS)[number]['value']
 }
 
-const DEFAULT: Stack = {
-  framework: 'react',
-  provider: 'openai',
-  memory: 'in-memory',
-  capabilities: ['tools'],
-}
-
-const FRAMEWORKS: { value: Framework; label: string; pkg: string; hook: string }[] = [
-  { value: 'react', label: 'React', pkg: '@agentskit/react', hook: 'useChat' },
-  { value: 'vue', label: 'Vue', pkg: '@agentskit/vue', hook: 'useChat' },
-  { value: 'svelte', label: 'Svelte', pkg: '@agentskit/svelte', hook: 'createChatStore' },
-  { value: 'solid', label: 'Solid', pkg: '@agentskit/solid', hook: 'useChat' },
-  { value: 'angular', label: 'Angular', pkg: '@agentskit/angular', hook: 'ChatState' },
-  { value: 'react-native', label: 'React Native', pkg: '@agentskit/react-native', hook: 'useChat' },
-  { value: 'ink', label: 'Ink (terminal)', pkg: '@agentskit/ink', hook: 'useChat' },
-  { value: 'node', label: 'Node (no UI)', pkg: '@agentskit/runtime', hook: 'runtime.run' },
-]
-
-const PROVIDERS: { value: Provider; label: string; pkg: string; factory: string; model: string }[] = [
-  { value: 'openai', label: 'OpenAI', pkg: '@agentskit/adapters/openai', factory: 'openai', model: 'gpt-4o-mini' },
-  { value: 'anthropic', label: 'Anthropic', pkg: '@agentskit/adapters/anthropic', factory: 'anthropic', model: 'claude-sonnet-4-6' },
-  { value: 'gemini', label: 'Gemini', pkg: '@agentskit/adapters/gemini', factory: 'gemini', model: 'gemini-2.5-flash' },
-  { value: 'openrouter', label: 'OpenRouter (free tier)', pkg: '@agentskit/adapters/openrouter', factory: 'openrouter', model: 'meta-llama/llama-3.1-8b-instruct:free' },
-  { value: 'ollama', label: 'Ollama (local)', pkg: '@agentskit/adapters/ollama', factory: 'ollama', model: 'llama3.1' },
-]
-
-const MEMORIES: { value: Memory; label: string; pkg: string; factory: string; args: string }[] = [
-  { value: 'in-memory', label: 'In-memory (dev)', pkg: '@agentskit/memory', factory: 'inMemory', args: '()' },
-  { value: 'file', label: 'File (JSON)', pkg: '@agentskit/memory/file', factory: 'fileMemory', args: `({ path: './threads.json' })` },
-  { value: 'sqlite', label: 'SQLite', pkg: '@agentskit/memory/sqlite', factory: 'sqliteMemory', args: `({ path: './threads.db' })` },
-  { value: 'redis', label: 'Redis', pkg: '@agentskit/memory/redis', factory: 'redisMemory', args: `({ url: process.env.REDIS_URL! })` },
-]
+const CAPABILITIES_KEY = 'ak:capabilities'
+const DEFAULT_CAPABILITIES: Capability[] = ['tools']
 
 const CAPABILITIES: { value: Capability; label: string; pkg: string }[] = [
   { value: 'tools', label: 'Tools (function calling)', pkg: '@agentskit/tools' },
@@ -57,38 +35,21 @@ const CAPABILITIES: { value: Capability; label: string; pkg: string }[] = [
   { value: 'observability', label: 'Observability (traces)', pkg: '@agentskit/observability' },
 ]
 
-function readStack(): Stack {
-  if (typeof window === 'undefined') return DEFAULT
+function readCapabilities(): Capability[] {
+  if (typeof window === 'undefined') return DEFAULT_CAPABILITIES
   try {
-    const raw = window.localStorage.getItem(STACK_KEY)
-    if (!raw) return DEFAULT
-    return { ...DEFAULT, ...JSON.parse(raw) }
+    const raw = window.localStorage.getItem(CAPABILITIES_KEY)
+    if (!raw) return DEFAULT_CAPABILITIES
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? (parsed as Capability[]) : DEFAULT_CAPABILITIES
   } catch {
-    return DEFAULT
+    return DEFAULT_CAPABILITIES
   }
-}
-function writeStack(s: Stack) {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(STACK_KEY, JSON.stringify(s))
-}
-function writeFramework(f: Framework) {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(FRAMEWORK_KEY, f)
-  window.dispatchEvent(new CustomEvent(FRAMEWORK_EVENT))
 }
 
-function useStack(): [Stack, (partial: Partial<Stack>) => void] {
-  const [stack, setStack] = useState<Stack>(DEFAULT)
-  useEffect(() => {
-    setStack(readStack())
-  }, [])
-  const update = (partial: Partial<Stack>) => {
-    const next = { ...stack, ...partial }
-    setStack(next)
-    writeStack(next)
-    if (partial.framework) writeFramework(partial.framework)
-  }
-  return [stack, update]
+function writeCapabilities(caps: Capability[]) {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(CAPABILITIES_KEY, JSON.stringify(caps))
 }
 
 function buildSnippet(stack: Stack): { install: string; code: string } {
@@ -104,7 +65,8 @@ function buildSnippet(stack: Stack): { install: string; code: string } {
     mem.pkg.split('/').slice(0, 2).join('/'),
     ...capPkgs,
   ]
-  const install = `pnpm add ${[...new Set(deps)].join(' ')}`
+  const pm = PACKAGE_MANAGERS.find((p) => p.value === stack.packageManager) ?? PACKAGE_MANAGERS[0]
+  const install = `${pm.add} ${[...new Set(deps)].join(' ')}`
 
   const hasTools = stack.capabilities.includes('tools')
   const hasObservability = stack.capabilities.includes('observability')
@@ -123,7 +85,10 @@ function buildSnippet(stack: Stack): { install: string; code: string } {
     `const adapter = ${prov.factory}({ model: '${prov.model}' })`,
     `const memory = ${mem.factory}${mem.args}`,
     hasTools
-      ? `const clock = defineTool({
+      ? `// One example tool. @agentskit/tools also ships web-search, fetch, shell,
+// filesystem, MCP, plus 25+ ready-made integrations (Slack, GitHub, Linear,
+// Stripe, Postgres, weather, maps, browser-agent, …).
+const clock = defineTool({
   name: 'get_time',
   description: 'Current server time',
   schema: {},
@@ -160,8 +125,18 @@ const { messages, input, setInput, send } = ${fw.hook}({
 }
 
 export function StackBuilder() {
-  const [stack, update] = useStack()
-  const { install, code } = useMemo(() => buildSnippet(stack), [stack])
+  const [framework, setFramework] = useFramework()
+  const [provider, setProvider] = useProvider()
+  const [memory, setMemory] = useMemory()
+  const [packageManager, setPackageManager] = usePackageManager()
+  const [capabilities, setCapabilities] = useState<Capability[]>(DEFAULT_CAPABILITIES)
+
+  useEffect(() => {
+    setCapabilities(readCapabilities())
+  }, [])
+
+  const stack: Stack = { framework, provider, memory, capabilities, packageManager }
+  const { install, code } = useMemo(() => buildSnippet(stack), [framework, provider, memory, capabilities, packageManager])
   const [copied, setCopied] = useState<'install' | 'code' | null>(null)
 
   const copy = (what: 'install' | 'code', text: string) => {
@@ -171,43 +146,54 @@ export function StackBuilder() {
   }
 
   const toggleCap = (c: Capability) => {
-    const has = stack.capabilities.includes(c)
-    update({
-      capabilities: has ? stack.capabilities.filter((x) => x !== c) : [...stack.capabilities, c],
-    })
+    const has = capabilities.includes(c)
+    const next = has ? capabilities.filter((x) => x !== c) : [...capabilities, c]
+    setCapabilities(next)
+    writeCapabilities(next)
   }
 
   return (
     <div data-ak-stack-builder className="my-6 overflow-hidden rounded-lg border border-ak-border bg-ak-surface">
-      <header className="border-b border-ak-border px-4 py-2">
+      <header className="flex items-center justify-between border-b border-ak-border px-4 py-2">
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-graphite">Stack builder</div>
+        <select
+          value={packageManager}
+          onChange={(e) => setPackageManager(e.target.value as typeof packageManager)}
+          className="rounded border border-ak-border bg-ak-midnight px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-ak-graphite"
+        >
+          {PACKAGE_MANAGERS.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
+            </option>
+          ))}
+        </select>
       </header>
       <div className="grid gap-4 p-4 md:grid-cols-2">
         <Field label="1. Framework">
           <Choice<Framework>
             options={FRAMEWORKS.map((f) => ({ value: f.value, label: f.label }))}
-            value={stack.framework}
-            onChange={(v) => update({ framework: v })}
+            value={framework}
+            onChange={setFramework}
           />
         </Field>
         <Field label="2. Provider">
           <Choice<Provider>
             options={PROVIDERS.map((p) => ({ value: p.value, label: p.label }))}
-            value={stack.provider}
-            onChange={(v) => update({ provider: v })}
+            value={provider}
+            onChange={setProvider}
           />
         </Field>
         <Field label="3. Memory">
           <Choice<Memory>
             options={MEMORIES.map((m) => ({ value: m.value, label: m.label }))}
-            value={stack.memory}
-            onChange={(v) => update({ memory: v })}
+            value={memory}
+            onChange={setMemory}
           />
         </Field>
         <Field label="4. Capabilities">
           <div className="flex flex-wrap gap-2">
             {CAPABILITIES.map((c) => {
-              const on = stack.capabilities.includes(c.value)
+              const on = capabilities.includes(c.value)
               return (
                 <button
                   key={c.value}
@@ -215,7 +201,7 @@ export function StackBuilder() {
                   onClick={() => toggleCap(c.value)}
                   className={`rounded border px-3 py-1 font-mono text-xs ${
                     on
-                      ? 'border-ak-foam bg-ak-foam/15 text-white'
+                      ? 'border-ak-foam bg-ak-foam/15 text-ak-foam'
                       : 'border-ak-border bg-ak-midnight text-ak-graphite hover:text-ak-foam'
                   }`}
                 >
@@ -238,9 +224,7 @@ export function StackBuilder() {
             {copied === 'install' ? '✓ copied' : 'copy'}
           </button>
         </header>
-        <pre className="overflow-x-auto rounded border border-ak-border bg-ak-midnight p-3 font-mono text-xs text-ak-foam">
-          {install}
-        </pre>
+        <DynamicCodeBlock lang="bash" code={install} />
       </section>
 
       <section className="border-t border-ak-border p-4">
@@ -254,9 +238,7 @@ export function StackBuilder() {
             {copied === 'code' ? '✓ copied' : 'copy'}
           </button>
         </header>
-        <pre className="overflow-x-auto rounded border border-ak-border bg-ak-midnight p-3 font-mono text-xs text-ak-foam">
-          <code>{code}</code>
-        </pre>
+        <DynamicCodeBlock lang="tsx" code={code} />
       </section>
     </div>
   )

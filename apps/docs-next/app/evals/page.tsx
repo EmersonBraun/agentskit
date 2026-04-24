@@ -42,7 +42,7 @@ export default function EvalsPage() {
     <main className="mx-auto w-full max-w-4xl px-4 py-12">
       <div className="mb-8">
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-foam">Evals</div>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-white">Adapter scoreboard</h1>
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ak-foam">Adapter scoreboard</h1>
         <p className="mt-3 max-w-2xl text-ak-graphite">
           Accuracy on tool-use and planning, plus streaming latency. Runs come from{' '}
           <code className="font-mono text-ak-foam">@agentskit/eval</code>. Today's numbers are seed data — the CI pipeline will swap them as real runs land.
@@ -56,7 +56,7 @@ export default function EvalsPage() {
         {data.suites.map((suite) => (
           <section key={suite.name} className="rounded-lg border border-ak-border bg-ak-surface p-5">
             <header className="mb-3">
-              <h2 className="font-display text-xl font-semibold text-white">{suite.name}</h2>
+              <h2 className="font-display text-xl font-semibold text-ak-foam">{suite.name}</h2>
               <p className="mt-1 text-sm text-ak-graphite">{suite.description}</p>
               <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
                 {suite.scale === 'percent' ? 'higher is better' : 'lower is better'}
@@ -68,7 +68,7 @@ export default function EvalsPage() {
                   <span className="w-6 shrink-0 text-right font-mono text-[10px] text-ak-graphite">
                     {i + 1}.
                   </span>
-                  <span className="w-52 shrink-0 font-mono text-xs text-white">{r.adapter}</span>
+                  <span className="w-52 shrink-0 font-mono text-xs text-ak-foam">{r.adapter}</span>
                   <span
                     className="h-3 rounded bg-gradient-to-r from-ak-foam/80 via-ak-foam/60 to-ak-foam/40"
                     style={{ width: width(suite, r.score) }}

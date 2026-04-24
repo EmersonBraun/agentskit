@@ -30,18 +30,20 @@
   --ak-red: #F85149;
 }
 
-/* Shiki dual-theme resolver: picks light/dark colors written inline as custom properties. */
+/* Shiki dual-theme resolver: tokens carry `--shiki-light` / `--shiki-dark` as inline vars.
+   We apply only `color` — never `background-color` — so the card surface shows uniformly and
+   tokens don't paint per-span bg rectangles that clash with the outer fd-card color. */
 code[data-line] span,
 pre[data-language] span,
 .shiki span {
   color: var(--shiki-light);
-  background-color: var(--shiki-light-bg);
+  background-color: transparent;
 }
 .dark code[data-line] span,
 .dark pre[data-language] span,
 .dark .shiki span {
   color: var(--shiki-dark);
-  background-color: var(--shiki-dark-bg);
+  background-color: transparent;
 }
 
 @theme {
@@ -57,12 +59,9 @@ pre[data-language] span,
   --font-display: 'Space Grotesk', var(--font-sans, Inter), system-ui, sans-serif;
 }
 
-/* Gradient wordmark + display typography */
+/* Wordmark — solid foreground, no gradient */
 .ak-wordmark {
-  background: linear-gradient(120deg, #58A6FF 0%, #A371F7 45%, #F778BA 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ak-foam);
 }
 
 .font-display {
@@ -77,27 +76,32 @@ article h2 {
   letter-spacing: -0.02em;
 }
 
-/* Polish code blocks: subtle gradient border + tighter padding rhythm */
-.prose pre,
-pre[data-language] {
-  position: relative;
-  border-radius: 10px;
-  border: 1px solid var(--ak-border);
-  background: var(--ak-midnight);
+/* Fumadocs theme toggle — force square sizing for sun/moon icons (tailwind v4 `size-6.5` resolves width incorrectly in flex rail) */
+button[data-theme-toggle] {
+  flex-shrink: 0;
 }
-.prose pre::before,
-pre[data-language]::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 10px;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(88, 166, 255, 0.35), rgba(163, 113, 247, 0.25), rgba(247, 120, 186, 0.2));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  opacity: 0.6;
+button[data-theme-toggle] > svg {
+  width: 1.625rem !important;
+  height: 1.625rem !important;
+  flex: 0 0 auto;
+}
+
+/* Code blocks inside cards (stack builder, learn selectors): unified background.
+   Fumadocs CodeBlock wraps in `bg-fd-card` with inner `<pre class="py-3.5 bg-(--shiki-*-bg)">`;
+   when shiki's `--shiki-*-bg` var is empty the py-3.5 padding area renders transparent and shows
+   the outer card through. Force the whole stack — wrapper, pre, figure — to the same
+   `--color-fd-card` so the card reads as a single flat block. */
+[data-ak-stack-builder] pre,
+[data-ak-stack-builder] pre[data-language],
+[data-ak-stack-builder] figure[data-rehype-pretty-code-figure],
+[data-ak-stack-builder] figure[data-rehype-pretty-code-figure] pre,
+[data-ak-learn-selector] pre,
+[data-ak-learn-selector] pre[data-language],
+[data-ak-learn-selector] figure[data-rehype-pretty-code-figure],
+[data-ak-learn-selector] figure[data-rehype-pretty-code-figure] pre {
+  background: var(--color-fd-card) !important;
+  border: 0 !important;
+  margin: 0;
 }
 
 /* TOC polish: gradient active thumb + subtle scale on active item */

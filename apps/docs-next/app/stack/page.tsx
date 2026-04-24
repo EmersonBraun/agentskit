@@ -11,7 +11,7 @@ export default function StackPage() {
     <main className="mx-auto w-full max-w-4xl px-4 py-12">
       <div className="mb-8">
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-foam">Stack builder</div>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-white">
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ak-foam">
           Pick your <span className="ak-wordmark">AgentsKit</span> stack
         </h1>
         <p className="mt-3 max-w-2xl text-ak-graphite">

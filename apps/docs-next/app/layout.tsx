@@ -101,12 +101,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           search={{
             options: {
               allowClear: true,
-              tags: [
-                { name: 'Guides', value: 'guides' },
-                { name: 'API', value: 'api' },
-                { name: 'Examples', value: 'examples' },
-                { name: 'Packages', value: 'packages' },
-              ],
             },
           }}
         >

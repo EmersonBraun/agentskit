@@ -1,0 +1,60 @@
+'use client'
+
+import { useMemo } from 'react'
+import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react'
+import type { AdapterFactory, StreamChunk } from '@agentskit/core'
+import '@agentskit/react/theme'
+
+const FAKE_REPLIES = [
+  'Welcome to AgentsKit. Streaming is on by default.',
+  'Swap the adapter in one line to change providers.',
+  'Tools and memory are optional — compose what you need.',
+]
+
+function createMockAdapter(replies: string[] = FAKE_REPLIES): AdapterFactory {
+  let turn = 0
+  return {
+    createSource: () => ({
+      stream: async function* (): AsyncIterableIterator<StreamChunk> {
+        const reply = replies[turn++ % replies.length]
+        for (const ch of reply) {
+          await new Promise((r) => setTimeout(r, 18))
+          yield { type: 'text', content: ch }
+        }
+        yield { type: 'done' }
+      },
+      abort() {},
+    }),
+    capabilities: { streaming: true },
+  }
+}
+
+export function ChatPreview() {
+  const adapter = useMemo(() => createMockAdapter(), [])
+  const chat = useChat({
+    adapter,
+    initialMessages: [
+      {
+        id: 'init',
+        role: 'assistant',
+        content: 'Hi, ask me something.',
+        status: 'complete',
+        createdAt: new Date(),
+      },
+    ],
+  })
+
+  return (
+    <div
+      data-ak-learn-preview
+      className="flex h-[420px] flex-col overflow-hidden rounded-lg border border-ak-border bg-ak-surface"
+    >
+      <ChatContainer className="ak-chat-surface flex-1 space-y-2 p-4">
+        {chat.messages.map((msg) => (
+          <Message key={msg.id} message={msg} />
+        ))}
+      </ChatContainer>
+      <InputBar chat={chat} />
+    </div>
+  )
+}

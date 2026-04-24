@@ -19,7 +19,7 @@ export function ShowcaseGrid() {
           onClick={() => setActive(null)}
           className={`rounded-full border px-3 py-1 font-mono text-xs ${
             active === null
-              ? 'border-ak-foam bg-ak-foam/15 text-white'
+              ? 'border-ak-foam bg-ak-foam/15 text-ak-foam'
               : 'border-ak-border text-ak-graphite hover:text-ak-foam'
           }`}
         >
@@ -34,7 +34,7 @@ export function ShowcaseGrid() {
               onClick={() => setActive(on ? null : tag)}
               className={`rounded-full border px-3 py-1 font-mono text-xs ${
                 on
-                  ? 'border-ak-foam bg-ak-foam/15 text-white'
+                  ? 'border-ak-foam bg-ak-foam/15 text-ak-foam'
                   : 'border-ak-border text-ak-graphite hover:text-ak-foam'
               }`}
             >
@@ -59,7 +59,7 @@ export function ShowcaseGrid() {
                 </div>
               </div>
               <div className="border-t border-ak-border p-4">
-                <h3 className="font-display text-base font-semibold text-white">{s.name}</h3>
+                <h3 className="font-display text-base font-semibold text-ak-foam">{s.name}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-ak-graphite">{s.description}</p>
                 <div className="mt-3 flex flex-wrap gap-1">
                   {s.tags.map((t) => (

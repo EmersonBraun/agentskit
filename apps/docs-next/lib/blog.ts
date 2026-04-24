@@ -11,7 +11,8 @@ export function findBlogPost(slug: string): BlogEntry | undefined {
 }
 
 export function slugOf(entry: BlogEntry): string {
-  const path = (entry as unknown as { _file?: { path?: string } })._file?.path ?? ''
+  const info = (entry as unknown as { info?: { path?: string } }).info
+  const path = info?.path ?? ''
   return path.replace(/\.(mdx|md)$/, '').replace(/\\/g, '/').split('/').pop() ?? ''
 }
 

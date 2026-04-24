@@ -1,8 +1,15 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock'
 import { STEPS } from '@/lib/learn-steps'
 import { Stepper, MarkStepDone } from '@/components/learn/stepper'
-import { Playground } from '@/components/mdx/playground'
+import { ChatPreview } from '@/components/learn/chat-preview'
+import { ToolsPreview, TOOLS_SOURCE } from '@/components/learn/tools-preview'
+import {
+  PackageManagerBlock,
+  ProviderBlock,
+  MemoryBlock,
+} from '@/components/learn/selector-tabs'
 
 export function generateStaticParams() {
   return STEPS.map((s) => ({ step: s.slug }))
@@ -28,17 +35,14 @@ function renderBody(body: string) {
   if (last < body.length) blocks.push({ type: 'text', text: body.slice(last) })
   return blocks.map((b, i) =>
     b.type === 'code' ? (
-      <pre
-        key={i}
-        className="my-4 overflow-x-auto rounded-lg border border-ak-border bg-ak-midnight p-4 font-mono text-sm text-ak-foam"
-      >
-        <code>{b.text}</code>
-      </pre>
+      <div key={i} className="my-4">
+        <DynamicCodeBlock lang={b.lang ?? 'text'} code={b.text.replace(/\n$/, '')} />
+      </div>
     ) : (
       <p key={i} className="my-3 whitespace-pre-wrap text-ak-graphite">
         {b.text.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
           part.startsWith('**') ? (
-            <strong key={j} className="text-white">
+            <strong key={j} className="text-ak-foam">
               {part.slice(2, -2)}
             </strong>
           ) : (
@@ -66,13 +70,57 @@ export default async function StepPage({ params }: { params: Promise<{ step: str
           <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-foam">
             Step {idx + 1} / {STEPS.length}
           </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">{s.title}</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ak-foam">{s.title}</h1>
           <p className="mt-3 text-lg text-ak-graphite">{s.intro}</p>
           <div className="mt-6">{renderBody(s.body)}</div>
 
-          {s.files ? (
+          {s.kind === 'install' ? (
             <div className="mt-8">
-              <Playground files={s.files} entry={s.entry} eager title="Try it live" />
+              <PackageManagerBlock packages="@agentskit/react @agentskit/core" />
+            </div>
+          ) : null}
+
+          {s.kind === 'adapter' ? (
+            <div className="mt-8">
+              <ProviderBlock />
+            </div>
+          ) : null}
+
+          {s.kind === 'memory' ? (
+            <div className="mt-8">
+              <MemoryBlock />
+            </div>
+          ) : null}
+
+          {s.kind === 'chat' ? (
+            <div className="mt-8">
+              <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
+                Try it live
+              </div>
+              <ChatPreview />
+              {s.files ? (
+                <div className="mt-4">
+                  <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
+                    Source
+                  </div>
+                  <DynamicCodeBlock lang="tsx" code={s.files[s.entry ?? '/App.tsx'] ?? ''} />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {s.kind === 'tools' ? (
+            <div className="mt-8">
+              <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
+                Try it live — pick a tool
+              </div>
+              <ToolsPreview />
+              <div className="mt-4">
+                <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
+                  Source — how to build this
+                </div>
+                <DynamicCodeBlock lang="tsx" code={TOOLS_SOURCE} />
+              </div>
             </div>
           ) : null}
 
@@ -91,12 +139,12 @@ export default async function StepPage({ params }: { params: Promise<{ step: str
             {next ? (
               <Link
                 href={`/learn/${next.slug}`}
-                className="text-sm font-semibold text-ak-foam hover:text-white"
+                className="text-sm font-semibold text-ak-foam hover:text-ak-foam"
               >
                 {next.title} →
               </Link>
             ) : (
-              <Link href="/docs" className="text-sm font-semibold text-ak-foam hover:text-white">
+              <Link href="/docs" className="text-sm font-semibold text-ak-foam hover:text-ak-foam">
                 Read the docs →
               </Link>
             )}

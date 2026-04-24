@@ -44,7 +44,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           })}{' '}
           · {post.author}
         </div>
-        <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-white">{post.title}</h1>
+        <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-ak-foam">{post.title}</h1>
         {post.description ? <p className="mt-3 text-lg text-ak-graphite">{post.description}</p> : null}
       </header>
 
@@ -56,13 +56,13 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
         {prev ? (
           <Link href={`/blog/${slugOf(prev)}`} className="rounded-lg border border-ak-border bg-ak-surface p-4 hover:border-ak-foam">
             <div className="font-mono text-[10px] uppercase tracking-widest text-ak-graphite">← Older</div>
-            <div className="mt-1 font-display text-base font-semibold text-white">{prev.title}</div>
+            <div className="mt-1 font-display text-base font-semibold text-ak-foam">{prev.title}</div>
           </Link>
         ) : <span />}
         {next ? (
           <Link href={`/blog/${slugOf(next)}`} className="rounded-lg border border-ak-border bg-ak-surface p-4 text-right hover:border-ak-foam">
             <div className="font-mono text-[10px] uppercase tracking-widest text-ak-graphite">Newer →</div>
-            <div className="mt-1 font-display text-base font-semibold text-white">{next.title}</div>
+            <div className="mt-1 font-display text-base font-semibold text-ak-foam">{next.title}</div>
           </Link>
         ) : <span />}
       </footer>

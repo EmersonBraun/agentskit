@@ -17,7 +17,7 @@ export function Since({ v, pkg = 'core', children }: SinceProps) {
     >
       <span aria-hidden>✦</span>
       <span>
-        since <code className="text-white">@agentskit/{pkg}</code>@<code className="text-white">{v}</code>
+        since <code className="text-ak-foam">@agentskit/{pkg}</code>@<code className="text-ak-foam">{v}</code>
       </span>
       {children ? <span className="text-ak-graphite">· {children}</span> : null}
     </span>

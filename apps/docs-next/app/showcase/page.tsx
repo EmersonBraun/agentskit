@@ -12,7 +12,7 @@ export default function ShowcasePage() {
     <main className="mx-auto w-full max-w-6xl px-4 py-12">
       <div className="mb-8">
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-foam">Showcase</div>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-white">
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ak-foam">
           {SHOWCASE.length} runnable examples
         </h1>
         <p className="mt-3 max-w-2xl text-ak-graphite">

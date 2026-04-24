@@ -11,13 +11,13 @@ export function WeatherCard() {
     { d: 'Wed', t: 70, icon: 'sun' as const },
   ]
   return (
-    <div className="overflow-hidden rounded-lg border border-ak-border bg-gradient-to-br from-[#1e3a8a] via-[#4338ca] to-[#7c3aed] p-4 text-white shadow-lg">
+    <div className="overflow-hidden rounded-lg border border-ak-border bg-gradient-to-br from-[#1e3a8a] via-[#4338ca] to-[#7c3aed] p-4 text-ak-foam shadow-lg">
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <div className="text-xs font-mono text-white/70">Tokyo · Sat Apr 18</div>
+          <div className="text-xs font-mono text-ak-foam/70">Tokyo · Sat Apr 18</div>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-4xl font-bold">72°</span>
-            <span className="text-sm text-white/80">feels 70°</span>
+            <span className="text-sm text-ak-foam/80">feels 70°</span>
           </div>
         </div>
         <SunIcon />
@@ -25,7 +25,7 @@ export function WeatherCard() {
       <div className="mb-3 flex justify-between gap-2">
         {days.map(d => (
           <div key={d.d} className="flex flex-col items-center gap-1 rounded-md bg-white/10 px-2 py-1.5 text-xs">
-            <span className="text-white/70">{d.d}</span>
+            <span className="text-ak-foam/70">{d.d}</span>
             {d.icon === 'sun' ? <SunIcon small /> : d.icon === 'cloud' ? <CloudIcon /> : <RainIcon />}
             <span className="font-semibold">{d.t}°</span>
           </div>
@@ -57,7 +57,7 @@ export function PriceCard() {
     <div className="rounded-lg border border-ak-border bg-ak-midnight p-4 shadow-lg">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f7931a] font-bold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f7931a] font-bold text-ak-foam">
             ₿
           </div>
           <div>

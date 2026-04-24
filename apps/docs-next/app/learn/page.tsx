@@ -13,7 +13,7 @@ export default function LearnIndex() {
     <main className="mx-auto w-full max-w-6xl px-4 py-12">
       <div className="mb-10">
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-foam">Interactive tutorial</div>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-white">Learn AgentsKit in 5 steps</h1>
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ak-foam">Learn AgentsKit in 5 steps</h1>
         <p className="mt-3 max-w-2xl text-ak-graphite">
           End-to-end: install, build a streaming chat, swap providers, register tools, persist memory. Every step
           runs in your browser — no API keys required. Progress is saved locally.
@@ -33,7 +33,7 @@ export default function LearnIndex() {
                   <div className="font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
                     Step {i + 1}
                   </div>
-                  <div className="mt-1 text-lg font-semibold text-white">{s.title}</div>
+                  <div className="mt-1 text-lg font-semibold text-ak-foam">{s.title}</div>
                   <p className="mt-1 text-sm text-ak-graphite">{s.intro}</p>
                 </Link>
               </li>

@@ -49,7 +49,7 @@ export default function HomePt() {
       <div className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-ak-foam">
         AgentsKit.js · pt-BR
       </div>
-      <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-6xl">
+      <h1 className="text-4xl font-semibold tracking-tight text-ak-foam sm:text-6xl">
         O toolkit de agentes que o{' '}
         <span className="ak-wordmark">JavaScript merece</span>
       </h1>
@@ -84,9 +84,9 @@ export default function HomePt() {
             <div className="font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
               {b.kicker}
             </div>
-            <h2 className="mt-1 font-display text-xl font-semibold text-white">{b.title}</h2>
+            <h2 className="mt-1 font-display text-xl font-semibold text-ak-foam">{b.title}</h2>
             <p className="mt-2 text-sm text-ak-graphite">{b.desc}</p>
-            <span className="mt-3 inline-block text-sm font-semibold text-ak-foam group-hover:text-white">
+            <span className="mt-3 inline-block text-sm font-semibold text-ak-foam group-hover:text-ak-foam">
               {b.cta}
             </span>
           </Link>
@@ -97,7 +97,7 @@ export default function HomePt() {
         <div className="font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
           Sobre a tradução
         </div>
-        <h2 className="mt-2 font-display text-xl font-semibold text-white">
+        <h2 className="mt-2 font-display text-xl font-semibold text-ak-foam">
           Documentação em português chegando aos poucos
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-ak-graphite">

@@ -21,7 +21,7 @@ export function PartnerStrip() {
           <div className="font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
             Integrated with
           </div>
-          <h2 className="font-display text-xl font-semibold text-white">Works with what you already use</h2>
+          <h2 className="font-display text-xl font-semibold text-ak-foam">Works with what you already use</h2>
         </div>
         <span className="font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
           {PARTNERS.length} and counting
@@ -37,7 +37,7 @@ export function PartnerStrip() {
               <span className="font-mono text-[10px] uppercase tracking-widest text-ak-graphite">
                 {p.tier}
               </span>
-              <span className="mt-1 font-display text-base font-semibold text-white group-hover:text-ak-foam">
+              <span className="mt-1 font-display text-base font-semibold text-ak-foam group-hover:text-ak-foam">
                 {p.name}
               </span>
             </a>

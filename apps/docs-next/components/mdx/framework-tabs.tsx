@@ -143,7 +143,7 @@ export function FrameworkTabs({ children, order = DEFAULT_ORDER, defaultValue }:
               className={`rounded px-3 py-1.5 text-xs font-semibold transition ${
                 isActive
                   ? 'bg-ak-foam text-ak-midnight'
-                  : 'text-ak-graphite hover:bg-ak-midnight hover:text-white'
+                  : 'text-ak-graphite hover:bg-ak-midnight hover:text-ak-foam'
               }`}
             >
               {item.props.label ?? LABELS[name] ?? name}

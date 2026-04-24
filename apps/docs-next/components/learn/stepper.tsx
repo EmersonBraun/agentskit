@@ -66,8 +66,8 @@ export function Stepper({ activeSlug }: { activeSlug?: string }) {
                   href={`/learn/${s.slug}`}
                   className={`flex items-center gap-3 rounded-md border px-3 py-2 text-sm transition ${
                     isActive
-                      ? 'border-ak-foam bg-ak-foam/10 text-white'
-                      : 'border-transparent text-ak-graphite hover:border-ak-border hover:bg-ak-surface hover:text-white'
+                      ? 'border-ak-foam bg-ak-foam/10 text-ak-foam'
+                      : 'border-transparent text-ak-graphite hover:border-ak-border hover:bg-ak-surface hover:text-ak-foam'
                   }`}
                 >
                   <span

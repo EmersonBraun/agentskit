@@ -27,7 +27,7 @@ export default function BlogIndex() {
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
       <div className="mb-10">
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-foam">Blog</div>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-white">Releases, decisions, and deep dives</h1>
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight text-ak-foam">Releases, decisions, and deep dives</h1>
         <p className="mt-3 text-ak-graphite">
           Long-form posts from the AgentsKit.js team. Subscribe via{' '}
           <a href="/blog/rss.xml" className="text-ak-foam underline">
@@ -61,7 +61,7 @@ export default function BlogIndex() {
                     </>
                   ) : null}
                 </div>
-                <h2 className="mt-2 font-display text-2xl font-semibold text-white group-hover:text-ak-foam">
+                <h2 className="mt-2 font-display text-2xl font-semibold text-ak-foam group-hover:text-ak-foam">
                   {p.title}
                 </h2>
                 {p.description ? (

@@ -57,7 +57,7 @@ export function LanguageToggle() {
                   {l.flag}
                 </span>
                 <span className="flex flex-col text-left">
-                  <span className="font-mono text-xs font-semibold text-white">{l.native}</span>
+                  <span className="font-mono text-xs font-semibold text-ak-foam">{l.native}</span>
                   <span className="font-mono text-[9px] uppercase tracking-widest text-ak-graphite">
                     {l.english} · {l.status}
                   </span>
