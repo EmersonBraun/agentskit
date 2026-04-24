@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import type { AdapterFactory, StreamChunk, ToolDefinition } from '@agentskit/core'
 import { useChat, ChatContainer, InputBar } from '@agentskit/react'
-import '@agentskit/react/theme'
+import '@/styles/agentskit-theme.css'
 import { initialAssistant } from './_shared/mock-adapter'
 import { ToolBadge } from './_shared/tool-badge'
 import { MdRenderer } from './_shared/md-renderer'

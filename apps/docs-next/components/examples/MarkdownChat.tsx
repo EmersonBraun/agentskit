@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react'
-import '@agentskit/react/theme'
+import '@/styles/agentskit-theme.css'
 import { createMockAdapter, initialAssistant } from './_shared/mock-adapter'
 import { MdRenderer } from './_shared/md-renderer'
 
@@ -13,7 +13,7 @@ const TURNS = [
 You can pick from three styling modes:
 
 1. **Headless** — use the hooks and style with your design system
-2. **Default theme** — \`import '@agentskit/react/theme'\` for the tokenised CSS
+2. **Default theme** — \`import '@/styles/agentskit-theme.css'\` for the tokenised CSS
 3. **Custom CSS** — target \`data-ak-*\` attributes directly
 
 | Mode | Lines | Output |

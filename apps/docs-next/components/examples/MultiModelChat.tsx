@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react'
-import '@agentskit/react/theme'
+import '@/styles/agentskit-theme.css'
 import { createMockAdapter, initialAssistant } from './_shared/mock-adapter'
 import { PROVIDERS, type Provider } from '@/lib/stack-state'
 

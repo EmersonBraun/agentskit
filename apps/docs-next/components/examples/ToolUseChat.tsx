@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react'
-import '@agentskit/react/theme'
+import '@/styles/agentskit-theme.css'
 import { createMockAdapter, initialAssistant, toolsFor } from './_shared/mock-adapter'
 import { ToolBadge } from './_shared/tool-badge'
 

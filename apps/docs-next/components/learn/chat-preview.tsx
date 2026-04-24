@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { useChat, ChatContainer, Message, InputBar } from '@agentskit/react'
 import type { AdapterFactory, StreamChunk } from '@agentskit/core'
-import '@agentskit/react/theme'
+import '@/styles/agentskit-theme.css'
 
 const FAKE_REPLIES = [
   'Welcome to AgentsKit. Streaming is on by default.',
