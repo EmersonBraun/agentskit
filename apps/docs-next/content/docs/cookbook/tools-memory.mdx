@@ -5,6 +5,8 @@ description: The "chat with state and actions" loop — persistent memory plus t
 
 Most real agent apps need both **memory** (recall past turns) and **tools** (perform actions). Here's the minimum viable wiring.
 
+<Verified test="packages/core/tests/define-tool.test.ts" />
+
 ```tsx
 import { useChat } from '@agentskit/react'
 import { openai } from '@agentskit/adapters/openai'

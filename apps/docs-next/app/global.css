@@ -86,6 +86,53 @@ pre[data-language]::before {
   opacity: 0.6;
 }
 
+/* TOC polish: gradient active thumb + subtle scale on active item */
+[data-toc] nav [class*='absolute inset-y-0'] {
+  width: 2px !important;
+  background: linear-gradient(180deg, #58A6FF 0%, #A371F7 50%, #F778BA 100%) !important;
+  box-shadow: 0 0 8px rgba(163, 113, 247, 0.45);
+}
+[data-toc] nav a[data-active='true'] {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Heading anchor button — copy link per heading */
+.prose :where(h2, h3, h4) {
+  position: relative;
+  scroll-margin-top: 5rem;
+}
+.prose :where(h2, h3, h4) .ak-anchor {
+  position: absolute;
+  left: -1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+  color: var(--ak-graphite, #8B949E);
+  text-decoration: none;
+  font-weight: 400;
+  cursor: pointer;
+}
+.prose :where(h2, h3, h4):hover .ak-anchor,
+.prose :where(h2, h3, h4):focus-within .ak-anchor {
+  opacity: 1;
+}
+.ak-anchor:hover {
+  color: var(--ak-foam, #E6EDF3);
+}
+.ak-anchor[data-copied='true']::after {
+  content: 'copied';
+  position: absolute;
+  left: 100%;
+  margin-left: 0.25rem;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #2EA043;
+  white-space: nowrap;
+}
+
 @keyframes ak-fade-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }

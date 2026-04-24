@@ -8,6 +8,8 @@ import {
 import { notFound } from 'next/navigation'
 import { getMDXComponents } from '@/mdx-components'
 import { JsonLd } from '@/components/seo/json-ld'
+import { NextSteps } from '@/components/docs/next-steps'
+import { TypedocEnhancer } from '@/components/docs/typedoc-enhancer'
 
 const REPO = 'AgentsKit-io/agentskit'
 const SITE = 'https://www.agentskit.io'
@@ -66,6 +68,8 @@ export default async function Page(props: {
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
         <MDX components={getMDXComponents()} />
+        <TypedocEnhancer enabled={(params.slug?.[0] ?? '') === 'api'} />
+        <NextSteps tree={source.pageTree} url={page.url} />
         <div
           style={{
             marginTop: '3rem',

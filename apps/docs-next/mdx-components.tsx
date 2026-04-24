@@ -10,10 +10,34 @@ import { RunCode } from '@/components/mdx/run-code'
 import { ArchDiagram } from '@/components/mdx/arch-diagram'
 import { Since } from '@/components/mdx/since'
 import { Tip, Warning, Pitfall, Performance, Security, Info, Success, Compare } from '@/components/mdx/callouts'
+import { HeadingAnchor } from '@/components/docs/heading-anchor'
+import { Verified } from '@/components/mdx/verified'
+import { LiveAdapter } from '@/components/mdx/live-adapter'
+import { StackBuilder } from '@/components/mdx/stack-builder'
+
+type HeadingProps = React.DetailedHTMLProps<
+  React.HTMLAttributes<HTMLHeadingElement>,
+  HTMLHeadingElement
+>
+
+function withAnchor(tag: 'h2' | 'h3' | 'h4') {
+  const Tag = tag
+  return function HeadingWithAnchor({ children, id, ...rest }: HeadingProps) {
+    return (
+      <Tag id={id} {...rest}>
+        <HeadingAnchor id={id} />
+        {children}
+      </Tag>
+    )
+  }
+}
 
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultMdxComponents,
+    h2: withAnchor('h2'),
+    h3: withAnchor('h3'),
+    h4: withAnchor('h4'),
     Mermaid,
     StackblitzEmbed,
     CodeSandboxEmbed,
@@ -32,6 +56,9 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     Info,
     Success,
     Compare,
+    Verified,
+    LiveAdapter,
+    StackBuilder,
     ...components,
   }
 }

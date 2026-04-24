@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Generate /docs/production/performance.mdx from .size-limit.json budgets.
+// If apps/docs-next/.sizes.json exists (produced by measure-sizes.mjs), also emit measured sizes + pass/fail.
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -7,6 +8,7 @@ import { fileURLToPath } from 'node:url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '../../..')
 const OUT = resolve(__dirname, '../content/docs/production/performance.mdx')
+const SIZES_PATH = resolve(__dirname, '..', '.sizes.json')
 
 const configPath = join(ROOT, '.size-limit.json')
 if (!existsSync(configPath)) {
@@ -16,27 +18,63 @@ if (!existsSync(configPath)) {
 
 const entries = JSON.parse(readFileSync(configPath, 'utf8'))
 
-const rows = entries.map((e) => {
-  const name = e.name ?? e.path
-  const limit = e.limit ?? '—'
-  const format = name.includes('(CJS)') ? 'CJS' : name.includes('(ESM)') ? 'ESM' : '—'
-  const pkg = name.replace(/\s*\((ESM|CJS)\)$/, '').trim()
-  return { pkg, format, limit, path: e.path, gzip: !!e.gzip }
-}).sort((a, b) => a.pkg.localeCompare(b.pkg) || a.format.localeCompare(b.format))
+let measured = null
+if (existsSync(SIZES_PATH)) {
+  try {
+    const data = JSON.parse(readFileSync(SIZES_PATH, 'utf8'))
+    measured = new Map()
+    for (const e of data.entries ?? []) {
+      measured.set(e.name, { size: e.size, passed: e.passed !== false })
+    }
+    console.log(`performance: using ${measured.size} measured entries (${data.generatedAt})`)
+  } catch (err) {
+    console.warn(`performance: failed to parse ${SIZES_PATH}:`, err.message)
+  }
+}
+
+function fmtBytes(n) {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return '—'
+  if (n < 1024) return `${n} B`
+  return `${(n / 1024).toFixed(2)} KB`
+}
+
+const rows = entries
+  .map((e) => {
+    const name = e.name ?? e.path
+    const limit = e.limit ?? '—'
+    const format = name.includes('(CJS)') ? 'CJS' : name.includes('(ESM)') ? 'ESM' : '—'
+    const pkg = name.replace(/\s*\((ESM|CJS)\)$/, '').trim()
+    const m = measured?.get(name)
+    return { pkg, format, limit, name, size: m?.size, passed: m?.passed }
+  })
+  .sort((a, b) => a.pkg.localeCompare(b.pkg) || a.format.localeCompare(b.format))
+
+const header = measured
+  ? '| Package | Format | Limit (gzip) | Measured (gzip) | Status |\n|---|---|---|---|---|'
+  : '| Package | Format | Limit (gzip) |\n|---|---|---|'
+
+const body = rows
+  .map((r) => {
+    if (!measured) return `| \`${r.pkg}\` | ${r.format} | **${r.limit}** |`
+    const status = r.passed === undefined ? '—' : r.passed ? '✅ pass' : '❌ regressed'
+    return `| \`${r.pkg}\` | ${r.format} | ${r.limit} | **${fmtBytes(r.size)}** | ${status} |`
+  })
+  .join('\n')
+
+const measuredBlock = measured
+  ? `\n> Measurements are pinned at build time from \`pnpm measure:sizes\` → \`apps/docs-next/.sizes.json\`. Regenerate locally with \`pnpm measure:sizes && pnpm gen:performance\`.\n`
+  : `\n> Budgets only. Run \`pnpm measure:sizes && pnpm gen:performance\` to include real measurements. CI does this on every merge to main.\n`
 
 const frontmatter = `---
 title: Performance budgets
-description: Bundle size ceilings per package, enforced in CI via size-limit. Generated from .size-limit.json.
+description: Bundle size ceilings per package, enforced in CI via size-limit. Measured values injected when available.
 ---
 
 Every \`@agentskit/\` package has a **gzipped size budget** enforced on every PR via [size-limit](https://github.com/ai/size-limit). Exceed the limit and CI fails — no surprise bundle bloat.
 
-| Package | Format | Limit (gzip) |
-|---|---|---|
-${rows.map((r) => `| \`${r.pkg}\` | ${r.format} | **${r.limit}** |`).join('\n')}
-
-> Run \`pnpm size\` locally to measure actual sizes. Use \`pnpm size:why\` to break down which imports consume bytes.
-
+${header}
+${body}
+${measuredBlock}
 ## Runtime budgets
 
 | Concern | Target |
