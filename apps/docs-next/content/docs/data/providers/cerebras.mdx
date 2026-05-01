@@ -1,0 +1,41 @@
+---
+title: cerebras
+description: Cerebras — wafer-scale chips, OpenAI-compatible. Sub-100ms first-token latency on Llama / Qwen.
+---
+
+```ts
+import { cerebras } from '@agentskit/adapters'
+
+const adapter = cerebras({
+  apiKey: process.env.CEREBRAS_API_KEY!,
+  model: 'llama-3.3-70b',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | `llama-3.3-70b` |
+| `baseUrl` | `string` | `https://api.cerebras.ai/v1` |
+| `retry` | `RetryOptions` | inherited |
+
+## Capabilities
+
+`{ streaming: true, tools: true, usage: true }`. OpenAI-compatible — request shape matches `openai({ baseUrl })`.
+
+## Why cerebras
+
+- Wafer-scale inference — among the fastest tokens-per-second on the market.
+- OpenAI-compatible endpoint, drop-in for existing OpenAI code.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `CEREBRAS_API_KEY` | API key |
+
+## Related
+
+- [Providers overview](./) · [Choosing an adapter](./choosing)

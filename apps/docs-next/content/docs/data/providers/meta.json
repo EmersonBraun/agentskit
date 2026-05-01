@@ -22,6 +22,7 @@
     "fireworks",
     "openrouter",
     "huggingface",
+    "cerebras",
     "langchain",
     "langgraph",
     "vercel-ai",
