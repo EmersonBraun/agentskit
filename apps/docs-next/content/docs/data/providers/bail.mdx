@@ -1,0 +1,44 @@
+---
+title: bail (Qwen)
+description: Alibaba Bailian — Qwen-2.5/3 + Qwen-VL via the DashScope OpenAI-compatibility endpoint.
+---
+
+```ts
+import { bail } from '@agentskit/adapters'
+
+const adapter = bail({
+  apiKey: process.env.DASHSCOPE_API_KEY!,
+  model: 'qwen-max',
+})
+```
+
+`qwen` is exported as an alias for the same factory.
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | `qwen-max` |
+| `baseUrl` | `string` | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| `retry` | `RetryOptions` | inherited |
+
+## Capabilities
+
+`{ streaming: true, tools: true, multiModal: true, usage: true }`. The compat endpoint mirrors the OpenAI chat-completions schema, so request/response shapes match `openai({ baseUrl })`.
+
+## Why bail / Qwen
+
+- APAC latency + data residency.
+- Qwen-VL handles image / audio / video inputs.
+- Strong Chinese-first reasoning.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `DASHSCOPE_API_KEY` | API key |
+
+## Related
+
+- [Providers overview](./) · [Choosing an adapter](./choosing) · [openai](./openai)

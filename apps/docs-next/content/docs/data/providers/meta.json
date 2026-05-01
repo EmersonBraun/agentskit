@@ -25,6 +25,7 @@
     "huggingface",
     "cerebras",
     "replicate",
+    "bail",
     "langchain",
     "langgraph",
     "vercel-ai",
