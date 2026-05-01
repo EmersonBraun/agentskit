@@ -22,6 +22,9 @@ export type { TraceSpan, TraceTrackerCallbacks } from './trace-tracker'
 export { costGuard, priceFor, computeCost, DEFAULT_PRICES } from './cost-guard'
 export type { CostGuardOptions, TokenPrice } from './cost-guard'
 
+export { multiTenantCostGuard } from './cost-guard-multi-tenant'
+export type { MultiTenantCostGuardOptions } from './cost-guard-multi-tenant'
+
 export { approximateCounter, countTokens, countTokensDetailed, createProviderCounter } from './token-counter'
 export type { ProviderTokenCounterOptions } from './token-counter'
 

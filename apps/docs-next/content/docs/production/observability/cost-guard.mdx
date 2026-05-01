@@ -18,6 +18,31 @@ const runtime = createRuntime({
 
 `onExceed`: `'throw' | 'stop' | 'warn'`.
 
+## multiTenantCostGuard
+
+Same accounting partitioned by tenant for SaaS deployments.
+
+```ts
+import { multiTenantCostGuard } from '@agentskit/observability'
+
+const guard = multiTenantCostGuard({
+  budgets: { 'acme-co': 5, 'startup-co': 1 },
+  defaultBudgetUsd: 0.10,         // unlisted tenants
+  onExceeded: ({ tenant, costUsd, budgetUsd }) => {
+    metrics.increment('agent.budget.exceeded', { tenant })
+    // Reject the next request at the gateway, log+drop, etc.
+  },
+})
+
+createRuntime({ adapter, observers: [guard] })
+
+// Wire your request scope: AsyncLocalStorage or set-before-call
+guard.setTenant(req.tenant)
+await runtime.run(task)
+```
+
+**Why no auto-abort.** SaaS multi-tenant deployments typically reject the inbound request at the gateway, not mid-run. Wire the abort to the controller you already track per request.
+
 ## Token counters
 
 ```ts
