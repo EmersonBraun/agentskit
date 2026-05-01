@@ -1,0 +1,54 @@
+---
+title: vertex
+description: Vertex AI — Gemini on Google Cloud with project + region routing and OAuth2 tokens.
+---
+
+```ts
+import { vertex } from '@agentskit/adapters'
+
+const adapter = vertex({
+  project: process.env.GCP_PROJECT!,
+  region: 'us-central1',
+  model: 'gemini-2.5-pro',
+  accessToken: process.env.GCP_ACCESS_TOKEN!,
+})
+```
+
+`accessToken` can be a string or a `() => Promise<string>` minted on demand. The adapter intentionally does not depend on `google-auth-library`; mint tokens with `gcloud auth print-access-token`, the auth library, or your own Workload Identity flow.
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `project` | `string` | required |
+| `region` | `string` | required (e.g. `us-central1`) |
+| `model` | `string` | required (e.g. `gemini-2.5-pro`) |
+| `accessToken` | `string \| (() => string \| Promise<string>)` | required |
+| `publisher` | `string` | `google` (set for partner publishers like `anthropic`) |
+| `retry` | `RetryOptions` | inherited |
+
+## Capabilities
+
+`{ streaming: true, tools: true, multiModal: true, usage: true, reasoning: model.includes('pro') }`. Request shape mirrors the public Gemini API; auth is OAuth2 instead of an API key.
+
+## Why vertex
+
+- GCP-native deployments that need Gemini behind project IAM.
+- Partner publishers (Anthropic on Vertex, Mistral on Vertex) under one auth model.
+- Workload Identity / Service Account auth.
+
+## Caveats
+
+- This adapter does **not** mint tokens. Bring `accessToken` from your auth flow (function form is recommended in long-lived processes — tokens expire after ~1 hour).
+- Knowledge Bases / Grounding go in `@agentskit/rag` (not in v1).
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `GCP_PROJECT` | GCP project id |
+| `GCP_ACCESS_TOKEN` | OAuth2 token (or mint dynamically in `accessToken`) |
+
+## Related
+
+- [Providers overview](./) · [Choosing an adapter](./choosing) · [gemini](./gemini) · [bedrock](./bedrock)
