@@ -24,6 +24,7 @@
     "openrouter",
     "huggingface",
     "cerebras",
+    "replicate",
     "langchain",
     "langgraph",
     "vercel-ai",

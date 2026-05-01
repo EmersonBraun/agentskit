@@ -1,0 +1,62 @@
+---
+title: replicate
+description: Replicate — hosted open models behind one API. Two-step prediction + SSE stream.
+---
+
+```ts
+import { replicate } from '@agentskit/adapters'
+
+const adapter = replicate({
+  apiKey: process.env.REPLICATE_API_TOKEN!,
+  model: 'meta/meta-llama-3-70b-instruct',
+})
+```
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `apiKey` | `string` | required |
+| `model` | `string` | required (e.g. `meta/meta-llama-3-70b-instruct`) |
+| `version` | `string` | optional — pin a specific version hash |
+| `baseUrl` | `string` | `https://api.replicate.com` |
+| `toInput` | `(request) => Record<string, unknown>` | `{ prompt }` (joined `[ROLE] content`) |
+
+## Capabilities
+
+`{ streaming: true, tools: false }` — Replicate's prediction surface doesn't expose a uniform tool-calling shape across models, so the adapter ships text-stream-only.
+
+## How streaming works
+
+Replicate uses a two-step prediction protocol:
+
+1. POST to `/v1/models/{owner}/{name}/predictions` (or `/v1/predictions` with `version`) — returns a prediction with a `urls.stream` SSE endpoint.
+2. GET that SSE stream; events of type `output` carry text deltas, `done` ends the run, `error` surfaces failure.
+
+This implies one extra round-trip before the first token. For latency-sensitive workloads, prefer `groq` or `cerebras`.
+
+## Custom input shape
+
+Some models take chat-style inputs, others `{ prompt, max_tokens, temperature }`. Override `toInput` to fit:
+
+```ts
+replicate({
+  apiKey: process.env.REPLICATE_API_TOKEN!,
+  model: 'meta/meta-llama-3-70b-instruct',
+  toInput: (request) => ({
+    prompt: request.messages.map(m => m.content).join('\n'),
+    max_tokens: 512,
+    temperature: 0.7,
+  }),
+})
+```
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `REPLICATE_API_TOKEN` | API token |
+
+## Related
+
+- [Providers overview](./) · [Choosing an adapter](./choosing)
