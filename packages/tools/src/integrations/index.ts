@@ -29,6 +29,34 @@ export type { StripeConfig } from './stripe'
 export { postgres, postgresQuery } from './postgres'
 export type { PostgresConfig, PostgresExecuteResult } from './postgres'
 
+export { postgresWithRoles } from './postgres-roles'
+export type { PostgresRolesConfig } from './postgres-roles'
+
+export { twilio, twilioSendSms } from './twilio'
+export type { TwilioConfig } from './twilio'
+
+export {
+  pagerduty,
+  pagerdutyTrigger,
+  pagerdutyAcknowledge,
+  pagerdutyResolve,
+  pagerdutyOncall,
+} from './pagerduty'
+export type { PagerDutyConfig } from './pagerduty'
+
+export { stripeWebhookTool, verifyStripeSignature } from './stripe-webhook'
+export type { StripeWebhookConfig } from './stripe-webhook'
+
+export {
+  cloudflareR2,
+  cloudflareR2Get,
+  cloudflareR2Put,
+  cloudflareR2List,
+  cloudflareR2Delete,
+  cloudflareR2SignedUrl,
+} from './cloudflare-r2'
+export type { CloudflareR2Config, R2ClientLike } from './cloudflare-r2'
+
 export { s3, s3GetObject, s3PutObject, s3ListObjects } from './s3'
 export type { S3Config, S3Client } from './s3'
 

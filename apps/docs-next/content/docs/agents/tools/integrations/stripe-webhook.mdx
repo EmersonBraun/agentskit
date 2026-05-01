@@ -1,0 +1,45 @@
+---
+title: stripeWebhook
+description: Verify Stripe webhook signatures and parse the event before the agent ever sees it.
+---
+
+```ts
+import { stripeWebhookTool } from '@agentskit/tools/integrations'
+
+const tools = [
+  stripeWebhookTool({ secret: process.env.STRIPE_WEBHOOK_SECRET! }),
+]
+```
+
+## Tool
+
+| Tool | Purpose |
+|---|---|
+| `stripe_webhook_verify` | Verify the `Stripe-Signature` header against a raw payload, return the parsed event on success, throw otherwise. |
+
+## Schema
+
+```ts
+{
+  payload: string;   // Raw request body (the BYTES Stripe signed, not JSON-parsed)
+  signature: string; // Value of the Stripe-Signature header
+}
+```
+
+Returns `{ id, type, created, object }` — the verified event metadata plus the inner data object.
+
+## How verification works
+
+- Parses `t=...,v1=...` from the header.
+- Refuses if the timestamp is older than `toleranceSeconds` (default 5 min) — defense against replay attacks.
+- Computes `HMAC-SHA256(secret, "${t}.${payload}")` and compares against every `v1=` in constant time.
+- Throws on any mismatch — the agent never receives an event whose signature didn't verify.
+
+## Why a tool, not middleware
+
+Webhook verification should happen *before* the agent loop. But making it a tool lets the agent reason about an event with a name (`charge.succeeded`, `customer.subscription.deleted`) instead of an opaque blob, and trace the verification step in observability.
+
+## Related
+
+- [stripe](./stripe) — outbound Stripe REST tools.
+- [Production → security: prompt-injection](/docs/production/security/prompt-injection) — why server-verifying inputs matters before they hit the model.

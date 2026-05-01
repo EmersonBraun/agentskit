@@ -1,0 +1,45 @@
+---
+title: twilio
+description: Twilio SMS — send via the REST Messages endpoint with E.164 validation.
+---
+
+```ts
+import { twilio } from '@agentskit/tools/integrations'
+
+const tools = twilio({
+  accountSid: process.env.TWILIO_ACCOUNT_SID!,
+  authToken: process.env.TWILIO_AUTH_TOKEN!,
+  fromNumber: '+14155551234',
+})
+```
+
+## Tools
+
+| Tool | Purpose |
+|---|---|
+| `twilio_send_sms` | POST a message to a recipient. |
+
+## Schema
+
+```ts
+{
+  to: string;        // E.164 (e.g. +14155559999)
+  body: string;      // <= 1600 chars; Twilio segments at 160
+  from?: string;     // override fromNumber (E.164)
+}
+```
+
+Returns `{ sid, status }` — Twilio message SID and the queued/sending/delivered/etc. status.
+
+## E.164 validation
+
+The adapter rejects any number that isn't E.164 at construction time and at execute time. This prevents silent malformed sends.
+
+## Why send-only
+
+Receive-side requires a webhook handler in your app (Twilio doesn't push, you pull from Twilio's POSTs). Wire that up alongside the agent's outbound surface.
+
+## Related
+
+- [Built-ins → slackTool](/docs/agents/tools/builtins#slacktool) — Slack webhook companion.
+- [Use case: support agent](/docs/use-cases/support-agent)

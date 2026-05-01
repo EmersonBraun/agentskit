@@ -1,0 +1,51 @@
+---
+title: postgresWithRoles
+description: Read/write split for the postgres tool — two role-bound clients, two distinct tools, least-privilege at the database level.
+---
+
+```ts
+import { Pool } from 'pg'
+import { postgresWithRoles } from '@agentskit/tools/integrations'
+
+const readPool = new Pool({ connectionString: process.env.PG_READ_URL! })
+const writePool = new Pool({ connectionString: process.env.PG_WRITE_URL! })
+
+const tools = postgresWithRoles({
+  readClient: async (sql, params) => {
+    const r = await readPool.query(sql, params)
+    return { rows: r.rows, rowCount: r.rowCount ?? 0 }
+  },
+  writeClient: async (sql, params) => {
+    const r = await writePool.query(sql, params)
+    return { rows: r.rows, rowCount: r.rowCount ?? 0 }
+  },
+  maxRows: 200,
+})
+```
+
+## Tools
+
+| Tool | Surface |
+|---|---|
+| `postgres_read` | Read-only SQL via `readClient`. Refuses `INSERT` / `UPDATE` / `DELETE` / `MERGE` / `DROP` / `ALTER` / `TRUNCATE` / `CREATE` / `GRANT` / `REVOKE`. Always exposed. |
+| `postgres_write` | Write SQL via `writeClient`. Allows the write verbs above. Only exposed when `writeClient` is set. |
+
+## Why split them
+
+A single `postgres({ allowWrites: true })` tool gives the agent both capabilities through one surface. If the agent gets confused — or prompt-injected — it can write where it meant to read.
+
+Two role-bound clients enforce least privilege at the database level, not just at the prompt level:
+
+- `readClient` connected as a role with **`USAGE`** + **`SELECT`** only, ideally pointed at a read replica.
+- `writeClient` connected as a role with the minimum write privileges the use case requires, on the primary.
+
+A prompt-injected agent that calls `postgres_write` without permission is rejected by Postgres itself, not just by AgentsKit.
+
+## Read-only without writeClient
+
+Pass only `readClient` to expose a single read-only tool — the agent literally cannot write because no write surface exists.
+
+## Related
+
+- [postgres](./postgres) — single-tool postgres with `allowWrites` flag (use when role-splitting isn't an option).
+- [Production → security: mandatory sandbox](/docs/production/security/prompt-injection)

@@ -1,0 +1,54 @@
+---
+title: cloudflareR2
+description: Cloudflare R2 storage — S3-compatible at the protocol level, mirrors the s3 tool surface.
+---
+
+```ts
+import { S3Client } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { GetObjectCommand } from '@aws-sdk/client-s3'
+import { cloudflareR2 } from '@agentskit/tools/integrations'
+
+const client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+})
+
+const tools = cloudflareR2({
+  client,
+  bucket: 'my-bucket',
+  signGetUrl: async ({ Bucket, Key, expiresIn }) =>
+    getSignedUrl(client, new GetObjectCommand({ Bucket, Key }), { expiresIn }),
+})
+```
+
+`@aws-sdk/client-s3` and `@aws-sdk/s3-request-presigner` are **optional peer dependencies** loaded lazily.
+
+## Tools
+
+| Tool | Purpose |
+|---|---|
+| `r2_get` | Read an object by key. |
+| `r2_put` | Write an object (string body + optional `contentType`). |
+| `r2_list` | List keys with optional prefix + pagination. |
+| `r2_delete` | Delete an object by key. |
+| `r2_signed_url` | Pre-signed GET URL with expiry. Only exposed when `signGetUrl` is provided. |
+
+## Why R2 vs S3
+
+R2 is S3-compatible at the protocol level — the AgentsKit surface is identical. R2's value prop is the cost profile (no egress charges) and the Cloudflare-stack ergonomics. Use the same tool set when an agent needs storage with a different cost shape.
+
+## Caveats
+
+- **Optional peer dep.** Install `@aws-sdk/client-s3` (and `@aws-sdk/s3-request-presigner` for signed URLs) — the adapter throws a clear hint if absent.
+- **Region is `auto`.** R2 ignores AWS regions; use the literal string `auto`.
+- **Endpoint format.** `https://<account-id>.r2.cloudflarestorage.com` — not the S3 endpoint.
+
+## Related
+
+- [s3](./s3) — same surface, AWS S3 backend.
+- [Storage recipes](/docs/reference/recipes)

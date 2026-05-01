@@ -1,0 +1,39 @@
+---
+title: pagerduty
+description: PagerDuty Events API v2 — trigger / acknowledge / resolve. Optional REST oncall lookup.
+---
+
+```ts
+import { pagerduty } from '@agentskit/tools/integrations'
+
+const tools = pagerduty({
+  routingKey: process.env.PAGERDUTY_ROUTING_KEY!,
+  apiToken: process.env.PAGERDUTY_API_TOKEN, // optional — required only for pagerduty_oncall
+})
+```
+
+## Tools
+
+| Tool | Purpose |
+|---|---|
+| `pagerduty_trigger` | Create an incident with `summary` / `source` / `severity`. Returns `dedup_key`. |
+| `pagerduty_acknowledge` | Acknowledge by `dedup_key`. |
+| `pagerduty_resolve` | Resolve by `dedup_key`. |
+| `pagerduty_oncall` | Look up the current on-call user for a schedule. Requires `apiToken`. |
+
+## Severity ladder
+
+`critical · error · warning · info` — matches the PagerDuty Events API enum.
+
+## Idempotency
+
+Pass a stable `dedup_key` on `trigger` if you want acknowledge/resolve to land on the same incident later. Without it, PagerDuty assigns one and returns it.
+
+## Why this exists
+
+Incident-response agents need to page humans, ack their own paging when they self-recover, and resolve when the alert clears. This wraps the v2 Events surface so the agent doesn't reach for a generic HTTP tool.
+
+## Related
+
+- [Use case: oncall agent](/docs/reference/recipes/devtools-server)
+- [Built-ins → slackTool](/docs/agents/tools/builtins#slacktool) — companion notification path.
