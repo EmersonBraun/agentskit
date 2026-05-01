@@ -2,7 +2,7 @@
 title: "System Prompts Are Your Production Agent Harness - Here's Why"
 date: 2026-04-28
 summary: "OpenAI's Codex instructions reveal the blueprint for deployment-ready agent control that AgentsKit harnesses implement"
-author: "Emerson Braun <emersonfbraun@gmail.com>"
+author: "Emerson Braun <emerson.braun@agentskit.io>"
 tags: ["ai", "agentskit", "weekly"]
 ---
 
