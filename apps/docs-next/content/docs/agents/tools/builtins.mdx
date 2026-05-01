@@ -9,6 +9,7 @@ description: Ship-ready tools — web, fetch, filesystem, shell.
 | `fetchUrl` | `@agentskit/tools` | HTTP GET + content extraction |
 | `filesystem` | `@agentskit/tools` | read/write/list, scoped to a root |
 | `shell` | `@agentskit/tools` | exec commands, sandbox-friendly |
+| `sqliteQueryTool` | `@agentskit/tools` | read-only SQL against a local SQLite file |
 
 ## webSearch
 
@@ -44,6 +45,30 @@ const tool = createMandatorySandbox(shell({ cwd: '/tmp/agent-work' }), {
   requireSandbox: true,
 })
 ```
+
+## sqliteQueryTool
+
+```ts
+import { sqliteQueryTool } from '@agentskit/tools'
+
+const tool = sqliteQueryTool({ path: './data/app.db' })
+```
+
+Read-only by design — `INSERT`, `UPDATE`, `DELETE`, `DROP`, etc. are
+rejected. Returns up to 100 rows by default with a `truncated` flag;
+override with `maxRows`.
+
+`better-sqlite3` is an **optional peer dependency** — install it
+alongside this package:
+
+```bash
+npm install better-sqlite3
+```
+
+> **Safety note.** SQL is the agent's input here, so prompt injection
+> can produce data-exfiltration queries even though writes are blocked.
+> Treat the database as read-by-the-LLM data and avoid pointing this
+> tool at databases that hold secrets the agent shouldn't see.
 
 ## Related
 

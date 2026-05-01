@@ -14,3 +14,6 @@ export { listTools } from './discovery'
 
 export { defineZodTool } from './zod'
 export type { DefineZodToolConfig } from './zod'
+
+export { sqliteQueryTool } from './sqlite-query'
+export type { SqliteQueryConfig } from './sqlite-query'

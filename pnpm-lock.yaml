@@ -732,12 +732,18 @@ importers:
         specifier: workspace:*
         version: link:../core
     devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
       '@types/json-schema':
         specifier: ^7.0.15
         version: 7.0.15
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.0
+      better-sqlite3:
+        specifier: ^12.9.0
+        version: 12.9.0
       tsup:
         specifier: ^8.5.0
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.10)(tsx@4.21.0)(typescript@6.0.3)(yaml@2.8.3)
