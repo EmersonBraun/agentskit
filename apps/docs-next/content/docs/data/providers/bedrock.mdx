@@ -1,0 +1,63 @@
+---
+title: bedrock
+description: AWS Bedrock — enterprise path for Claude on Anthropic's hosted-on-AWS surface.
+---
+
+```ts
+import { bedrock } from '@agentskit/adapters'
+
+const adapter = bedrock({
+  model: 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+  region: 'us-east-1',
+})
+```
+
+`@aws-sdk/client-bedrock-runtime` is an **optional peer dependency** —
+the adapter loads it lazily so installs without AWS infra keep working.
+
+```bash
+npm install @aws-sdk/client-bedrock-runtime
+```
+
+Auth uses the AWS SDK's [default credential chain](https://docs.aws.amazon.com/sdkref/latest/guide/standardized-credentials.html)
+— env vars, shared config, IAM role, SSO. No credentials are read or
+stored by the adapter itself.
+
+## Options
+
+| Option | Type | Default |
+|---|---|---|
+| `model` | `string` | required (must start with `anthropic.`) |
+| `region` | `string` | SDK default (env / shared config) |
+| `maxTokens` | `number` | `4096` |
+| `client` | `BedrockRuntimeClientLike` | constructed from `region` |
+
+## Capabilities
+
+`{ streaming: true, tools: true, multiModal: true, usage: true, reasoning: model.includes('sonnet' | 'opus') }`.
+
+Streams via `InvokeModelWithResponseStreamCommand`. Tool calls follow
+the Anthropic-on-Bedrock event shape (`content_block_start` /
+`content_block_delta` / `content_block_stop`).
+
+## Caveats
+
+- **Optional peer dep.** If `@aws-sdk/client-bedrock-runtime` is not
+  installed, the adapter throws a friendly install hint on the first
+  request.
+- **v1 only routes Anthropic models.** Titan and other foundation
+  models on Bedrock are tracked as a follow-up.
+- **Guardrails** are not wired in v1. Plan to add in Phase 2.
+- **Knowledge Bases** belong in `@agentskit/rag`.
+
+## Env
+
+| Var | Purpose |
+|---|---|
+| `AWS_REGION` | Default region for the SDK |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Static credentials (or use IAM role / SSO) |
+
+## Related
+
+- [Providers overview](./) · [Choosing an adapter](./choosing)
+- [Concepts: Adapter](/docs/get-started/concepts/adapter)

@@ -12,6 +12,7 @@
     "openai",
     "azure-openai",
     "anthropic",
+    "bedrock",
     "gemini",
     "vertex",
     "grok",
