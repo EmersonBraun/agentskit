@@ -11,6 +11,10 @@ export {
   loadConfluencePage,
   loadGoogleDriveFile,
   loadPdf,
+  loadS3,
+  loadGcs,
+  loadDropbox,
+  loadOneDrive,
 } from './loaders'
 export type {
   LoaderOptions,
@@ -21,7 +25,15 @@ export type {
   ConfluenceLoaderOptions,
   DriveLoaderOptions,
   PdfLoaderOptions,
+  S3LoaderOptions,
+  S3LikeClient,
+  GcsLoaderOptions,
+  DropboxLoaderOptions,
+  OneDriveLoaderOptions,
 } from './loaders'
+
+export { voyageReranker, jinaReranker } from './rerankers'
+export type { VoyageRerankerOptions, JinaRerankerOptions } from './rerankers'
 
 export {
   createRerankedRetriever,
