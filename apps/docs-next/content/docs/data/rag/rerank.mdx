@@ -15,9 +15,13 @@ const retriever = createRerankedRetriever({
 
 ## Rerankers
 
-- `cohereReranker({ apiKey, model? })`
-- `bgeReranker({ url, model? })` — self-hosted.
-- `bm25Reranker()` — zero-dep fallback.
+- `cohereReranker({ apiKey, model? })` — Cohere Rerank.
+- `bgeReranker({ url, model? })` — self-hosted BGE cross-encoder.
+- `voyageReranker({ apiKey, model? })` — Voyage AI; defaults to `rerank-2`. Pass `rerank-2-lite` for cheaper / faster runs.
+- `jinaReranker({ apiKey, model? })` — Jina AI; defaults to `jina-reranker-v2-base-multilingual`.
+- `bm25Rerank` — zero-dep fallback.
+
+All rerankers are drop-in `RerankFn` values — they share the same `createRerankedRetriever` API so you can swap them without changing call sites.
 
 ## Related
 

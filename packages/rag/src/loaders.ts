@@ -160,6 +160,267 @@ export async function loadGoogleDriveFile(
   return [{ content, source: `gdrive://${fileId}`, metadata: { fileId } }]
 }
 
+// ---------------------------------------------------------------------------
+// S3 — Cloudflare R2 / MinIO / any S3-compatible bucket
+// ---------------------------------------------------------------------------
+
+export interface S3LikeClient {
+  send(command: { input: Record<string, unknown> }): Promise<unknown>
+}
+
+export interface S3LoaderOptions extends LoaderOptions {
+  /**
+   * AWS SDK v3 \`S3Client\`-shaped client. Bring your own to keep the bundle
+   * lean. Works with R2 / MinIO / etc. by configuring the client's endpoint.
+   */
+  client: S3LikeClient
+  bucket: string
+  /**
+   * AWS SDK v3 commands. Pass them in to skip the dynamic import:
+   * \`{ ListObjectsV2Command, GetObjectCommand }\` from \`@aws-sdk/client-s3\`.
+   * Optional — when omitted the loader resolves them lazily.
+   */
+  commands?: {
+    ListObjectsV2Command: new (input: Record<string, unknown>) => { input: Record<string, unknown> }
+    GetObjectCommand: new (input: Record<string, unknown>) => { input: Record<string, unknown> }
+  }
+  /** Limit to keys under this prefix. */
+  prefix?: string
+  /** Include only keys matching this predicate after listing. */
+  filter?: (key: string) => boolean
+  /** Cap on number of objects to load. Default 100. */
+  maxFiles?: number
+}
+
+interface S3SdkLike {
+  ListObjectsV2Command: new (input: Record<string, unknown>) => { input: Record<string, unknown> }
+  GetObjectCommand: new (input: Record<string, unknown>) => { input: Record<string, unknown> }
+}
+
+let cachedS3Sdk: Promise<S3SdkLike> | null = null
+async function loadS3Sdk(): Promise<S3SdkLike> {
+  if (!cachedS3Sdk) {
+    cachedS3Sdk = (async () => {
+      try {
+        const moduleId = '@aws-sdk/client-s3'
+        return (await import(/* @vite-ignore */ moduleId)) as unknown as S3SdkLike
+      } catch {
+        throw new Error('Install @aws-sdk/client-s3 to use loadS3: npm install @aws-sdk/client-s3')
+      }
+    })()
+  }
+  return cachedS3Sdk
+}
+
+export async function loadS3(options: S3LoaderOptions): Promise<InputDocument[]> {
+  const { ListObjectsV2Command, GetObjectCommand } = options.commands ?? await loadS3Sdk()
+  const docs: InputDocument[] = []
+  let continuationToken: string | undefined
+  const maxFiles = options.maxFiles ?? 100
+  outer: while (true) {
+    const list = await options.client.send(new ListObjectsV2Command({
+      Bucket: options.bucket,
+      Prefix: options.prefix,
+      ContinuationToken: continuationToken,
+    })) as {
+      Contents?: Array<{ Key?: string }>
+      NextContinuationToken?: string
+      IsTruncated?: boolean
+    }
+    for (const obj of list.Contents ?? []) {
+      const key = obj.Key
+      if (!key) continue
+      if (options.filter && !options.filter(key)) continue
+      const get = await options.client.send(new GetObjectCommand({
+        Bucket: options.bucket,
+        Key: key,
+      })) as { Body?: { transformToString(): Promise<string> } }
+      const content = await get.Body?.transformToString() ?? ''
+      docs.push({
+        content,
+        source: `s3://${options.bucket}/${key}`,
+        metadata: { bucket: options.bucket, key },
+      })
+      if (docs.length >= maxFiles) break outer
+    }
+    if (!list.IsTruncated) break
+    continuationToken = list.NextContinuationToken
+  }
+  return docs
+}
+
+// ---------------------------------------------------------------------------
+// GCS — Google Cloud Storage
+// ---------------------------------------------------------------------------
+
+export interface GcsLoaderOptions extends LoaderOptions {
+  bucket: string
+  prefix?: string
+  /** OAuth2 access token. Mint via google-auth-library or workload identity. */
+  accessToken: string | (() => string | Promise<string>)
+  filter?: (name: string) => boolean
+  maxFiles?: number
+}
+
+export async function loadGcs(options: GcsLoaderOptions): Promise<InputDocument[]> {
+  const fetchImpl = options.fetch ?? globalThis.fetch
+  const docs: InputDocument[] = []
+  const maxFiles = options.maxFiles ?? 100
+  const getToken = async () =>
+    typeof options.accessToken === 'string' ? options.accessToken : await options.accessToken()
+
+  let pageToken: string | undefined
+  outer: while (true) {
+    const params = new URLSearchParams()
+    if (options.prefix) params.set('prefix', options.prefix)
+    if (pageToken) params.set('pageToken', pageToken)
+    const url = `https://storage.googleapis.com/storage/v1/b/${options.bucket}/o?${params.toString()}`
+    const response = await fetchImpl(url, {
+      headers: { authorization: `Bearer ${await getToken()}` },
+    })
+    if (!response.ok) throw new Error(`loadGcs ${response.status}: ${url}`)
+    const data = await response.json() as {
+      items?: Array<{ name: string }>
+      nextPageToken?: string
+    }
+    for (const item of data.items ?? []) {
+      if (options.filter && !options.filter(item.name)) continue
+      const objUrl = `https://storage.googleapis.com/storage/v1/b/${options.bucket}/o/${encodeURIComponent(item.name)}?alt=media`
+      const objResponse = await fetchImpl(objUrl, {
+        headers: { authorization: `Bearer ${await getToken()}` },
+      })
+      if (!objResponse.ok) continue
+      docs.push({
+        content: await objResponse.text(),
+        source: `gs://${options.bucket}/${item.name}`,
+        metadata: { bucket: options.bucket, name: item.name },
+      })
+      if (docs.length >= maxFiles) break outer
+    }
+    if (!data.nextPageToken) break
+    pageToken = data.nextPageToken
+  }
+  return docs
+}
+
+// ---------------------------------------------------------------------------
+// Dropbox
+// ---------------------------------------------------------------------------
+
+export interface DropboxLoaderOptions extends LoaderOptions {
+  /** Dropbox OAuth2 access token. */
+  accessToken: string
+  /** Folder path, e.g. `/team-docs`. Empty string = root. */
+  path?: string
+  filter?: (path: string) => boolean
+  maxFiles?: number
+}
+
+export async function loadDropbox(options: DropboxLoaderOptions): Promise<InputDocument[]> {
+  const fetchImpl = options.fetch ?? globalThis.fetch
+  const docs: InputDocument[] = []
+  const maxFiles = options.maxFiles ?? 100
+  const headers = { authorization: `Bearer ${options.accessToken}`, 'content-type': 'application/json' }
+
+  let cursor: string | undefined
+  outer: while (true) {
+    const url = cursor
+      ? 'https://api.dropboxapi.com/2/files/list_folder/continue'
+      : 'https://api.dropboxapi.com/2/files/list_folder'
+    const body = cursor ? { cursor } : { path: options.path ?? '', recursive: true }
+    const response = await fetchImpl(url, { method: 'POST', headers, body: JSON.stringify(body) })
+    if (!response.ok) throw new Error(`loadDropbox ${response.status}: ${url}`)
+    const data = await response.json() as {
+      entries?: Array<{ '.tag': string; path_lower?: string; path_display?: string }>
+      cursor?: string
+      has_more?: boolean
+    }
+    for (const entry of data.entries ?? []) {
+      if (entry['.tag'] !== 'file') continue
+      const path = entry.path_display ?? entry.path_lower
+      if (!path) continue
+      if (options.filter && !options.filter(path)) continue
+      const downloadResponse = await fetchImpl('https://content.dropboxapi.com/2/files/download', {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${options.accessToken}`,
+          'Dropbox-API-Arg': JSON.stringify({ path }),
+        },
+      })
+      if (!downloadResponse.ok) continue
+      docs.push({
+        content: await downloadResponse.text(),
+        source: `dropbox:${path}`,
+        metadata: { path },
+      })
+      if (docs.length >= maxFiles) break outer
+    }
+    if (!data.has_more) break
+    cursor = data.cursor
+  }
+  return docs
+}
+
+// ---------------------------------------------------------------------------
+// OneDrive — Microsoft Graph
+// ---------------------------------------------------------------------------
+
+export interface OneDriveLoaderOptions extends LoaderOptions {
+  /** Microsoft Graph access token (mint via MSAL). */
+  accessToken: string | (() => string | Promise<string>)
+  /** Drive id. Defaults to `me/drive` (the signed-in user's OneDrive). */
+  driveId?: string
+  /** Item id (folder) to walk. Defaults to root. */
+  folderItemId?: string
+  filter?: (name: string) => boolean
+  maxFiles?: number
+}
+
+export async function loadOneDrive(options: OneDriveLoaderOptions): Promise<InputDocument[]> {
+  const fetchImpl = options.fetch ?? globalThis.fetch
+  const docs: InputDocument[] = []
+  const maxFiles = options.maxFiles ?? 100
+  const driveBase = options.driveId
+    ? `https://graph.microsoft.com/v1.0/drives/${options.driveId}`
+    : `https://graph.microsoft.com/v1.0/me/drive`
+  const folder = options.folderItemId ? `items/${options.folderItemId}` : 'root'
+
+  const getToken = async () =>
+    typeof options.accessToken === 'string' ? options.accessToken : await options.accessToken()
+
+  async function walk(prefix: string): Promise<void> {
+    const url = `${driveBase}/${prefix}/children`
+    const response = await fetchImpl(url, {
+      headers: { authorization: `Bearer ${await getToken()}` },
+    })
+    if (!response.ok) throw new Error(`loadOneDrive ${response.status}: ${url}`)
+    const data = await response.json() as {
+      value?: Array<{ id: string; name: string; folder?: object; file?: { mimeType: string }; '@microsoft.graph.downloadUrl'?: string }>
+    }
+    for (const item of data.value ?? []) {
+      if (docs.length >= maxFiles) return
+      if (item.folder) {
+        await walk(`items/${item.id}`)
+        continue
+      }
+      if (!item.file) continue
+      if (options.filter && !options.filter(item.name)) continue
+      const downloadUrl = item['@microsoft.graph.downloadUrl']
+      if (!downloadUrl) continue
+      const fileResponse = await fetchImpl(downloadUrl)
+      if (!fileResponse.ok) continue
+      docs.push({
+        content: await fileResponse.text(),
+        source: `onedrive:${item.id}`,
+        metadata: { id: item.id, name: item.name, mimeType: item.file.mimeType },
+      })
+    }
+  }
+
+  await walk(folder)
+  return docs
+}
+
 export interface PdfLoaderOptions extends LoaderOptions {
   parsePdf: (bytes: Uint8Array) => Promise<{ text: string; pages?: number }> | { text: string; pages?: number }
 }
