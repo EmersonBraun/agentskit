@@ -3,6 +3,7 @@ import path from 'node:path'
 
 export type StarterKind =
   | 'react'
+  | 'nextjs'
   | 'ink'
   | 'runtime'
   | 'multi-agent'
@@ -974,6 +975,179 @@ console.log(\`Listening on http://localhost:\${server.port}\`)
   }
 }
 
+function nextjsStarter(ctx: RenderContext): Record<string, string> {
+  const deps: Record<string, string> = {
+    '@agentskit/react': '^0.4.0',
+    next: '^15.0.0',
+    react: '^19.0.0',
+    'react-dom': '^19.0.0',
+  }
+  if (ctx.provider !== 'demo') deps['@agentskit/adapters'] = '^0.4.0'
+  if (ctx.tools.length > 0) deps['@agentskit/tools'] = '^0.4.0'
+
+  const envKey = PROVIDER_ENV_KEY[ctx.provider]
+  const adapter = adapterCall(ctx.provider)
+  const apiAdapterImport = ctx.provider === 'demo'
+    ? ''
+    : `import { ${PROVIDER_IMPORT[ctx.provider as Exclude<Provider, 'demo'>]} } from '@agentskit/adapters'\n`
+  const apiDemoSnippet = ctx.provider === 'demo' ? demoAdapterSnippet() : ''
+
+  return {
+    'package.json': JSON.stringify(
+      {
+        name: 'agentskit-nextjs-app',
+        private: true,
+        type: 'module',
+        scripts: {
+          dev: 'next dev',
+          build: 'next build',
+          start: 'next start',
+          lint: 'next lint',
+        },
+        dependencies: deps,
+        devDependencies: {
+          '@types/node': '^22.0.0',
+          '@types/react': '^19.0.0',
+          '@types/react-dom': '^19.0.0',
+          typescript: '^5.5.0',
+        },
+      },
+      null,
+      2,
+    ) + '\n',
+
+    'next.config.mjs': `/** @type {import('next').NextConfig} */
+const nextConfig = {}
+export default nextConfig
+`,
+
+    'tsconfig.json': JSON.stringify(
+      {
+        compilerOptions: {
+          target: 'ES2022',
+          lib: ['dom', 'dom.iterable', 'ES2022'],
+          allowJs: true,
+          skipLibCheck: true,
+          strict: true,
+          noEmit: true,
+          esModuleInterop: true,
+          module: 'ESNext',
+          moduleResolution: 'bundler',
+          resolveJsonModule: true,
+          isolatedModules: true,
+          jsx: 'preserve',
+          incremental: true,
+          plugins: [{ name: 'next' }],
+          paths: { '@/*': ['./*'] },
+        },
+        include: ['next-env.d.ts', '**/*.ts', '**/*.tsx', '.next/types/**/*.ts'],
+        exclude: ['node_modules'],
+      },
+      null,
+      2,
+    ) + '\n',
+
+    'app/layout.tsx': `import type { ReactNode } from 'react'
+import '@agentskit/react/theme'
+
+export const metadata = { title: 'AgentsKit · Next.js Starter' }
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
+}
+`,
+
+    'app/page.tsx': `'use client'
+
+import { ChatContainer, InputBar, Message, useChat } from '@agentskit/react'
+import { genericAdapter } from './chat-adapter'
+
+export default function Page() {
+  const chat = useChat({ adapter: genericAdapter('/api/chat') })
+
+  return (
+    <main style={{ display: 'grid', placeItems: 'center', minHeight: '100dvh' }}>
+      <ChatContainer>
+        {chat.messages.map(message => (
+          <Message key={message.id} message={message} />
+        ))}
+        <InputBar chat={chat} />
+      </ChatContainer>
+    </main>
+  )
+}
+`,
+
+    'app/chat-adapter.ts': `import { generic } from '@agentskit/adapters'
+
+export const genericAdapter = (route: string) => generic({
+  fetch: async ({ messages, signal }) => {
+    const response = await fetch(route, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
+      signal,
+    })
+    if (!response.body) throw new Error('No body returned from /api/chat')
+    return response
+  },
+})
+`,
+
+    'app/api/chat/route.ts': `${apiAdapterImport}${apiDemoSnippet}export const runtime = 'edge'
+
+export async function POST(request: Request) {
+  const { messages } = await request.json() as { messages: Array<{ role: string; content: string }> }
+
+  const adapter = ${adapter}
+
+  const source = adapter.createSource({ messages: messages.map((message, index) => ({
+    id: String(index),
+    role: message.role as 'user' | 'assistant' | 'system',
+    content: message.content,
+    status: 'complete' as const,
+    createdAt: new Date(0),
+  })) })
+
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const encoder = new TextEncoder()
+      try {
+        for await (const chunk of source.stream()) {
+          if (chunk.type === 'text') controller.enqueue(encoder.encode(chunk.content))
+        }
+      } catch (err) {
+        controller.error(err)
+        return
+      }
+      controller.close()
+    },
+  })
+
+  return new Response(stream, {
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' },
+  })
+}
+`,
+
+    '.env.example': envKey ? `${envKey}=\n` : '# No API key required for the demo provider\n',
+
+    '.gitignore': `node_modules
+.next
+out
+.env
+.env.local
+.agentskit-history.*
+`,
+
+    'README.md': readmeFor(ctx),
+  }
+}
+
 function readmeFor(ctx: RenderContext): string {
   const installCmd = ctx.pm === 'npm' ? 'npm install' : `${ctx.pm} install`
   const runCmd = ctx.pm === 'npm' ? 'npm run dev' : `${ctx.pm} dev`
@@ -1014,6 +1188,7 @@ ISC
 
 const TEMPLATE_FN: Record<StarterKind, (ctx: RenderContext) => Record<string, string>> = {
   react: reactStarter,
+  nextjs: nextjsStarter,
   ink: inkStarter,
   runtime: runtimeStarter,
   'multi-agent': multiAgentStarter,

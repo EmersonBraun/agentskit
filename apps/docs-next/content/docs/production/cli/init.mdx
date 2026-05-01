@@ -17,7 +17,7 @@ Interactive. Picks template + provider + memory backend.
 
 | Flag | Purpose |
 |---|---|
-| `--template <name>` | `react` / `sveltekit` / `nuxt` / `ink` / `vite-ink` / `cloudflare-workers` / `bun` / `runtime` / `multi-agent` |
+| `--template <name>` | `react` / `nextjs` / `sveltekit` / `nuxt` / `ink` / `vite-ink` / `cloudflare-workers` / `bun` / `runtime` / `multi-agent` |
 | `--provider <name>` | `openai` / `anthropic` / `ollama` / ... |
 | `--name <dir>` | target directory |
 | `--no-install` | skip `pnpm install` |
@@ -25,6 +25,7 @@ Interactive. Picks template + provider + memory backend.
 ## Templates
 
 - **react** — Vite + `@agentskit/react` + `useChat` + headless components.
+- **nextjs** — Next.js App Router + `@agentskit/react` client + a streaming Edge Route Handler at `app/api/chat/route.ts`.
 - **sveltekit** — `@agentskit/svelte` + a `+server.ts` route streaming over fetch.
 - **nuxt** — `@agentskit/vue` + a Nitro `server/api/chat.post.ts` event handler.
 - **ink** — terminal chat via `@agentskit/ink`, run with `tsx`.

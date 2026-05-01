@@ -177,4 +177,33 @@ describe('@agentskit/cli', () => {
     expect(server).toContain('Bun.serve')
     expect(server).toContain('demoAdapter')
   })
+
+  it('writes a Next.js App Router starter with a streaming Route Handler', async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), 'agentskit-cli-'))
+    await writeStarterProject({ targetDir: tempDir, template: 'nextjs', provider: 'demo' })
+
+    const pkg = JSON.parse(await readFile(path.join(tempDir, 'package.json'), 'utf8'))
+    expect(pkg.dependencies.next).toBeTruthy()
+    expect(pkg.dependencies['@agentskit/react']).toBeTruthy()
+    expect(pkg.scripts.dev).toBe('next dev')
+
+    const route = await readFile(path.join(tempDir, 'app/api/chat/route.ts'), 'utf8')
+    expect(route).toContain('export async function POST')
+    expect(route).toContain("export const runtime = 'edge'")
+    expect(route).toContain('demoAdapter')
+
+    const page = await readFile(path.join(tempDir, 'app/page.tsx'), 'utf8')
+    expect(page).toContain("'use client'")
+    expect(page).toContain('useChat')
+  })
+
+  it('wires a real provider into the Next.js Route Handler', async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), 'agentskit-cli-'))
+    await writeStarterProject({ targetDir: tempDir, template: 'nextjs', provider: 'openai' })
+
+    const route = await readFile(path.join(tempDir, 'app/api/chat/route.ts'), 'utf8')
+    expect(route).toContain("import { openai } from '@agentskit/adapters'")
+    expect(route).toContain('openai({')
+    expect(route).not.toContain('demoAdapter')
+  })
 })

@@ -44,6 +44,7 @@ export async function runInteractiveInit(
       default: defaults.template ?? 'react',
       choices: [
         { name: 'React chat (Vite + browser)', value: 'react', description: 'Streaming UI with @agentskit/react' },
+        { name: 'Next.js chat (App Router + Route Handler)', value: 'nextjs', description: 'app/api/chat streams to a useChat client' },
         { name: 'SvelteKit chat', value: 'sveltekit', description: '@agentskit/svelte client + server route streaming' },
         { name: 'Nuxt chat', value: 'nuxt', description: '@agentskit/vue composable + Nitro server route streaming' },
         { name: 'Ink chat (terminal UI)', value: 'ink', description: 'Same chat but in your terminal' },
