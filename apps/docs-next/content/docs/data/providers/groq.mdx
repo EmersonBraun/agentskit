@@ -17,9 +17,13 @@ const adapter = groq({
 | Option | Type | Default |
 |---|---|---|
 | `apiKey` | `string` | required |
-| `model` | `string` | required |
+| `model` | `string` | `llama-3.3-70b-versatile` |
 | `baseUrl` | `string` | `https://api.groq.com/openai/v1` |
-| `fetch` | `typeof fetch` | global |
+| `retry` | `RetryOptions` | inherited |
+
+## Capabilities
+
+`{ streaming: true, tools: true, usage: true }` — Groq exposes a strict OpenAI-compatible surface, so the request shape matches `openai({ baseUrl })`.
 
 ## Why groq
 
