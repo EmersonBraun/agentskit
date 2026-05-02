@@ -29,6 +29,12 @@ jobs:
 
       - run: pnpm --filter "./packages/*" build
 
+      - name: Lint every example app
+        run: pnpm --filter "./apps/example-*" lint
+
+      - name: Build every example app
+        run: pnpm --filter "./apps/example-*" build
+
       - run: pnpm exec playwright test
 
       - if: always()
