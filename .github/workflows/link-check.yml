@@ -38,6 +38,5 @@ jobs:
             --cache
             --max-cache-age 7d
             --accept 200,206,301,302,403,429
-            --exclude-mail
             'apps/docs-next/content/docs/**/*.mdx'
             '*.md'
