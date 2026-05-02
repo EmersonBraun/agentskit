@@ -30,6 +30,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./trace-tracker": {
+      "types": "./dist/trace-tracker.d.ts",
+      "import": "./dist/trace-tracker.js",
+      "require": "./dist/trace-tracker.cjs"
+    },
+    "./cost-guard": {
+      "types": "./dist/cost-guard.d.ts",
+      "import": "./dist/cost-guard.js",
+      "require": "./dist/cost-guard.cjs"
     }
   },
   "files": [

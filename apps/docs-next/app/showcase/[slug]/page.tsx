@@ -55,6 +55,9 @@ export default async function ShowcaseDetail({ params }: { params: Promise<{ slu
   const { slug } = await params
   const entry = findShowcase(slug)
   if (!entry) notFound()
+  const idx = SHOWCASE.findIndex((s) => s.slug === slug)
+  const prev = idx > 0 ? SHOWCASE[idx - 1] : SHOWCASE[SHOWCASE.length - 1]
+  const next = idx < SHOWCASE.length - 1 ? SHOWCASE[idx + 1] : SHOWCASE[0]
   const source = await readSource(entry.module)
   const shared = source ? await readSharedSources(source) : []
   const altFrameworks = Object.keys(entry.sources ?? {}) as Exclude<ShowcaseFramework, 'react'>[]
@@ -81,12 +84,30 @@ export default async function ShowcaseDetail({ params }: { params: Promise<{ slu
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-12">
-      <Link
-        href="/showcase"
-        className="mb-6 inline-block font-mono text-xs uppercase tracking-widest text-ak-graphite hover:text-ak-foam"
-      >
-        ← All examples
-      </Link>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <Link
+          href="/showcase"
+          className="font-mono text-xs uppercase tracking-widest text-ak-graphite hover:text-ak-foam"
+        >
+          ← All examples
+        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/showcase/${prev.slug}`}
+            className="group flex items-center gap-1.5 rounded-md border border-ak-border px-3 py-1.5 font-mono text-[11px] text-ak-graphite hover:border-ak-blue hover:text-ak-foam"
+          >
+            <span>←</span>
+            <span className="hidden sm:inline">{prev.name}</span>
+          </Link>
+          <Link
+            href={`/showcase/${next.slug}`}
+            className="group flex items-center gap-1.5 rounded-md border border-ak-border px-3 py-1.5 font-mono text-[11px] text-ak-graphite hover:border-ak-blue hover:text-ak-foam"
+          >
+            <span className="hidden sm:inline">{next.name}</span>
+            <span>→</span>
+          </Link>
+        </div>
+      </div>
       <div className="mb-6">
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-ak-foam">Showcase</div>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ak-foam">{entry.name}</h1>

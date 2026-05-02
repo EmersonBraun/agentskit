@@ -32,6 +32,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./chunker": {
+      "types": "./dist/chunker.d.ts",
+      "import": "./dist/chunker.js",
+      "require": "./dist/chunker.cjs"
     }
   },
   "files": [

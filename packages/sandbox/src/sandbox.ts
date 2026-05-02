@@ -1,6 +1,6 @@
 import { ConfigError, ErrorCodes } from '@agentskit/core'
 import type { SandboxBackend, ExecuteOptions, ExecuteResult } from './types'
-import { createE2BBackend, type E2BConfig } from './e2b-backend'
+import type { E2BConfig } from './e2b-backend'
 
 export interface SandboxConfig {
   apiKey?: string
@@ -26,7 +26,7 @@ export function createSandbox(config: SandboxConfig = {}): Sandbox {
 
   let backend: SandboxBackend | null = config.backend ?? null
 
-  const getBackend = (): SandboxBackend => {
+  const getBackend = async (): Promise<SandboxBackend> => {
     if (backend) return backend
 
     if (!config.apiKey) {
@@ -38,7 +38,8 @@ export function createSandbox(config: SandboxConfig = {}): Sandbox {
       })
     }
 
-    backend = createE2BBackend({
+    const mod = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ /* @vite-ignore */ './e2b-backend')
+    backend = mod.createE2BBackend({
       apiKey: config.apiKey,
       timeout: defaults.timeout,
     })
@@ -53,7 +54,8 @@ export function createSandbox(config: SandboxConfig = {}): Sandbox {
         ...options,
       }
 
-      return await getBackend().execute(code, mergedOptions)
+      const b = await getBackend()
+      return await b.execute(code, mergedOptions)
     },
 
     async dispose(): Promise<void> {

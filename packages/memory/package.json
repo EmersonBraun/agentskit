@@ -31,6 +31,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./personalization": {
+      "types": "./dist/personalization.d.ts",
+      "import": "./dist/personalization.js",
+      "require": "./dist/personalization.cjs"
     }
   },
   "files": [

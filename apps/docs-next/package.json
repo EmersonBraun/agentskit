@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "prebuild": "node scripts/gen-api.mjs && node scripts/gen-changelog.mjs && node scripts/gen-performance.mjs && node scripts/gen-ask-context.mjs",
+    "prebuild": "pnpm --filter @agentskit/adapters --filter @agentskit/eval --filter @agentskit/memory --filter @agentskit/observability --filter @agentskit/rag --filter @agentskit/runtime --filter @agentskit/sandbox --filter @agentskit/skills build && node scripts/gen-api.mjs && node scripts/gen-changelog.mjs && node scripts/gen-performance.mjs && node scripts/gen-ask-context.mjs",
     "gen:ask-context": "node scripts/gen-ask-context.mjs",
     "gen:changelog": "node scripts/gen-changelog.mjs",
     "gen:performance": "node scripts/gen-performance.mjs",
@@ -20,8 +20,16 @@
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {
+    "@agentskit/adapters": "workspace:*",
     "@agentskit/core": "workspace:*",
+    "@agentskit/eval": "workspace:*",
+    "@agentskit/memory": "workspace:*",
+    "@agentskit/observability": "workspace:*",
+    "@agentskit/rag": "workspace:*",
     "@agentskit/react": "workspace:*",
+    "@agentskit/runtime": "workspace:*",
+    "@agentskit/sandbox": "workspace:*",
+    "@agentskit/skills": "workspace:*",
     "@agentskit/tools": "workspace:*",
     "@codesandbox/sandpack-react": "^2.20.0",
     "@tailwindcss/postcss": "^4.2.4",

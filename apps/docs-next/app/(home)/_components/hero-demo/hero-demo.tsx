@@ -2,7 +2,22 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { SCENES, type WidgetKind, type Event } from './scenes'
-import { WeatherCard, PriceCard, OrderTracker, FlightList } from './widgets'
+import {
+  WeatherCard,
+  PriceCard,
+  OrderTracker,
+  FlightList,
+  RAGCite,
+  SandboxRun,
+  MultiAgent,
+  ObsTrace,
+  MemoryRecall,
+  ProviderSwap,
+  IntegrationCard,
+  TerminalMirror,
+  EvalRun,
+  SkillSwap,
+} from './widgets'
 
 type ToolState = { label: string; done: boolean; ms: number } | null
 
@@ -221,6 +236,16 @@ export function HeroDemo() {
                   {frame.widget === 'price' && <PriceCard />}
                   {frame.widget === 'order' && <OrderTracker />}
                   {frame.widget === 'flight' && <FlightList />}
+                  {frame.widget === 'rag' && <RAGCite />}
+                  {frame.widget === 'sandbox' && <SandboxRun />}
+                  {frame.widget === 'agents' && <MultiAgent />}
+                  {frame.widget === 'trace' && <ObsTrace />}
+                  {frame.widget === 'memory' && <MemoryRecall />}
+                  {frame.widget === 'providers' && <ProviderSwap />}
+                  {frame.widget === 'integration' && <IntegrationCard />}
+                  {frame.widget === 'terminal' && <TerminalMirror />}
+                  {frame.widget === 'eval' && <EvalRun />}
+                  {frame.widget === 'skill' && <SkillSwap />}
                 </div>
               )}
 
