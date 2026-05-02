@@ -99,10 +99,15 @@ export function makeAgent(variant: PromptVariant) {
     })
 
     const lower = input.toLowerCase()
-    let answer = 'unknown'
+    let answer: string
     if (lower.includes('apollo')) answer = '1969 — Neil Armstrong walked on the Moon'
     else if (lower.includes('pragmatic')) answer = 'Andrew Hunt and David Thomas'
     else if (lower.includes('australia')) answer = 'Canberra'
+    else {
+      answer = cfg.refusesUnknown
+        ? 'I do not know'
+        : 'Based on what I recall, the answer is likely related to your query.'
+    }
 
     const citations = cfg.emitsCitations
       ? lower.includes('apollo')

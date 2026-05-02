@@ -24,8 +24,7 @@ async function runVariant(variant: PromptVariant): Promise<ExperimentResult> {
     agent,
     scorers: ALL_SCORERS,
     options: { projectName: 'agentskit-dspy-showcase', experimentName: variant },
-    bt: skipUpload,
-  })
+  }, { bt: skipUpload })
 }
 
 const fmtPct = (n: number): string => `${(n * 100).toFixed(1)}%`

@@ -80,11 +80,15 @@ export interface RunBraintrustEvalArgs<TCase extends ScorerInput = ScorerInput> 
   agent: (input: string) => Promise<{ output: string; metadata?: Record<string, unknown> }>
   scorers: Scorer[]
   options: BraintrustRunOptions
+}
+
+export interface RunBraintrustEvalInternals {
   bt?: BraintrustModule
 }
 
 export async function runBraintrustEval<TCase extends ScorerInput = ScorerInput>(
   args: RunBraintrustEvalArgs<TCase>,
+  internals: RunBraintrustEvalInternals = {},
 ): Promise<ExperimentResult> {
   const { cases, agent, scorers, options } = args
   const apiKey = options.apiKey ?? envOr('BRAINTRUST_API_KEY')
@@ -92,7 +96,7 @@ export async function runBraintrustEval<TCase extends ScorerInput = ScorerInput>
 
   let experiment: BraintrustExperiment | null = null
   try {
-    const mod = args.bt ?? ((await import('braintrust')) as unknown as BraintrustModule)
+    const mod = internals.bt ?? ((await import('braintrust')) as unknown as BraintrustModule)
     if (apiKey) {
       const init = await mod.init({
         project: options.projectName,
@@ -117,7 +121,11 @@ export async function runBraintrustEval<TCase extends ScorerInput = ScorerInput>
       output = r.output
       runMeta = r.metadata
     } catch (err) {
-      runMeta = { primaryError: err instanceof Error ? err.message : String(err) }
+      runMeta = {
+        primaryError: err instanceof Error ? err.message : String(err),
+        crashed: true,
+        uncaughtException: err instanceof Error ? err.name : String(err),
+      }
     }
     const scores = await scoreCase(scorers, {
       input: c.input,

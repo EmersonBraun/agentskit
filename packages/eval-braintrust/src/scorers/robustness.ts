@@ -40,11 +40,10 @@ export const fallbackResilience: Scorer<unknown, FallbackMeta> = ({ metadata }) 
   const fallback = Boolean(metadata?.fallbackFired)
   if (!errored && !fallback) return { name: 'fallback_resilience', score: 1, rationale: 'no errors' }
   if (errored && fallback) return { name: 'fallback_resilience', score: 1, rationale: 'fallback recovered' }
-  return {
-    name: 'fallback_resilience',
-    score: 0,
-    rationale: errored ? 'primary errored, no fallback' : 'fallback fired without error',
+  if (!errored && fallback) {
+    return { name: 'fallback_resilience', score: 1, rationale: 'fallback fired (no primary error — defensive)' }
   }
+  return { name: 'fallback_resilience', score: 0, rationale: 'primary errored, no fallback' }
 }
 
 export interface CrashMeta {

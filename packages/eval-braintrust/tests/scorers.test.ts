@@ -146,6 +146,16 @@ describe('robustness scorers', () => {
     ).toBe(0)
   })
 
+  it('fallbackResilience: defensive fallback without error scores 1', async () => {
+    expect(
+      (await fallbackResilience({
+        input: 'q',
+        output: 'x',
+        metadata: { fallbackFired: true },
+      })).score,
+    ).toBe(1)
+  })
+
   it('noCrashSurvival: 0 when crashed', async () => {
     expect(
       (await noCrashSurvival({

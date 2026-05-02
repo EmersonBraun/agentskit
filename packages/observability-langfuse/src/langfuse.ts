@@ -91,11 +91,12 @@ export function langfuse(config: LangfuseConfig = {}): Observer {
   }
 
   const startRemote = (span: TraceSpan) => {
+    const parentPromise = span.parentId ? spanPromises.get(span.parentId) ?? null : null
     const p = (async (): Promise<LangfuseSpan | null> => {
       try {
         const trace = await ensureTrace()
-        const parent = span.parentId ? await spanPromises.get(span.parentId) : null
-        const host = parent ?? trace
+        const parent = parentPromise ? await parentPromise : null
+        const host: LangfuseTrace | LangfuseSpan = parent ?? trace
         const params: Record<string, unknown> = {
           id: span.id,
           name: span.name,
@@ -103,7 +104,7 @@ export function langfuse(config: LangfuseConfig = {}): Observer {
           metadata: span.attributes,
         }
         if (isLlmSpan(span.name)) {
-          const gen = (host as LangfuseTrace | LangfuseSpan).generation
+          const gen = host.generation
           if (!gen) return null
           return gen.call(host, {
             ...params,
@@ -111,7 +112,7 @@ export function langfuse(config: LangfuseConfig = {}): Observer {
             input: span.attributes['agentskit.message_count'],
           })
         }
-        const sp = (host as LangfuseTrace | LangfuseSpan).span
+        const sp = host.span
         if (!sp) return null
         return sp.call(host, params)
       } catch {

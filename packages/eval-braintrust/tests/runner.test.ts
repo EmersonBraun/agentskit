@@ -53,6 +53,7 @@ describe('runBraintrustEval', () => {
       agent,
       scorers: [taskSuccess, schemaSurvival],
       options: { projectName: 'agentskit-test' },
+    }, {
       bt: {
         async init() {
           throw new Error('skip')
@@ -79,8 +80,7 @@ describe('runBraintrustEval', () => {
       agent: async input => ({ output: input }),
       scorers: [taskSuccess],
       options: { projectName: 'p', apiKey: 'k', experimentName: 'exp' },
-      bt: { init: async () => fakeExperiment },
-    })
+    }, { bt: { init: async () => fakeExperiment } })
     expect(logs).toHaveLength(1)
     expect(result.url).toBe('https://braintrust.dev/x')
   })
@@ -100,5 +100,6 @@ describe('runBraintrustEval', () => {
       },
     })
     expect(result.cases[0]?.metadata?.primaryError).toBe('agent down')
+    expect(result.cases[0]?.metadata?.crashed).toBe(true)
   })
 })
