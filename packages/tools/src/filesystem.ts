@@ -1,4 +1,5 @@
 import { resolve, relative } from 'node:path'
+import { ErrorCodes, ToolError } from '@agentskit/core'
 import type { ToolDefinition } from '@agentskit/core'
 
 export interface FilesystemConfig {
@@ -9,7 +10,11 @@ function safePath(basePath: string, inputPath: string): string {
   const normalizedBase = resolve(basePath)
   const resolved = resolve(basePath, inputPath)
   if (!resolved.startsWith(normalizedBase + '/') && resolved !== normalizedBase) {
-    throw new Error(`Access denied: "${inputPath}" is outside the allowed base path`)
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+      message: `Access denied: "${inputPath}" is outside the allowed base path`,
+      hint: 'Pass paths relative to the configured basePath; absolute traversal (e.g. ../) is rejected.',
+    })
   }
   return resolved
 }

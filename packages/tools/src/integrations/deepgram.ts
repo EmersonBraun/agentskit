@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 import type { HttpToolOptions } from './http'
 
 export interface DeepgramConfig extends HttpToolOptions {
@@ -41,7 +41,12 @@ export function deepgramTranscribe(config: DeepgramConfig) {
         }),
       })
       const text = await response.text()
-      if (!response.ok) throw new Error(`deepgram ${response.status}: ${text.slice(0, 200)}`)
+      if (!response.ok) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: `deepgram ${response.status}: ${text.slice(0, 200)}`,
+        })
+      }
       const data = JSON.parse(text) as {
         results?: {
           channels?: Array<{

@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 import type { HttpToolOptions } from './http'
 
 export interface WhisperConfig extends HttpToolOptions {
@@ -29,7 +29,13 @@ export function whisperTranscribe(config: WhisperConfig) {
     } as const,
     async execute({ url, language }) {
       const audio = await fetchImpl(String(url))
-      if (!audio.ok) throw new Error(`whisper: audio fetch ${audio.status}`)
+      if (!audio.ok) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: `whisper: audio fetch ${audio.status}`,
+          hint: `URL ${String(url)}.`,
+        })
+      }
       const bytes = await audio.arrayBuffer()
       const form = new FormData()
       form.append('file', new Blob([bytes], { type: 'audio/mpeg' }), 'audio')
@@ -42,7 +48,12 @@ export function whisperTranscribe(config: WhisperConfig) {
         body: form,
       })
       const text = await response.text()
-      if (!response.ok) throw new Error(`whisper ${response.status}: ${text.slice(0, 200)}`)
+      if (!response.ok) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: `whisper ${response.status}: ${text.slice(0, 200)}`,
+        })
+      }
       try {
         const parsed = JSON.parse(text) as { text: string }
         return { text: parsed.text }

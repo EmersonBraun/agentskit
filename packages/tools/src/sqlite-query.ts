@@ -1,3 +1,4 @@
+import { ConfigError, ErrorCodes, ToolError } from '@agentskit/core'
 import type { ToolDefinition } from '@agentskit/core'
 
 export interface SqliteQueryConfig {
@@ -29,7 +30,10 @@ async function openDatabase(path: string): Promise<SqliteDb> {
     db.pragma('query_only = ON')
     return db
   } catch {
-    throw new Error('Install better-sqlite3 to use sqliteQueryTool: npm install better-sqlite3')
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_PEER_MISSING,
+      message: 'Install better-sqlite3 to use sqliteQueryTool: npm install better-sqlite3',
+    })
   }
 }
 
@@ -37,7 +41,10 @@ const WRITE_KEYWORDS = /\b(?:insert|update|delete|drop|create|alter|attach|detac
 
 export function sqliteQueryTool(config: SqliteQueryConfig): ToolDefinition {
   if (config.readOnly !== undefined && config.readOnly !== true) {
-    throw new Error('sqliteQueryTool: writes are not supported in v1 (readOnly must be true).')
+    throw new ConfigError({
+      code: ErrorCodes.AK_CONFIG_INVALID,
+      message: 'sqliteQueryTool: writes are not supported in v1 (readOnly must be true).',
+    })
   }
   const maxRows = config.maxRows ?? 100
   let dbPromise: Promise<SqliteDb> | null = null
@@ -60,9 +67,17 @@ export function sqliteQueryTool(config: SqliteQueryConfig): ToolDefinition {
     },
     execute: async (args) => {
       const sql = String(args.sql ?? '').trim()
-      if (!sql) throw new Error('sqlite_query: missing sql argument')
+      if (!sql) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+          message: 'sqlite_query: missing sql argument',
+        })
+      }
       if (WRITE_KEYWORDS.test(sql)) {
-        throw new Error('sqlite_query: only read-only SELECT-style statements are allowed')
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+          message: 'sqlite_query: only read-only SELECT-style statements are allowed',
+        })
       }
       const db = await getDb()
       const stmt = db.prepare(sql)

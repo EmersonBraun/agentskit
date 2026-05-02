@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 
 /**
  * Cloudflare R2 storage. R2 is S3-compatible at the protocol level, so the
@@ -54,7 +54,11 @@ async function loadSdk(): Promise<CommandClasses> {
         const moduleId = '@aws-sdk/client-s3'
         return (await import(/* @vite-ignore */ moduleId)) as unknown as CommandClasses
       } catch {
-        throw new Error('Install @aws-sdk/client-s3 to use cloudflareR2: npm install @aws-sdk/client-s3')
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_PEER_MISSING,
+          message: 'Install @aws-sdk/client-s3 to use cloudflareR2: npm install @aws-sdk/client-s3',
+          hint: 'cloudflareR2 reuses the S3-compatible @aws-sdk/client-s3 driver as an optional peer.',
+        })
       }
     })()
   }

@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 import { httpJson, type HttpToolOptions } from './http'
 
 export interface LinearConfig extends HttpToolOptions {
@@ -20,8 +20,19 @@ async function gql<TResult>(config: LinearConfig, query: string, variables: Reco
     path: '',
     body: { query, variables },
   })
-  if (result.errors?.length) throw new Error(`linear: ${result.errors.map(e => e.message).join('; ')}`)
-  if (!result.data) throw new Error('linear: empty response')
+  if (result.errors?.length) {
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+      message: `linear: ${result.errors.map(e => e.message).join('; ')}`,
+      hint: 'GraphQL error from Linear; check the operation + variables.',
+    })
+  }
+  if (!result.data) {
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+      message: 'linear: empty response',
+    })
+  }
   return result.data
 }
 
@@ -69,7 +80,13 @@ export function linearCreateIssue(config: LinearConfig) {
         `mutation Create($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id identifier url } } }`,
         { input: { teamId, title, description: description ?? '' } },
       )
-      if (!data.issueCreate.success) throw new Error('linear: issue create failed')
+      if (!data.issueCreate.success) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: 'linear: issue create failed',
+          hint: `teamId=${teamId}, title=${title}.`,
+        })
+      }
       return { id: data.issueCreate.issue.identifier, url: data.issueCreate.issue.url }
     },
   })

@@ -1,4 +1,4 @@
-import { defineTool, type ToolDefinition } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool, type ToolDefinition } from '@agentskit/core'
 import { httpJson, type HttpToolOptions } from './http'
 
 export interface LinearTriageConfig extends HttpToolOptions {
@@ -20,8 +20,18 @@ async function gql<TResult>(config: LinearTriageConfig, query: string, variables
     path: '',
     body: { query, variables },
   })
-  if (result.errors?.length) throw new Error(`linear: ${result.errors.map(e => e.message).join('; ')}`)
-  if (!result.data) throw new Error('linear: empty response')
+  if (result.errors?.length) {
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+      message: `linear: ${result.errors.map(e => e.message).join('; ')}`,
+    })
+  }
+  if (!result.data) {
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+      message: 'linear: empty response',
+    })
+  }
   return result.data
 }
 
@@ -90,7 +100,13 @@ export function linearTriageAssign(config: LinearTriageConfig) {
           },
         },
       )
-      if (!data.issueUpdate.success) throw new Error('linear: triage update failed')
+      if (!data.issueUpdate.success) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: 'linear: triage update failed',
+          hint: `issueId=${issueId}, stateId=${stateId}.`,
+        })
+      }
       return { id: data.issueUpdate.issue.identifier, url: data.issueUpdate.issue.url }
     },
   })

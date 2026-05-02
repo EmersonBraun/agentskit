@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 import type { HttpToolOptions } from './http'
 
 export interface ElevenLabsConfig extends HttpToolOptions {
@@ -42,7 +42,10 @@ export function elevenlabsTts(config: ElevenLabsConfig) {
       })
       if (!response.ok) {
         const detail = await response.text()
-        throw new Error(`elevenlabs ${response.status}: ${detail.slice(0, 200)}`)
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: `elevenlabs ${response.status}: ${detail.slice(0, 200)}`,
+        })
       }
       const buf = new Uint8Array(await response.arrayBuffer())
       const b64 = bytesToBase64(buf)

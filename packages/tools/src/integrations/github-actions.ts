@@ -1,4 +1,4 @@
-import { defineTool, type ToolDefinition } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool, type ToolDefinition } from '@agentskit/core'
 import { httpJson, type HttpToolOptions } from './http'
 
 export interface GitHubActionsConfig extends HttpToolOptions {
@@ -22,7 +22,13 @@ function opts(config: GitHubActionsConfig): HttpToolOptions {
 
 function repoOf(config: GitHubActionsConfig, repo: string | undefined): string {
   const r = repo ?? config.defaultRepo
-  if (!r) throw new Error('githubActions: repo (owner/name) is required')
+  if (!r) {
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+      message: 'githubActions: repo (owner/name) is required',
+      hint: 'Pass repo in args or set defaultRepo in GitHubActionsConfig.',
+    })
+  }
   return r
 }
 

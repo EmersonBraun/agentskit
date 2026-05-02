@@ -1,3 +1,4 @@
+import { ErrorCodes, ToolError } from '@agentskit/core'
 import type { ToolDefinition } from '@agentskit/core'
 import type {
   JsonRpcMessage,
@@ -98,7 +99,12 @@ export async function toolsFromMcpClient(client: McpClient): Promise<ToolDefinit
         .map(c => (c.type === 'text' ? c.text : ''))
         .filter(Boolean)
         .join('\n')
-      if (result.isError) throw new Error(text || `MCP tool ${t.name} errored`)
+      if (result.isError) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: text || `MCP tool ${t.name} errored`,
+        })
+      }
       return text
     },
   }))

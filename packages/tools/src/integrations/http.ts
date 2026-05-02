@@ -1,3 +1,5 @@
+import { ErrorCodes, ToolError } from '@agentskit/core'
+
 export interface HttpToolOptions {
   baseUrl?: string
   /** Header bag merged into every request (auth, user-agent, etc.). */
@@ -27,7 +29,13 @@ export async function httpJson<TResult = unknown>(
   request: HttpJsonRequest,
 ): Promise<TResult> {
   const fetchImpl = options.fetch ?? globalThis.fetch
-  if (!fetchImpl) throw new Error('no fetch available')
+  if (!fetchImpl) {
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+      message: 'no fetch available',
+      hint: 'Run on Node ≥ 18 (or pass options.fetch explicitly).',
+    })
+  }
 
   const url = new URL(
     request.path,
@@ -59,7 +67,11 @@ export async function httpJson<TResult = unknown>(
     const text = await response.text()
     const parsed = text.length > 0 ? safeParse(text) : undefined
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status} ${response.statusText}: ${text.slice(0, 500)}`)
+      throw new ToolError({
+        code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+        message: `HTTP ${response.status} ${response.statusText}: ${text.slice(0, 500)}`,
+        hint: `URL ${url.toString()}.`,
+      })
     }
     return parsed as TResult
   } finally {

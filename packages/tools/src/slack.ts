@@ -1,3 +1,4 @@
+import { ConfigError, ErrorCodes, ToolError } from '@agentskit/core'
 import type { ToolDefinition } from '@agentskit/core'
 
 export interface SlackToolConfig {
@@ -7,7 +8,12 @@ export interface SlackToolConfig {
 }
 
 export function slackTool(config: SlackToolConfig): ToolDefinition {
-  if (!config.webhookUrl) throw new Error('slackTool: webhookUrl is required')
+  if (!config.webhookUrl) {
+    throw new ConfigError({
+      code: ErrorCodes.AK_CONFIG_INVALID,
+      message: 'slackTool: webhookUrl is required',
+    })
+  }
   const doFetch = config.fetch ?? fetch
 
   return {
@@ -26,7 +32,12 @@ export function slackTool(config: SlackToolConfig): ToolDefinition {
     },
     execute: async (args) => {
       const text = String(args.text ?? '').trim()
-      if (!text) throw new Error('slack_send: missing text')
+      if (!text) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+          message: 'slack_send: missing text',
+        })
+      }
       const payload: Record<string, string> = { text }
       if (typeof args.channel === 'string' && args.channel) payload.channel = args.channel
       if (typeof args.username === 'string' && args.username) payload.username = args.username

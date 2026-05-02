@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 
 /**
  * Safe-mode Postgres query tool. The agent sees one tool: `postgres_query`.
@@ -50,10 +50,23 @@ export function postgresQuery(config: PostgresConfig) {
     } as const,
     async execute({ sql, params }) {
       const verb = firstVerb(String(sql))
-      if (ALWAYS_DENY.includes(verb)) throw new Error(`postgres: ${verb} is not allowed`)
-      if (extraDeny.has(verb)) throw new Error(`postgres: ${verb} is denied by policy`)
+      if (ALWAYS_DENY.includes(verb)) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+          message: `postgres: ${verb} is not allowed`,
+        })
+      }
+      if (extraDeny.has(verb)) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+          message: `postgres: ${verb} is denied by policy`,
+        })
+      }
       if (!config.allowWrites && WRITE_PREFIXES.includes(verb)) {
-        throw new Error(`postgres: ${verb} requires allowWrites: true`)
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+          message: `postgres: ${verb} requires allowWrites: true`,
+        })
       }
       const result = await config.execute(String(sql), Array.isArray(params) ? params : [])
       return {

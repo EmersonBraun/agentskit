@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 
 export interface StripeWebhookConfig {
   /** Endpoint signing secret from the Stripe dashboard (`whsec_...`). */
@@ -77,7 +77,13 @@ export function stripeWebhookTool(config: StripeWebhookConfig) {
     } as const,
     async execute({ payload, signature }) {
       const ok = verifyStripeSignature(String(payload), String(signature), config.secret, tolerance)
-      if (!ok) throw new Error('stripe: webhook signature verification failed')
+      if (!ok) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+          message: 'stripe: webhook signature verification failed',
+          hint: 'Check secret matches the endpoint and that the raw body is unparsed.',
+        })
+      }
       const event = JSON.parse(String(payload)) as StripeEvent
       return {
         id: event.id,

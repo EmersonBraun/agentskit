@@ -1,4 +1,4 @@
-import { defineTool, type ToolDefinition } from '@agentskit/core'
+import { ConfigError, ErrorCodes, ToolError, defineTool, type ToolDefinition } from '@agentskit/core'
 import { httpJson, type HttpToolOptions } from './http'
 
 export interface PagerDutyConfig extends HttpToolOptions {
@@ -21,7 +21,12 @@ function eventsOpts(config: PagerDutyConfig): HttpToolOptions {
 }
 
 function restOpts(config: PagerDutyConfig): HttpToolOptions {
-  if (!config.apiToken) throw new Error('pagerduty: apiToken required for REST queries')
+  if (!config.apiToken) {
+    throw new ConfigError({
+      code: ErrorCodes.AK_CONFIG_INVALID,
+      message: 'pagerduty: apiToken required for REST queries',
+    })
+  }
   return {
     baseUrl: REST_BASE,
     headers: {
@@ -59,7 +64,13 @@ export function pagerdutyTrigger(config: PagerDutyConfig) {
           payload: { summary, source, severity },
         },
       })
-      if (result.status !== 'success') throw new Error(`pagerduty: ${result.message ?? 'trigger failed'}`)
+      if (result.status !== 'success') {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: `pagerduty: ${result.message ?? 'trigger failed'}`,
+          hint: `dedup_key=${dedup_key ?? '(none)'}.`,
+        })
+      }
       return { dedup_key: result.dedup_key }
     },
   })
@@ -87,7 +98,13 @@ function eventActionTool(config: PagerDutyConfig, action: 'acknowledge' | 'resol
           dedup_key,
         },
       })
-      if (result.status !== 'success') throw new Error(`pagerduty: ${result.message ?? `${action} failed`}`)
+      if (result.status !== 'success') {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: `pagerduty: ${result.message ?? `${action} failed`}`,
+          hint: `dedup_key=${dedup_key}.`,
+        })
+      }
       return { ok: true }
     },
   })

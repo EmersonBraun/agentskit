@@ -1,3 +1,4 @@
+import { ErrorCodes, ToolError } from '@agentskit/core'
 import type { ToolDefinition } from '@agentskit/core'
 
 export interface WebSearchResult {
@@ -33,7 +34,12 @@ async function serperSearch(query: string, apiKey: string, maxResults: number): 
     },
     body: JSON.stringify({ q: query, num: maxResults }),
   })
-  if (!response.ok) throw new Error(`Serper API error: ${response.status}`)
+  if (!response.ok) {
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+      message: `Serper API error: ${response.status}`,
+    })
+  }
 
   const data = await response.json() as {
     organic?: Array<{ title?: string; link?: string; snippet?: string }>
@@ -52,7 +58,12 @@ async function tavilySearch(query: string, apiKey: string, maxResults: number): 
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ api_key: apiKey, query, max_results: maxResults, include_answer: false }),
   })
-  if (!response.ok) throw new Error(`Tavily API error: ${response.status}`)
+  if (!response.ok) {
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+      message: `Tavily API error: ${response.status}`,
+    })
+  }
 
   const data = await response.json() as {
     results?: Array<{ title?: string; url?: string; content?: string }>

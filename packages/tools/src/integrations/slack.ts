@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 import { httpJson, type HttpToolOptions } from './http'
 
 export interface SlackConfig extends HttpToolOptions {
@@ -34,7 +34,13 @@ export function slackPostMessage(config: SlackConfig) {
         path: '/chat.postMessage',
         body: { channel, text, thread_ts },
       })
-      if (!result.ok) throw new Error(`slack: ${result.error ?? 'unknown error'}`)
+      if (!result.ok) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: `slack: ${result.error ?? 'unknown error'}`,
+          hint: 'Slack returned ok:false; verify channel id, token scope, and rate limits.',
+        })
+      }
       return { ts: result.ts }
     },
   })

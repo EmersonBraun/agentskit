@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 import type { HttpToolOptions } from './http'
 
 export interface ReaderConfig extends HttpToolOptions {
@@ -31,7 +31,12 @@ export function readerFetch(config: ReaderConfig = {}) {
       if (config.apiKey) headers.authorization = `Bearer ${config.apiKey}`
       const response = await fetchImpl(`${baseUrl}/${url as string}`, { headers })
       const text = await response.text()
-      if (!response.ok) throw new Error(`reader ${response.status}: ${text.slice(0, 200)}`)
+      if (!response.ok) {
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: `reader ${response.status}: ${text.slice(0, 200)}`,
+        })
+      }
       return text
     },
   })

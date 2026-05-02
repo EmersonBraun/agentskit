@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 import { httpJson, type HttpToolOptions } from './http'
 
 export interface StripeConfig extends HttpToolOptions {
@@ -41,7 +41,11 @@ async function postForm<TResult>(base: HttpToolOptions, path: string, params: Re
   const parsed = text.length > 0 ? (JSON.parse(text) as TResult) : ({} as TResult)
   if (!response.ok) {
     const err = parsed as { error?: { message?: string } }
-    throw new Error(`stripe ${response.status}: ${err?.error?.message ?? text.slice(0, 200)}`)
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+      message: `stripe ${response.status}: ${err?.error?.message ?? text.slice(0, 200)}`,
+      hint: `URL ${url.toString()}.`,
+    })
   }
   return parsed
 }

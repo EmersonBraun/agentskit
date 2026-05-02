@@ -1,4 +1,4 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
 
 export interface TwilioConfig {
   accountSid: string
@@ -13,7 +13,10 @@ const E164 = /^\+[1-9]\d{6,14}$/
 
 function assertE164(label: string, value: string): void {
   if (!E164.test(value)) {
-    throw new Error(`twilio: ${label} must be E.164 (e.g. +14155551234), got "${value}"`)
+    throw new ToolError({
+      code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+      message: `twilio: ${label} must be E.164 (e.g. +14155551234), got "${value}"`,
+    })
   }
 }
 
@@ -49,7 +52,11 @@ export function twilioSendSms(config: TwilioConfig) {
       })
       const data = await response.json() as { sid?: string; status?: string; message?: string; code?: number }
       if (!response.ok) {
-        throw new Error(`twilio: ${data.code ?? response.status} ${data.message ?? 'request failed'}`)
+        throw new ToolError({
+          code: ErrorCodes.AK_TOOL_EXEC_FAILED,
+          message: `twilio: ${data.code ?? response.status} ${data.message ?? 'request failed'}`,
+          hint: `URL ${url}. Status ${response.status}.`,
+        })
       }
       return { sid: data.sid, status: data.status }
     },

@@ -1,4 +1,12 @@
-import { defineTool } from '@agentskit/core'
+import { ErrorCodes, ToolError, defineTool } from '@agentskit/core'
+
+function bucketErr(name: string): ToolError {
+  return new ToolError({
+    code: ErrorCodes.AK_TOOL_INVALID_INPUT,
+    message: `${name}: bucket required`,
+    hint: 'Pass bucket in args or set defaultBucket in S3Config.',
+  })
+}
 
 /**
  * S3-compatible object storage tool. The AWS SDK is heavy — instead
@@ -30,7 +38,7 @@ export function s3GetObject(config: S3Config) {
     } as const,
     async execute({ bucket, key }) {
       const target = (bucket as string) ?? config.defaultBucket
-      if (!target) throw new Error('s3_get_object: bucket required')
+      if (!target) throw bucketErr('s3_get_object')
       const result = await config.client.getObject({ bucket: target, key: String(key) })
       return { bucket: target, key, body: result.body }
     },
@@ -53,7 +61,7 @@ export function s3PutObject(config: S3Config) {
     } as const,
     async execute({ bucket, key, body, content_type }) {
       const target = (bucket as string) ?? config.defaultBucket
-      if (!target) throw new Error('s3_put_object: bucket required')
+      if (!target) throw bucketErr('s3_put_object')
       const result = await config.client.putObject({
         bucket: target,
         key: String(key),
@@ -79,7 +87,7 @@ export function s3ListObjects(config: S3Config) {
     } as const,
     async execute({ bucket, prefix, limit }) {
       const target = (bucket as string) ?? config.defaultBucket
-      if (!target) throw new Error('s3_list_objects: bucket required')
+      if (!target) throw bucketErr('s3_list_objects')
       const items = await config.client.listObjects({
         bucket: target,
         prefix: prefix as string | undefined,
