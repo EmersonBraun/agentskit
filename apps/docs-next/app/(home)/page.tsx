@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { SocialProofBar } from './_components/social-proof-bar'
 import { InstallCommand } from './_components/install-command'
 import { HeroDemo } from './_components/hero-demo/hero-demo'
+import { DownloadsBadge } from './_components/downloads-badge'
 import { ContributorWall } from '@/components/contribute/contributor-wall'
 import { AnimatedLogo } from '@/components/brand/animated-logo'
 import { JsonLd } from '@/components/seo/json-ld'
@@ -183,19 +184,7 @@ function Hero() {
             LangChain
           </p>
 
-          <a
-            href="https://www.producthunt.com/products/agentskit?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-agentskit"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-5 inline-block"
-          >
-            <img
-              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1125539&theme=dark"
-              alt="AgentsKit — The most complete ecosystem to create AI agents | Product Hunt"
-              width={250}
-              height={54}
-            />
-          </a>
+          <DownloadsBadge />
         </div>
 
         <div className="min-w-0">
