@@ -75,6 +75,16 @@ export const SHOWCASE: ShowcaseMeta[] = [
   { slug: 'agent-actions', name: 'Agent actions', description: 'Streaming UI with live tool-call visualization.', tags: ['tools', 'streaming'], module: 'AgentActions', sources: { vue: { stackblitz: STACKBLITZ_TEMPLATES.vue }, svelte: { stackblitz: STACKBLITZ_TEMPLATES.svelte } } },
   { slug: 'shadcn', name: 'shadcn/ui chat', description: 'AgentsKit styled with shadcn/ui tokens.', tags: ['chat', 'design-system'], module: 'ShadcnChat' },
   { slug: 'mui', name: 'Material UI chat', description: 'AgentsKit styled with MUI components.', tags: ['chat', 'design-system'], module: 'MuiChat' },
+  { slug: 'sandbox', name: 'Sandbox runner', description: 'Agent-emitted code runs isolated in E2B / WebContainer.', tags: ['sandbox', 'tools', 'code'], module: 'SandboxRunner', sources: { node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
+  { slug: 'observability', name: 'Observability trace', description: 'Live span tree with tokens, latency, cost. Exports to LangSmith / OTEL.', tags: ['observability', 'production'], module: 'ObservabilityTrace', sources: { node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
+  { slug: 'memory-recall', name: 'Persistent memory', description: 'Cross-session recall with sqlite, redis, or lancedb backends.', tags: ['memory', 'persistence'], module: 'MemoryRecallExample', sources: { node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
+  { slug: 'eval', name: 'Eval suite', description: 'Run regression tests, track accuracy / latency / cost in CI.', tags: ['eval', 'production', 'ci'], module: 'EvalSuite', sources: { node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
+  { slug: 'slack', name: 'Slack integration', description: 'Agent posts to Slack via @agentskit/tools.', tags: ['integrations', 'tools'], module: 'SlackIntegration', sources: { node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
+  { slug: 'ink', name: 'Ink terminal', description: 'Same controller, rendered in your terminal via Ink.', tags: ['ink', 'cli', 'terminal'], module: 'InkTerminal', sources: { ink: { stackblitz: STACKBLITZ_TEMPLATES.ink }, node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
+  { slug: 'skills', name: 'Skill swap', description: 'Hot-swap personas mid-conversation: researcher, critic, planner.', tags: ['skills', 'prompts'], module: 'SkillsExample', sources: { node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
+  { slug: 'runtime-react', name: 'Runtime ReAct', description: 'Standalone agent runtime — no UI required. ReAct loop with tools + memory.', tags: ['runtime', 'multi-agent'], module: 'RuntimeReAct', sources: { node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
+  { slug: 'provider-fanout', name: 'Provider fanout', description: 'Same prompt across openai, anthropic, gemini, ollama. Compare quality + cost.', tags: ['adapters', 'multi-model'], module: 'ProviderFanout', sources: { node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
+  { slug: 'rag-cite', name: 'RAG with citations', description: 'Retrieve top-k chunks with scores and inline cite refs.', tags: ['rag', 'citations'], module: 'RAGCiteExample', sources: { node: { stackblitz: STACKBLITZ_TEMPLATES.node } } },
 ]
 
 export const ALL_TAGS: string[] = Array.from(new Set(SHOWCASE.flatMap((s) => s.tags))).sort()

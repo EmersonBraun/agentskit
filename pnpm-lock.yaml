@@ -59,12 +59,36 @@ importers:
 
   apps/docs-next:
     dependencies:
+      '@agentskit/adapters':
+        specifier: workspace:*
+        version: link:../../packages/adapters
       '@agentskit/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@agentskit/eval':
+        specifier: workspace:*
+        version: link:../../packages/eval
+      '@agentskit/memory':
+        specifier: workspace:*
+        version: link:../../packages/memory
+      '@agentskit/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      '@agentskit/rag':
+        specifier: workspace:*
+        version: link:../../packages/rag
       '@agentskit/react':
         specifier: workspace:*
         version: link:../../packages/react
+      '@agentskit/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
+      '@agentskit/sandbox':
+        specifier: workspace:*
+        version: link:../../packages/sandbox
+      '@agentskit/skills':
+        specifier: workspace:*
+        version: link:../../packages/skills
       '@agentskit/tools':
         specifier: workspace:*
         version: link:../../packages/tools

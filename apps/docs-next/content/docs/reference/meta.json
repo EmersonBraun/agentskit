@@ -5,17 +5,11 @@
   "pages": [
     "index",
     "stability",
-    "---Packages---",
     "packages",
-    "---Recipes---",
     "recipes",
-    "---Examples---",
     "examples",
-    "---Specs---",
     "specs",
-    "---Contribute---",
     "contribute",
-    "---Changelog---",
     "changelog"
   ]
 }

@@ -33,6 +33,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./createAdapter": {
+      "types": "./dist/createAdapter.d.ts",
+      "import": "./dist/createAdapter.js",
+      "require": "./dist/createAdapter.cjs"
     }
   },
   "files": [

@@ -17,6 +17,16 @@ const LOADERS: Record<string, () => Promise<{ default: ComponentType }>> = {
   AgentActions: () => import('@/components/examples/AgentActions').then((m) => ({ default: m.AgentActions })),
   ShadcnChat: () => import('@/components/examples/ShadcnChat').then((m) => ({ default: m.ShadcnChat })),
   MuiChat: () => import('@/components/examples/MuiChat').then((m) => ({ default: m.MuiChat })),
+  SandboxRunner: () => import('@/components/examples/SandboxRunner').then((m) => ({ default: m.SandboxRunner })),
+  ObservabilityTrace: () => import('@/components/examples/ObservabilityTrace').then((m) => ({ default: m.ObservabilityTrace })),
+  MemoryRecallExample: () => import('@/components/examples/MemoryRecallExample').then((m) => ({ default: m.MemoryRecallExample })),
+  EvalSuite: () => import('@/components/examples/EvalSuite').then((m) => ({ default: m.EvalSuite })),
+  SlackIntegration: () => import('@/components/examples/SlackIntegration').then((m) => ({ default: m.SlackIntegration })),
+  InkTerminal: () => import('@/components/examples/InkTerminal').then((m) => ({ default: m.InkTerminal })),
+  SkillsExample: () => import('@/components/examples/SkillsExample').then((m) => ({ default: m.SkillsExample })),
+  RuntimeReAct: () => import('@/components/examples/RuntimeReAct').then((m) => ({ default: m.RuntimeReAct })),
+  ProviderFanout: () => import('@/components/examples/ProviderFanout').then((m) => ({ default: m.ProviderFanout })),
+  RAGCiteExample: () => import('@/components/examples/RAGCiteExample').then((m) => ({ default: m.RAGCiteExample })),
 }
 
 export function LiveExample({ meta }: { meta: ShowcaseMeta }) {
