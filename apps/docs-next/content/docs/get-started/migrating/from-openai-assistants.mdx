@@ -1,0 +1,214 @@
+---
+title: From OpenAI Assistants
+description: Side-by-side migration guide. Map OpenAI's Assistants API (and the deprecation path) to AgentsKit runtime + memory.
+---
+import { ContributeCallout } from '@/components/contribute/contribute-callout'
+
+OpenAI announced the Assistants API will be **deprecated** (with the
+target sunset window already on the roadmap). Migrate to AgentsKit when:
+
+- You want a runtime that **keeps working** when OpenAI deprecates the
+  endpoint — the runtime is provider-agnostic.
+- You need **multi-provider** support — Anthropic, Gemini, Bedrock,
+  Vertex, local (Ollama, vLLM, llama.cpp, WebLLM), etc.
+- You want **first-class durability** (`createDurableRunner`) instead
+  of leaning on OpenAI-managed thread state.
+- You want the **same tools / memory / skills** to work in terminal,
+  CLI, headless, React, Ink, every framework.
+
+Stay with the Assistants API while:
+
+- You're **prototyping** and want OpenAI to host the thread + files for you.
+- Your project ends before the deprecation window matters.
+- You depend specifically on **Code Interpreter** running in OpenAI's
+  managed sandbox (AgentsKit ships `@agentskit/sandbox` with E2B as the
+  recommended backend; comparable but not the same).
+
+## Quick reference
+
+| OpenAI Assistants | AgentsKit | Notes |
+|---|---|---|
+| `client.beta.assistants.create({ model, instructions, tools })` | `createRuntime({ adapter, systemPrompt, tools })` | One factory; configuration is plain data. |
+| `client.beta.threads.create()` | `sqliteChatMemory({ path })` (or `fileChatMemory`, `redisChatMemory`, `tursoChatMemory`) | The thread is your `ChatMemory`. |
+| `client.beta.threads.messages.create({ thread_id, content })` | `runtime.run(content)` with `memory:` set | Memory load + save is automatic. |
+| `client.beta.threads.runs.create({ thread_id, assistant_id })` | Same `runtime.run(...)` | No separate "run" entity — the runtime executes inline. |
+| `tool_outputs.submit({...})` | Tool `execute(args)` returns the result directly | The runtime resolves tool calls in the loop. |
+| `file_search` (built-in retrieval) | `createRAG({ embed, store })` + `retriever:` | Bring your own embedder + vector store. |
+| `code_interpreter` | `@agentskit/sandbox` (E2B by default) | Sandbox runs JS or Python with policy controls. |
+| Vision (image input) | `imagePart({ url })` in message content | Multi-modal content parts in `@agentskit/core`. |
+| `client.beta.threads.runs.stream(...)` | Built-in — every adapter streams | `for await (const chunk of source.stream())`. |
+| Function calling | `ToolDefinition` with JSON Schema 7 | Same shape; explicit `name` + `schema`. |
+| Polling status | Not needed | The runtime returns when the loop ends. |
+| `additional_instructions` | `runtime.run(task, { systemPrompt })` | Per-call override. |
+
+## 1. Basic assistant → runtime
+
+### Before — Assistants API
+
+```ts
+import OpenAI from 'openai'
+const client = new OpenAI()
+
+const assistant = await client.beta.assistants.create({
+  model: 'gpt-4o',
+  instructions: 'You are a helpful coding assistant.',
+  tools: [{ type: 'code_interpreter' }],
+})
+
+const thread = await client.beta.threads.create()
+await client.beta.threads.messages.create(thread.id, {
+  role: 'user',
+  content: 'Sort this list and explain Big-O',
+})
+const run = await client.beta.threads.runs.createAndPoll(thread.id, {
+  assistant_id: assistant.id,
+})
+```
+
+### After — AgentsKit
+
+```ts
+import { createRuntime } from '@agentskit/runtime'
+import { openai } from '@agentskit/adapters'
+import { sqliteChatMemory } from '@agentskit/memory'
+import { createSandbox, sandboxedShell } from '@agentskit/sandbox'
+
+const sandbox = createSandbox({ apiKey: process.env.E2B_API_KEY! })
+
+const runtime = createRuntime({
+  adapter: openai({ apiKey: process.env.OPENAI_API_KEY!, model: 'gpt-4o' }),
+  systemPrompt: 'You are a helpful coding assistant.',
+  tools: [sandboxedShell({ sandbox })],
+  memory: sqliteChatMemory({ path: './threads/user-42.db' }),
+})
+
+await runtime.run('Sort this list and explain Big-O')
+```
+
+The thread + assistant + run + poll cycle collapses into one `runtime.run(...)`. Memory is yours to keep (file, SQLite, Redis, Turso, etc.) — no managed-thread lock-in.
+
+## 2. File search → RAG
+
+```ts
+import { createRAG, loadGitHubTree, loadPdf } from '@agentskit/rag'
+import { fileVectorMemory } from '@agentskit/memory'
+import { openaiEmbedder } from '@agentskit/adapters'
+
+const rag = createRAG({
+  embed: openaiEmbedder({ apiKey: KEY, model: 'text-embedding-3-small' }),
+  store: fileVectorMemory({ path: './kb.json' }),
+})
+
+await rag.ingest([
+  ...await loadGitHubTree('myorg', 'docs', { token }),
+  ...await loadPdf('/path/to/manual.pdf', { parsePdf }),
+])
+
+createRuntime({ adapter, retriever: rag })
+```
+
+You own the embedding model, vector store, and reranker. Swap any of them without rewriting the assistant logic.
+
+## 3. Code interpreter → sandbox
+
+```ts
+import { createSandbox } from '@agentskit/sandbox'
+import { runWithMandatorySandbox } from '@agentskit/sandbox'
+
+const sandbox = createSandbox({ apiKey: process.env.E2B_API_KEY! })
+
+const runtime = createRuntime({
+  adapter,
+  tools: runWithMandatorySandbox({
+    tools: [shellTool, pythonTool],
+    sandbox,
+    policy: { requireSandbox: '*' },
+  }),
+})
+```
+
+Policies, allow/deny lists, and per-tool validators are first-class. See [Mandatory sandbox](/docs/production/security/mandatory-sandbox).
+
+## 4. Vision
+
+```ts
+import { imagePart, textPart } from '@agentskit/core'
+
+await runtime.run({
+  role: 'user',
+  content: [
+    textPart('What does this chart show?'),
+    imagePart({ url: 'https://example.com/chart.png' }),
+  ],
+})
+```
+
+The same content-part helpers work across providers that support vision (`openai`, `anthropic`, `gemini`).
+
+## 5. Streaming
+
+```ts
+import { createRuntime } from '@agentskit/runtime'
+
+const runtime = createRuntime({
+  adapter,
+  observers: [{
+    name: 'stdout',
+    on: e => e.type === 'text' && process.stdout.write((e as { content: string }).content),
+  }],
+})
+```
+
+Every adapter streams. No "polling" mental model.
+
+## 6. Multi-provider in one place
+
+```ts
+import { createRouter } from '@agentskit/adapters'
+import { openai, anthropic } from '@agentskit/adapters'
+
+const router = createRouter({
+  candidates: [
+    { id: 'oai',  adapter: openai({ apiKey: O, model: 'gpt-4o' }),       cost: 5,  capabilities: { tools: true } },
+    { id: 'anth', adapter: anthropic({ apiKey: A, model: 'claude-sonnet-4-6' }), cost: 6, capabilities: { tools: true } },
+  ],
+  policy: 'cheapest',
+})
+
+createRuntime({ adapter: router })
+```
+
+When OpenAI deprecates Assistants and ships a successor, you swap one line. Provider risk is contained at the adapter seam.
+
+## 7. Durable runs
+
+OpenAI manages thread state for you. AgentsKit makes it explicit and portable:
+
+```ts
+import { createDurableRunner, createFileStepLog } from '@agentskit/runtime'
+
+const store = await createFileStepLog('.agentskit/runs.jsonl')
+const runner = createDurableRunner({ store, runId: 'order-1234' })
+
+const draft = await runner.step('draft',  () => runtime.run('Draft refund email'))
+const sent  = await runner.step('send',   () => sendEmail(draft.content))
+```
+
+Crash mid-step? Resume with the same `runId`. See [Durable execution](/docs/agents/durable).
+
+## Incremental migration
+
+1. **Keep Assistants for legacy threads.** Read-only, until the deprecation window.
+2. **New surfaces use AgentsKit.** Same model, but provider-agnostic adapter.
+3. **Port active threads** when you can — `ChatMemory.save(messages)` accepts the same role/content shape OpenAI returns.
+4. **Cut over** by the time the deprecation window closes. The runtime + memory stack is the durable part.
+
+## Related
+
+- [Build your first agent](/docs/get-started/getting-started/build-your-first-agent)
+- [Architecture at a glance](/docs/get-started/architecture-at-a-glance)
+- [Mandatory sandbox](/docs/production/security/mandatory-sandbox)
+- [Recipe: Chat with RAG](/docs/reference/recipes/rag-chat)
+- [Concepts: Adapter](../concepts/adapter)
+
+<ContributeCallout title="Migrating off Assistants?" body="Tell us what's blocking you — the more concrete the example, the better the next iteration of this guide." />

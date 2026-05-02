@@ -1,0 +1,219 @@
+---
+title: From LangGraph
+description: Side-by-side migration guide. Map LangGraph stateful graphs to AgentsKit runtime + topologies.
+---
+import { ContributeCallout } from '@/components/contribute/contribute-callout'
+
+LangGraph encodes agent control flow as an explicit state machine — nodes,
+edges, conditionals. AgentsKit reaches the same problem from the opposite
+direction: a runtime that already knows how to loop, with composable
+`topologies` (supervisor / swarm / hierarchical / blackboard) and
+`compileFlow` for declarative DAGs. Migrate when:
+
+- You want **less ceremony** for the common ReAct case — no nodes, no edges, just `runtime.run(task)`.
+- You need **first-class durability** for long workflows (`createDurableRunner`) without spinning up a separate orchestrator.
+- You want **the same adapter** across every surface (terminal, CLI, runtime, React, Ink) instead of a graph wrapper around one model.
+- You'd rather author a flow as **YAML the team can review** than as code (`agentskit flow`).
+
+Stay with LangGraph when:
+
+- You depend on **LangSmith's graph debugger** and your team thinks visually in nodes/edges.
+- You have **dozens of conditional transitions** that map naturally onto a state-machine view.
+- You're already deep in the LangChain ecosystem and the integration cost outweighs the runtime simplification.
+
+## Quick reference
+
+| LangGraph | AgentsKit | Notes |
+|---|---|---|
+| `StateGraph(stateType)` | `createRuntime({ adapter, tools, memory })` | Most ReAct loops don't need an explicit graph. |
+| `graph.add_node(name, fn)` | A `ToolDefinition` or a `SkillDefinition` delegate | Nodes that wrap an LLM call become a delegate; nodes that wrap I/O become a tool. |
+| `graph.add_edge('a', 'b')` | Implicit in the runtime loop | The runtime already moves from "model thinks" → "tool runs" → "model continues". |
+| `add_conditional_edges(...)` | Custom delegate router or `compileFlow` `needs:` | Branching belongs in code, not in YAML; conditionals stay in a handler. |
+| `graph.compile()` | `compileFlow({ definition, registry })` for DAGs | YAML or JSON object → durable runner. See [Visual flows](/docs/agents/flow). |
+| `Checkpointer` | `createDurableRunner({ store, runId })` | File or in-memory step log; reuse `runId` to resume. |
+| `Send(...)` (parallel fan-out) | `swarm({ members })` or `compileFlow` parallel `needs` | Topologies wrap N agents into one. |
+| Multi-agent (supervisor + workers) | `supervisor({ supervisor, workers })` | Built-in. See [Topologies](/docs/agents/topologies). |
+| Tool node | `ToolDefinition` registered on the runtime | Same JSON Schema 7 inputs. |
+| `interrupt()` | `createApprovalGate` (HITL) | Pause + resume on a human decision. |
+
+## 1. Basic ReAct loop
+
+### Before — LangGraph
+
+```python
+from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolNode
+
+graph = StateGraph(AgentState)
+graph.add_node("agent", call_model)
+graph.add_node("tools", ToolNode(tools))
+graph.add_edge("tools", "agent")
+graph.add_conditional_edges("agent", should_continue, {"continue": "tools", "end": END})
+graph.set_entry_point("agent")
+app = graph.compile()
+```
+
+### After — AgentsKit
+
+```ts
+import { createRuntime } from '@agentskit/runtime'
+import { openai } from '@agentskit/adapters'
+import { webSearch } from '@agentskit/tools'
+
+const runtime = createRuntime({
+  adapter: openai({ apiKey: KEY, model: 'gpt-4o-mini' }),
+  tools: [webSearch()],
+  maxSteps: 10,
+})
+
+await runtime.run('Find the top 3 results for "agent frameworks 2026"')
+```
+
+The agent / tool alternation, "should continue" decision, and entry point are all the runtime's job. You configure capacity (`maxSteps`) and content (`tools`, `memory`, `skill`).
+
+## 2. Stateful graph → durable runner
+
+### Before — LangGraph
+
+```python
+from langgraph.checkpoint.sqlite import SqliteSaver
+
+memory = SqliteSaver.from_conn_string("checkpoints.db")
+app = graph.compile(checkpointer=memory)
+config = {"configurable": {"thread_id": "user-42"}}
+result = await app.ainvoke({"messages": [...]}, config)
+```
+
+### After — AgentsKit
+
+```ts
+import { createDurableRunner, createFileStepLog } from '@agentskit/runtime'
+
+const store = await createFileStepLog('.agentskit/runs.jsonl')
+const runner = createDurableRunner({ store, runId: 'user-42' })
+
+await runner.step('plan', () => runtime.run(task))
+await runner.step('act',  () => runtime.run(followUp))
+```
+
+Each `runner.step(id, fn)` is recorded; replays short-circuit on resume. Crash, deploy, or retry — the same `runId` picks up where it stopped. See [Durable execution](/docs/agents/durable).
+
+## 3. Conditional graphs → flow YAML
+
+LangGraph excels at "if state.x then go to node Y" chains. When that's the actual shape, AgentsKit ships `compileFlow`:
+
+```yaml
+name: nightly-refresh
+nodes:
+  - id: fetch
+    run: http.get
+    with: { url: https://api.example.com/items }
+  - id: parse
+    run: json.parse
+    needs: [fetch]
+  - id: write
+    run: cache.write
+    needs: [parse]
+```
+
+```ts
+import { compileFlow } from '@agentskit/runtime'
+
+const compiled = compileFlow({
+  definition,
+  registry: {
+    'http.get':    ({ with: w }) => fetch(w.url as string).then(r => r.text()),
+    'json.parse':  ({ deps })   => JSON.parse(deps.fetch as string),
+    'cache.write': ({ deps })   => cache.set('items', deps.parse),
+  },
+})
+
+await compiled.run(input, { runId: 'nightly', store })
+```
+
+Branching inside a node stays in code — flow YAML stays linear (no `if`, no expressions) so it's reviewable. See [Visual flows](/docs/agents/flow).
+
+## 4. Multi-agent — supervisor / swarm
+
+### LangGraph supervisor pattern
+
+```python
+graph = StateGraph(...)
+graph.add_node("supervisor", supervisor_fn)
+graph.add_node("researcher", researcher_node)
+graph.add_node("coder", coder_node)
+graph.add_conditional_edges("supervisor", route_to_worker, {...})
+```
+
+### AgentsKit
+
+```ts
+import { supervisor } from '@agentskit/runtime'
+import { researcher, coder } from '@agentskit/skills'
+
+const research = createRuntime({ adapter, skill: researcher, tools: [...] })
+const code     = createRuntime({ adapter, skill: coder, tools: [...] })
+
+const ensemble = supervisor({
+  supervisor: { name: 'lead',     run: task => leadRuntime.run(task).then(r => r.content) },
+  workers: [
+    { name: 'research', run: task => research.run(task).then(r => r.content) },
+    { name: 'code',     run: task => code.run(task).then(r => r.content) },
+  ],
+  maxRounds: 3,
+})
+
+await ensemble.run('Build a landing page about quantum computing')
+```
+
+`swarm`, `hierarchical`, and `blackboard` topologies are interchangeable — they all return an `AgentHandle`. See [Topologies](/docs/agents/topologies).
+
+## 5. Human-in-the-loop
+
+LangGraph: `interrupt()` + a separate channel to deliver the answer.
+
+AgentsKit:
+
+```ts
+import { createApprovalGate, createInMemoryApprovalStore } from '@agentskit/core/hitl'
+
+const gate = createApprovalGate({ store: createInMemoryApprovalStore() })
+await gate.open({ id: 'approve-spend', payload: { amountUsd: 42 } })
+// somewhere else: await gate.decide('approve-spend', 'approved')
+const decision = await gate.await('approve-spend', { timeoutMs: 5 * 60_000 })
+```
+
+See [HITL approvals](/docs/reference/recipes/hitl-approvals).
+
+## 6. Streaming
+
+```ts
+import { createRuntime } from '@agentskit/runtime'
+
+const runtime = createRuntime({
+  adapter,
+  observers: [
+    { name: 'log', on: e => e.type === 'text' && process.stdout.write((e as { content: string }).content) },
+  ],
+})
+```
+
+Same observer plugs into LangSmith / OpenTelemetry sinks if you want to keep your existing dashboards.
+
+## Incremental migration
+
+You don't have to port the whole graph at once:
+
+1. **Keep your LangGraph app** for the critical path.
+2. **Wrap one node as an AgentsKit runtime** — point it at the same provider, see how the loop simplifies.
+3. **Port a parallel fan-out** to `swarm` or `compileFlow` — easy win since LangGraph's `Send` is verbose.
+4. **Move durable runs** to `createDurableRunner` when the checkpointer story stops being enough.
+
+## Related
+
+- [Visual flows](/docs/agents/flow) — the YAML DAG counterpart.
+- [Topologies](/docs/agents/topologies) — supervisor / swarm / hierarchical / blackboard.
+- [Durable execution](/docs/agents/durable) — Temporal-style step logs.
+- [From LangChain](./from-langchain) — companion guide for the LangChain runtime layer.
+
+<ContributeCallout title="Migrated from LangGraph?" body="Tell us what tripped you up — every real-world migration makes the next one smoother." />

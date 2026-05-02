@@ -1,0 +1,230 @@
+---
+title: From LlamaIndex
+description: Side-by-side migration guide. Map LlamaIndex retrieval and agent abstractions to AgentsKit RAG + runtime.
+---
+import { ContributeCallout } from '@/components/contribute/contribute-callout'
+
+LlamaIndex is the king of "RAG over your documents". AgentsKit treats RAG
+as one piece of a larger agent runtime — adapters, tools, memory,
+skills, observability all share the same contracts. Migrate when:
+
+- You want **one runtime** for "agent that uses RAG" instead of two libraries (LlamaIndex + your own loop).
+- You need **swappable providers** in one line — adapters are the seam.
+- You want **TypeScript-first** ergonomics. AgentsKit is TS, not Python.
+- You want **first-class tool calling, durable execution, and topologies** alongside RAG.
+
+Stay with LlamaIndex when:
+
+- You're 100% Python and don't want a TS dependency.
+- You depend on the LlamaIndex agent recipes (`OpenAIAssistantAgent`, `ReActAgent` with very specific prompt structures).
+- You need exotic indexers (TreeIndex, ListIndex, KeywordTableIndex) AgentsKit doesn't have.
+
+## Quick reference
+
+| LlamaIndex | AgentsKit | Notes |
+|---|---|---|
+| `VectorStoreIndex.from_documents(docs)` | `createRAG({ embed, store }).ingest(docs)` | One factory; pluggable embedder + vector store. |
+| `index.as_retriever()` | The `RAG` instance itself implements `Retriever` | Use it as `retriever:` on the runtime. |
+| `index.as_query_engine()` | `runtime.run(query)` with `retriever` set | Retrieval per-turn is automatic. |
+| `Document(text, metadata)` | `{ content, metadata }` | Same shape, plain object. |
+| `SimpleNodeParser`, `SentenceSplitter` | `chunkText({ chunkSize, chunkOverlap })` | Lower-level helper if you want to chunk yourself. |
+| `OpenAIEmbedding` | `openaiEmbedder({ apiKey, model })` | Embedders are first-class adapters. |
+| `Chroma`, `Pinecone`, `Qdrant`, `Weaviate` | `chroma`, `pinecone`, `qdrant`, `weaviateVectorStore` | All in `@agentskit/memory`. |
+| `OpenAIAgent.from_tools(tools)` | `createRuntime({ adapter, tools })` | Same idea; one runtime for every model. |
+| `ReActAgent` | `createRuntime` (the loop is ReAct by default) | No separate class. |
+| `Workflow` (LlamaIndex 0.10+) | `compileFlow` for DAGs, `topologies` for multi-agent | YAML DAG vs explicit code; pick per use case. |
+
+## 1. Basic RAG over local files
+
+### Before — LlamaIndex (Python)
+
+```python
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.embeddings.openai import OpenAIEmbedding
+
+documents = SimpleDirectoryReader("./docs").load_data()
+index = VectorStoreIndex.from_documents(
+    documents,
+    embed_model=OpenAIEmbedding(model="text-embedding-3-small"),
+)
+query_engine = index.as_query_engine()
+print(query_engine.query("How do I deploy?"))
+```
+
+### After — AgentsKit
+
+```ts
+import { createRAG } from '@agentskit/rag'
+import { fileVectorMemory } from '@agentskit/memory'
+import { openaiEmbedder, openai } from '@agentskit/adapters'
+import { createRuntime } from '@agentskit/runtime'
+import { readdir, readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+
+const rag = createRAG({
+  embed: openaiEmbedder({ apiKey: KEY, model: 'text-embedding-3-small' }),
+  store: fileVectorMemory({ path: './embeddings.json' }),
+})
+
+const docs = await Promise.all(
+  (await readdir('./docs')).map(async f => ({
+    content: await readFile(join('./docs', f), 'utf8'),
+    source: f,
+  })),
+)
+await rag.ingest(docs)
+
+const runtime = createRuntime({
+  adapter: openai({ apiKey: KEY, model: 'gpt-4o-mini' }),
+  retriever: rag,
+})
+
+console.log(await runtime.run('How do I deploy?'))
+```
+
+The shape is the same: ingest → retrieve → answer. `runtime.run()` calls the retriever per turn automatically.
+
+## 2. Reranking
+
+LlamaIndex has `LLMRerank` and `SentenceTransformerRerank`. AgentsKit ships pluggable rerankers:
+
+```ts
+import { createRerankedRetriever, voyageReranker } from '@agentskit/rag'
+
+const reranked = createRerankedRetriever(rag, {
+  candidatePool: 30,
+  topK: 5,
+  rerank: voyageReranker({ apiKey: VOYAGE_KEY, model: 'rerank-2' }),
+})
+
+createRuntime({ adapter, retriever: reranked })
+```
+
+Built-in: BM25 (default), `voyageReranker`, `jinaReranker`. Custom: pass any `RerankFn`. See [RAG reranking](/docs/reference/recipes/rag-reranking).
+
+## 3. Hybrid retrieval
+
+LlamaIndex 0.10+ has `QueryFusionRetriever` for vector + keyword. AgentsKit:
+
+```ts
+import { createHybridRetriever } from '@agentskit/rag'
+
+const hybrid = createHybridRetriever(rag, {
+  vectorWeight: 0.7,
+  bm25Weight: 0.3,
+})
+```
+
+## 4. Document loaders
+
+LlamaIndex has hundreds of `LlamaHub` loaders. AgentsKit ships the
+common ones in `@agentskit/rag`:
+
+```ts
+import {
+  loadUrl, loadGitHubFile, loadGitHubTree,
+  loadNotionPage, loadConfluencePage, loadGoogleDriveFile,
+  loadPdf, loadS3, loadGcs, loadDropbox, loadOneDrive,
+} from '@agentskit/rag'
+
+await rag.ingest(await loadGitHubTree('agentskit-io', 'agentskit', { token }))
+await rag.ingest(await loadNotionPage('PAGE_ID', { token: NOTION_KEY }))
+```
+
+For everything else, the loader contract is `() => Promise<Array<{ content, source?, metadata? }>>` — write your own in 10 lines.
+
+## 5. Tool-using agent
+
+### Before — LlamaIndex
+
+```python
+from llama_index.core.agent import ReActAgent
+from llama_index.core.tools import FunctionTool
+
+def get_weather(city: str) -> str:
+    ...
+
+agent = ReActAgent.from_tools(
+    [FunctionTool.from_defaults(fn=get_weather)],
+    llm=OpenAI(model="gpt-4o"),
+)
+agent.chat("What's the weather in Lisbon?")
+```
+
+### After — AgentsKit
+
+```ts
+import { createRuntime } from '@agentskit/runtime'
+import { openai } from '@agentskit/adapters'
+import type { ToolDefinition } from '@agentskit/core'
+
+const weather: ToolDefinition = {
+  name: 'weather',
+  description: 'Get the weather for a city',
+  schema: { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] },
+  execute: async ({ city }) => fetch(`https://wttr.in/${city}?format=j1`).then(r => r.json()),
+}
+
+const runtime = createRuntime({
+  adapter: openai({ apiKey: KEY, model: 'gpt-4o' }),
+  tools: [weather],
+})
+
+await runtime.run("What's the weather in Lisbon?")
+```
+
+JSON Schema 7 is the input format. Convert from Zod with `zod-to-json-schema` if you want Zod as your source of truth.
+
+## 6. Combining RAG + tools + memory
+
+```ts
+import { sqliteChatMemory } from '@agentskit/memory'
+
+const runtime = createRuntime({
+  adapter,
+  tools: [weather, ...filesystem({ basePath: './workspace' })],
+  retriever: rag,
+  memory: sqliteChatMemory({ path: './sessions/user-42.db' }),
+  maxSteps: 10,
+})
+```
+
+Memory load + save, retrieval per turn, tool resolution — all handled. The runtime contract is locked in [ADR 0006](https://github.com/AgentsKit-io/agentskit/blob/main/docs/architecture/adrs/0006-runtime-contract.md).
+
+## 7. Vector store choice
+
+| Backend | Import | Notes |
+|---|---|---|
+| In-memory | `createInMemoryMemory` (core) | Tests, demos. |
+| File JSON | `fileVectorMemory({ path })` | Vectra-backed; one process. |
+| Postgres | `pgvector(...)` | Bring your own client (`pg` Pool, Neon, Supabase RPC). |
+| Pinecone | `pinecone({ indexUrl, apiKey })` | HTTP only; no SDK dep. |
+| Qdrant | `qdrant({ url, apiKey?, collection })` | HTTP only. |
+| Chroma | `chroma({ url, collection })` | HTTP only. |
+| Upstash | `upstashVector({ url, token })` | HTTP only. |
+| Weaviate | `weaviateVectorStore({ url, apiKey?, className })` | HTTP only. |
+| Milvus / Zilliz | `milvusVectorStore({ url, token, collection })` | HTTP only. |
+| MongoDB Atlas | `mongoAtlasVectorStore({ collection, ... })` | BYO client. |
+| Supabase | `supabaseVectorStore({ url, serviceRoleKey, table? })` | Wraps pgvector via RPC. |
+
+## Where LlamaIndex still wins
+
+- **Python ecosystem.** If your team and your data tooling are 100% Python, the migration cost might not be worth it.
+- **Tree / list / keyword indices** for non-embedding retrieval shapes.
+- **Document loaders.** LlamaHub has hundreds; AgentsKit ships ~10. If you need an exotic source (Slack archive, Salesforce object), you'd write it.
+- **Multimodal indices** (image / video). AgentsKit's RAG is text-first today.
+
+## Incremental migration
+
+1. **Embed once with LlamaIndex; retrieve with AgentsKit** — vector backends are wire-compatible. Point AgentsKit at your existing Pinecone / Qdrant index.
+2. **Move the agent loop to AgentsKit's runtime** — keep your LlamaIndex retriever wrapped via the `Retriever` contract.
+3. **Port loaders incrementally** as you re-ingest.
+
+## Related
+
+- [Recipe: Chat with RAG](/docs/reference/recipes/rag-chat) — end-to-end.
+- [RAG reranking](/docs/reference/recipes/rag-reranking) — voyage / jina / BM25.
+- [Vector adapters](/docs/reference/recipes/vector-adapters) — backend-by-backend.
+- [Concepts: Retriever](../concepts/retriever) — the contract LlamaIndex retrievers can implement.
+
+<ContributeCallout title="Coming from LlamaIndex?" body="Spot a missing equivalent? Open a discussion or send a PR — we want the mapping table to be exhaustive." />
