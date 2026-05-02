@@ -85,6 +85,7 @@ Every package has a focused **`CONVENTIONS.md`** at its root explaining what bel
 Don't surprise reviewers. Either:
 
 - Pick an [open issue](https://github.com/AgentsKit-io/agentskit/issues) (look for [`good first issue`](https://github.com/AgentsKit-io/agentskit/labels/good%20first%20issue) or [`help wanted`](https://github.com/AgentsKit-io/agentskit/labels/help%20wanted)), comment that you're taking it.
+- Browse the [public project board](https://github.com/orgs/AgentsKit-io/projects/1) — anything in `Ready` is fair game to claim.
 - Or open a new issue describing what you want to do **before** writing code, especially if the change touches a contract or a public API.
 
 ### 2. Branch and write code

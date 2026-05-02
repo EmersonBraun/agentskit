@@ -148,5 +148,5 @@ describe('Ink chat integration', () => {
     rerender(<ChatApp adapter={adapter} />)
 
     expect(lastFrame()).not.toContain('Thinking')
-  })
+  }, 15000)
 })

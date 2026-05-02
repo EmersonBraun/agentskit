@@ -175,12 +175,15 @@ export function createRuntime(config: RuntimeConfig) {
         if (signal?.aborted) break
 
         // Build assistant message with tool calls
-        const assistantToolCalls: ToolCall[] = stepToolCalls.map(({ toolCall }) => ({
-          id: toolCall!.id,
-          name: toolCall!.name,
-          args: safeParseArgs(toolCall!.args),
-          status: 'pending' as const,
-        }))
+        const assistantToolCalls: ToolCall[] = stepToolCalls
+          .map(({ toolCall }) => toolCall)
+          .filter((tc): tc is NonNullable<typeof tc> => tc != null)
+          .map(tc => ({
+            id: tc.id,
+            name: tc.name,
+            args: safeParseArgs(tc.args),
+            status: 'pending' as const,
+          }))
 
         const assistantMessage = buildMessage({
           role: 'assistant',

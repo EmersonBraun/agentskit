@@ -1,4 +1,5 @@
 import type { EmbedFn } from '@agentskit/core'
+import { throwIfNotOk } from './shared'
 
 export interface GeminiEmbedderConfig {
   apiKey: string
@@ -9,10 +10,7 @@ export interface GeminiEmbedderConfig {
 async function fetchAvailableModels(baseUrl: string, apiKey: string): Promise<string[]> {
   const url = `${baseUrl}/v1beta/models?key=${apiKey}`
   const response = await fetch(url)
-  if (!response.ok) {
-    const body = await response.text().catch(() => '')
-    throw new Error(`HTTP ${response.status} from gemini ${baseUrl}/v1beta/models: ${body.slice(0, 200)}`)
-  }
+  await throwIfNotOk(response, 'gemini', `${baseUrl}/v1beta/models`)
   const data = (await response.json()) as {
     models: Array<{ name: string; supportedGenerationMethods: string[] }>
   }

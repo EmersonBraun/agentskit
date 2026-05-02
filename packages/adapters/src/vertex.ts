@@ -33,6 +33,7 @@ export function vertex(config: VertexConfig): AdapterFactory {
       reasoning: model.includes('pro'),
     },
     createSource: (request: AdapterRequest): StreamSource => {
+      const systemMessage = request.messages.find(message => message.role === 'system')
       const body = {
         contents: request.messages
           .filter(message => message.role !== 'system')
@@ -40,11 +41,8 @@ export function vertex(config: VertexConfig): AdapterFactory {
             role: message.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: message.content }],
           })),
-        systemInstruction: request.messages.find(message => message.role === 'system')
-          ? {
-              role: 'system',
-              parts: [{ text: request.messages.find(message => message.role === 'system')!.content }],
-            }
+        systemInstruction: systemMessage
+          ? { role: 'system', parts: [{ text: systemMessage.content }] }
           : undefined,
         tools: request.context?.tools && request.context.tools.length > 0
           ? [{

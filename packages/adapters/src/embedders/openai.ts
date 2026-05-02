@@ -1,4 +1,5 @@
 import type { EmbedFn } from '@agentskit/core'
+import { throwIfNotOk } from './shared'
 
 export interface OpenAIEmbedderConfig {
   apiKey: string
@@ -11,10 +12,7 @@ async function fetchAvailableModels(baseUrl: string, apiKey: string): Promise<st
   const response = await fetch(url, {
     headers: { 'Authorization': `Bearer ${apiKey}` },
   })
-  if (!response.ok) {
-    const body = await response.text().catch(() => '')
-    throw new Error(`HTTP ${response.status} from ${url}: ${body.slice(0, 200)}`)
-  }
+  await throwIfNotOk(response, 'openai', url)
   const data = (await response.json()) as { data: Array<{ id: string }> }
   return data.data
     .map(m => m.id)

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Box, Text } from 'ink'
+import { useInkTheme } from './theme'
 
 export interface StatusHeaderProps {
   title?: string
@@ -20,24 +21,25 @@ export function StatusHeader({
   messageCount,
   sessionId,
 }: StatusHeaderProps) {
+  const theme = useInkTheme()
   const segments: Array<{ label: string; value: string; color?: string }> = []
 
-  if (provider) segments.push({ label: 'provider', value: provider, color: 'cyan' })
-  if (model) segments.push({ label: 'model', value: model, color: 'magenta' })
-  if (mode) segments.push({ label: 'mode', value: mode, color: mode === 'live' ? 'green' : 'yellow' })
+  if (provider) segments.push({ label: 'provider', value: provider, color: theme.segment.provider })
+  if (model) segments.push({ label: 'model', value: model, color: theme.segment.model })
+  if (mode) segments.push({ label: 'mode', value: mode, color: mode === 'live' ? theme.segment.modeLive : theme.segment.modeDemo })
   if (tools && tools.length > 0) {
-    segments.push({ label: 'tools', value: tools.join(','), color: 'blue' })
+    segments.push({ label: 'tools', value: tools.join(','), color: theme.segment.tools })
   }
   if (typeof messageCount === 'number') {
-    segments.push({ label: 'msgs', value: String(messageCount), color: 'gray' })
+    segments.push({ label: 'msgs', value: String(messageCount), color: theme.segment.muted })
   }
   if (sessionId) {
-    segments.push({ label: 'session', value: sessionId.slice(0, 12), color: 'gray' })
+    segments.push({ label: 'session', value: sessionId.slice(0, 12), color: theme.segment.muted })
   }
 
   return (
-    <Box flexDirection="column" borderStyle="round" borderColor="cyan" paddingX={1}>
-      <Text color="cyan" bold>
+    <Box flexDirection="column" borderStyle="round" borderColor={theme.header.border} paddingX={1}>
+      <Text color={theme.header.title} bold>
         ✦ {title}
       </Text>
       {segments.length > 0 ? (

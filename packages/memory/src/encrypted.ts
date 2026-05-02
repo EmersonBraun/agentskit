@@ -67,7 +67,7 @@ export async function createEncryptedMemory(
   options: EncryptedMemoryOptions,
 ): Promise<ChatMemory> {
   const subtle = options.subtle ?? globalThis.crypto?.subtle
-  const random = options.getRandomValues ?? (<T extends ArrayBufferView>(v: T) => globalThis.crypto.getRandomValues(v as ArrayBufferView as ArrayBufferView & { buffer: ArrayBuffer }) as T)
+  const random = options.getRandomValues ?? (<T extends ArrayBufferView>(v: T) => globalThis.crypto.getRandomValues(v as ArrayBufferView & { buffer: ArrayBuffer }) as T)
   if (!subtle) {
     throw new MemoryError({
       code: ErrorCodes.AK_MEMORY_LOAD_FAILED,

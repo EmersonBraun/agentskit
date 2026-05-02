@@ -1,5 +1,6 @@
 import { ConfigError, ErrorCodes } from '@agentskit/core'
 import type { EmbedFn } from '@agentskit/core'
+import { throwIfNotOk } from './shared'
 
 export interface OpenAICompatibleEmbedderConfig {
   apiKey: string
@@ -7,15 +8,12 @@ export interface OpenAICompatibleEmbedderConfig {
   baseUrl?: string
 }
 
-async function fetchAvailableModels(baseUrl: string, apiKey: string): Promise<string[]> {
+async function fetchAvailableModels(provider: string, baseUrl: string, apiKey: string): Promise<string[]> {
   const url = `${baseUrl}/v1/models`
   const response = await fetch(url, {
     headers: { 'Authorization': `Bearer ${apiKey}` },
   })
-  if (!response.ok) {
-    const body = await response.text().catch(() => '')
-    throw new Error(`HTTP ${response.status} from ${url}: ${body.slice(0, 200)}`)
-  }
+  await throwIfNotOk(response, provider, url)
   const data = (await response.json()) as { data: Array<{ id: string }> }
   return data.data
     .map(m => m.id)
@@ -30,7 +28,7 @@ async function buildModelError(
   originalError: string,
 ): Promise<Error> {
   try {
-    const models = await fetchAvailableModels(baseUrl, apiKey)
+    const models = await fetchAvailableModels(provider, baseUrl, apiKey)
     const list = models.length > 0 ? models.join(', ') : 'none found'
     return new Error(
       `${provider} embedding failed: ${originalError}. Available embedding models: ${list}`,

@@ -39,7 +39,7 @@ export async function runInteractiveInit(
       },
     })
 
-    const template = (await select<StarterKind>({
+    const template = await select<StarterKind>({
       message: 'Template:',
       default: defaults.template ?? 'react',
       choices: [
@@ -57,9 +57,9 @@ export async function runInteractiveInit(
         { name: 'Runtime (headless agent, no UI)', value: 'runtime', description: 'Autonomous task → result' },
         { name: 'Multi-agent (planner + delegates)', value: 'multi-agent', description: 'Supervisor pattern, ready to extend' },
       ],
-    })) as StarterKind
+    })
 
-    const provider = (await select<Provider>({
+    const provider = await select<Provider>({
       message: 'LLM provider:',
       default: 'demo',
       choices: [
@@ -69,22 +69,22 @@ export async function runInteractiveInit(
         { name: 'Gemini', value: 'gemini' },
         { name: 'Ollama (local, no key)', value: 'ollama' },
       ],
-    })) as Provider
+    })
 
     let tools: ToolKind[] = []
     if (template !== 'react') {
       // React template focuses on chat; tools are most useful in runtime / multi-agent / ink
-      tools = (await checkbox<ToolKind>({
+      tools = await checkbox<ToolKind>({
         message: 'Tools (space to toggle, enter to confirm):',
         choices: [
           { name: 'web_search', value: 'web_search' },
           { name: 'filesystem', value: 'filesystem' },
           { name: 'shell', value: 'shell' },
         ],
-      })) as ToolKind[]
+      })
     }
 
-    const memory = (await select<MemoryKind>({
+    const memory = await select<MemoryKind>({
       message: 'Memory backend:',
       default: 'none',
       choices: [
@@ -92,9 +92,9 @@ export async function runInteractiveInit(
         { name: 'File (JSON on disk)', value: 'file' },
         { name: 'SQLite (better-sqlite3)', value: 'sqlite' },
       ],
-    })) as MemoryKind
+    })
 
-    const packageManager = (await select<PackageManager>({
+    const packageManager = await select<PackageManager>({
       message: 'Package manager:',
       default: 'pnpm',
       choices: [
@@ -103,7 +103,7 @@ export async function runInteractiveInit(
         { name: 'yarn', value: 'yarn' },
         { name: 'bun', value: 'bun' },
       ],
-    })) as PackageManager
+    })
 
     process.stdout.write('\n' + kleur.dim('  Summary:\n'))
     process.stdout.write(kleur.dim(`    dir       ${targetDir}\n`))

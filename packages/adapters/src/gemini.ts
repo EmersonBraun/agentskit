@@ -19,6 +19,7 @@ export function gemini(config: GeminiConfig): AdapterFactory {
       usage: true,
     },
     createSource: (request: AdapterRequest): StreamSource => {
+      const systemMessage = request.messages.find(message => message.role === 'system')
       const body = {
         contents: request.messages
           .filter(message => message.role !== 'system')
@@ -26,11 +27,8 @@ export function gemini(config: GeminiConfig): AdapterFactory {
             role: message.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: message.content }],
           })),
-        systemInstruction: request.messages.find(message => message.role === 'system')
-          ? {
-              role: 'system',
-              parts: [{ text: request.messages.find(message => message.role === 'system')!.content }],
-            }
+        systemInstruction: systemMessage
+          ? { role: 'system', parts: [{ text: systemMessage.content }] }
           : undefined,
       }
 

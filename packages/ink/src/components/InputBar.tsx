@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Box, Text, useInput } from 'ink'
 import type { ChatReturn } from '@agentskit/core'
+import { useInkTheme } from './theme'
 
 export interface InputBarProps {
   chat: ChatReturn
@@ -35,6 +36,7 @@ export function InputBar({
   history,
   onSubmitInput,
 }: InputBarProps) {
+  const theme = useInkTheme()
   const isBusy = disabled || chat.status === 'streaming'
   const [cursorOn, setCursorOn] = useState(true)
 
@@ -122,10 +124,10 @@ export function InputBar({
     <Box flexDirection="column">
       <Text dimColor>{hint}</Text>
       <Box>
-        <Text color={isBusy ? 'gray' : 'cyan'} bold>
+        <Text color={isBusy ? theme.prompt.busy : theme.prompt.active} bold>
           ❯{' '}
         </Text>
-        <Text color={isBusy ? 'gray' : 'white'}>
+        <Text color={isBusy ? theme.inputText.busy : theme.inputText.active}>
           {chat.input}
           {!isBusy && cursorOn ? <Text inverse> </Text> : null}
         </Text>

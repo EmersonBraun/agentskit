@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Text } from 'ink'
-import type { ToolCall, ToolCallStatus } from '@agentskit/core'
+import type { ToolCall } from '@agentskit/core'
+import { useInkTheme } from './theme'
 
 export interface ToolCallViewProps {
   toolCall: ToolCall
@@ -12,14 +13,6 @@ export interface ToolCallViewProps {
 }
 
 const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
-
-const STATUS_META: Record<ToolCallStatus, { icon: string; color: string; label: string }> = {
-  pending: { icon: '○', color: 'gray', label: 'pending' },
-  running: { icon: SPINNER[0], color: 'cyan', label: 'running' },
-  complete: { icon: '✓', color: 'green', label: 'complete' },
-  error: { icon: '✗', color: 'red', label: 'error' },
-  requires_confirmation: { icon: '?', color: 'yellow', label: 'requires_confirmation' },
-}
 
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text
@@ -41,7 +34,8 @@ export function ToolCallView({
   resultPreviewChars = 500,
   argsPreviewChars = 120,
 }: ToolCallViewProps) {
-  const meta = STATUS_META[toolCall.status] ?? STATUS_META.pending
+  const theme = useInkTheme()
+  const meta = theme.toolStatus[toolCall.status] ?? theme.toolStatus.pending
   const [frame, setFrame] = useState(0)
   const isRunning = toolCall.status === 'running'
 
@@ -69,7 +63,7 @@ export function ToolCallView({
             <Text>{truncate(toolCall.result, resultPreviewChars)}</Text>
           ) : null}
           {toolCall.error ? (
-            <Text color="red">{truncate(toolCall.error, resultPreviewChars)}</Text>
+            <Text color={theme.toolStatus.error.color}>{truncate(toolCall.error, resultPreviewChars)}</Text>
           ) : null}
         </Box>
       ) : null}

@@ -103,6 +103,7 @@ export async function loadNotionPage(
   const data = (await response.json()) as {
     results?: Array<{ type: string; paragraph?: { rich_text?: Array<{ plain_text?: string }> }; heading_1?: { rich_text?: Array<{ plain_text?: string }> }; heading_2?: { rich_text?: Array<{ plain_text?: string }> }; heading_3?: { rich_text?: Array<{ plain_text?: string }> } }>
   }
+  const HEADING_PREFIX: Record<string, string> = { heading_1: '# ', heading_2: '## ', heading_3: '### ' }
   const text = (data.results ?? [])
     .map(block => {
       const part =
@@ -111,7 +112,7 @@ export async function loadNotionPage(
         block.heading_2?.rich_text ??
         block.heading_3?.rich_text
       if (!part) return ''
-      const prefix = block.type === 'heading_1' ? '# ' : block.type === 'heading_2' ? '## ' : block.type === 'heading_3' ? '### ' : ''
+      const prefix = HEADING_PREFIX[block.type] ?? ''
       return prefix + part.map(t => t.plain_text ?? '').join('')
     })
     .filter(Boolean)

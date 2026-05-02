@@ -456,8 +456,10 @@ export function createStreamSource(
 
   return {
     stream: async function* (): AsyncIterableIterator<StreamChunk> {
+      const controller = abortController
+      if (!controller) return
       try {
-        const response = await fetchWithRetry(doFetch, abortController!.signal, retry ?? {})
+        const response = await fetchWithRetry(doFetch, controller.signal, retry ?? {})
 
         if (!response.ok || !response.body) {
           yield { type: 'error', content: `${errorLabel} error: ${response.status}` }
@@ -526,8 +528,10 @@ export function simulateStream(
 
   return {
     stream: async function* (): AsyncIterableIterator<StreamChunk> {
+      const controller = abortController
+      if (!controller) return
       try {
-        const response = await fetchWithRetry(doFetch, abortController!.signal, retry ?? {})
+        const response = await fetchWithRetry(doFetch, controller.signal, retry ?? {})
 
         if (!response.ok) {
           yield { type: 'error', content: `${errorLabel} error: ${response.status}` }
@@ -541,7 +545,7 @@ export function simulateStream(
           if (delayMs > 0) {
             await new Promise<void>((resolve, reject) => {
               const timer = setTimeout(resolve, delayMs)
-              abortController?.signal.addEventListener(
+              controller.signal.addEventListener(
                 'abort',
                 () => {
                   clearTimeout(timer)

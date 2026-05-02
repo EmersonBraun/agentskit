@@ -16,7 +16,7 @@ A 10KB core. Nineteen focused packages. Zero lock-in. Six formal contracts that 
 [![Last commit](https://img.shields.io/github/last-commit/AgentsKit-io/agentskit)](https://github.com/AgentsKit-io/agentskit/commits)
 [![npm downloads](https://img.shields.io/npm/dm/@agentskit/core?label=core%20downloads)](https://www.npmjs.com/package/@agentskit/core)
 
-[**Documentation**](https://www.agentskit.io) · [**Discord**](https://discord.gg/zx6z2p4jVb) · [**Manifesto**](./MANIFESTO.md) · [**Origin**](./ORIGIN.md) · [**Architecture**](./docs/architecture/adrs)
+[**Documentation**](https://www.agentskit.io) · [**Discord**](https://discord.gg/zx6z2p4jVb) · [**Roadmap**](https://github.com/orgs/AgentsKit-io/projects/1) · [**Manifesto**](./MANIFESTO.md) · [**Origin**](./ORIGIN.md) · [**Architecture**](./docs/architecture/adrs)
 
 <a href="https://www.producthunt.com/products/agentskit?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-agentskit" target="_blank" rel="noopener noreferrer"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1125539&theme=light" alt="AgentsKit — The most complete ecosystem to create AI agents | Product Hunt" width="250" height="54" /></a>
 
@@ -289,6 +289,7 @@ See the [Phase 1 release notes](./docs/RELEASE-CORE-V1.md) for what shipped, and
 AgentsKit is built in the open and ships because contributors show up. Every package, every doc, every example is fair game.
 
 - **[How to contribute →](https://www.agentskit.io/docs/contribute)** — start here
+- **[Public roadmap board](https://github.com/orgs/AgentsKit-io/projects/1)** — what's planned, in flight, and shipped
 - **[Good-first-issues](https://github.com/AgentsKit-io/agentskit/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** — curated, tractable tickets
 - **[Help-wanted](https://github.com/AgentsKit-io/agentskit/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)** — larger scoped work
 - **[Discussions](https://github.com/AgentsKit-io/agentskit/discussions)** — ask, propose, share

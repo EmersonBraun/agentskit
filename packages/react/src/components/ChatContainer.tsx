@@ -26,7 +26,6 @@ export function ChatContainer({ children, className }: ChatContainerProps) {
       data-ak-chat-container=""
       data-testid="ak-chat-container"
       className={className}
-      style={{ overflow: 'auto' }}
     >
       {children}
     </div>

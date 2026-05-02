@@ -113,6 +113,15 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
     }))
   }
 
+  const updateToolCall = (assistantId: string, toolCallId: string, patch: Partial<ToolCall>) => {
+    setAssistantMessage(assistantId, message => ({
+      ...message,
+      toolCalls: (message.toolCalls ?? []).map(call =>
+        call.id === toolCallId ? { ...call, ...patch } : call
+      ),
+    }))
+  }
+
   const handleToolCall = async (assistantId: string, chunk: StreamChunk) => {
     if (!chunk.toolCall) return
 
@@ -137,14 +146,10 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
     // sets status to 'requires_confirmation' and waits for external confirmation
     if (tool?.requiresConfirmation) {
       if (chunk.toolCall.result) {
-        setAssistantMessage(assistantId, message => ({
-          ...message,
-          toolCalls: (message.toolCalls ?? []).map(call =>
-            call.id === toolCall.id
-              ? { ...call, result: chunk.toolCall?.result, status: 'complete' as const }
-              : call
-          ),
-        }))
+        updateToolCall(assistantId, toolCall.id, {
+          result: chunk.toolCall.result,
+          status: 'complete',
+        })
       }
       return
     }
@@ -158,23 +163,14 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
         emitter,
         lifecycle,
       })
-      setAssistantMessage(assistantId, message => ({
-        ...message,
-        toolCalls: (message.toolCalls ?? []).map(call =>
-          call.id === toolCall.id
-            ? { ...call, status: 'error' as const, error: execResult.error }
-            : call
-        ),
-      }))
+      updateToolCall(assistantId, toolCall.id, {
+        status: 'error',
+        error: execResult.error,
+      })
       return
     }
 
-    setAssistantMessage(assistantId, message => ({
-      ...message,
-      toolCalls: (message.toolCalls ?? []).map(call =>
-        call.id === toolCall.id ? { ...call, status: 'running' as const } : call
-      ),
-    }))
+    updateToolCall(assistantId, toolCall.id, { status: 'running' })
 
     const execResult = await executeSafeTool({
       tool,
@@ -183,28 +179,15 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
       emitter,
       lifecycle,
       onPartial: (partial) => {
-        setAssistantMessage(assistantId, message => ({
-          ...message,
-          toolCalls: (message.toolCalls ?? []).map(call =>
-            call.id === toolCall.id ? { ...call, result: partial } : call
-          ),
-        }))
+        updateToolCall(assistantId, toolCall.id, { result: partial })
       },
     })
 
-    setAssistantMessage(assistantId, message => ({
-      ...message,
-      toolCalls: (message.toolCalls ?? []).map(call =>
-        call.id === toolCall.id
-          ? {
-              ...call,
-              status: execResult.status === 'complete' ? 'complete' as const : 'error' as const,
-              result: execResult.result,
-              error: execResult.error,
-            }
-          : call
-      ),
-    }))
+    updateToolCall(assistantId, toolCall.id, {
+      status: execResult.status === 'complete' ? 'complete' : 'error',
+      result: execResult.result,
+      error: execResult.error,
+    })
   }
 
   const buildAdapterRequest = async (messages: Message[], text: string): Promise<AdapterRequest> => {
@@ -530,18 +513,13 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
       const msg = state.messages.find(m =>
         m.toolCalls?.some(tc => tc.id === toolCallId && tc.status === 'requires_confirmation')
       )
-      if (!msg) return
+      const tc = msg?.toolCalls?.find(c => c.id === toolCallId)
+      if (!msg || !tc) return
 
-      const tc = msg.toolCalls!.find(c => c.id === toolCallId)!
       const tool = toolMap.get(tc.name)
       if (!tool?.execute) return
 
-      setAssistantMessage(msg.id, message => ({
-        ...message,
-        toolCalls: (message.toolCalls ?? []).map(call =>
-          call.id === toolCallId ? { ...call, status: 'running' as const } : call
-        ),
-      }))
+      updateToolCall(msg.id, toolCallId, { status: 'running' })
 
       const execResult = await executeSafeTool({
         tool,
@@ -550,28 +528,15 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
         emitter,
         lifecycle,
         onPartial: (partial) => {
-          setAssistantMessage(msg.id, message => ({
-            ...message,
-            toolCalls: (message.toolCalls ?? []).map(call =>
-              call.id === toolCallId ? { ...call, result: partial } : call
-            ),
-          }))
+          updateToolCall(msg.id, toolCallId, { result: partial })
         },
       })
 
-      setAssistantMessage(msg.id, message => ({
-        ...message,
-        toolCalls: (message.toolCalls ?? []).map(call =>
-          call.id === toolCallId
-            ? {
-                ...call,
-                status: execResult.status === 'complete' ? 'complete' as const : 'error' as const,
-                result: execResult.result,
-                error: execResult.error,
-              }
-            : call
-        ),
-      }))
+      updateToolCall(msg.id, toolCallId, {
+        status: execResult.status === 'complete' ? 'complete' : 'error',
+        result: execResult.result,
+        error: execResult.error,
+      })
 
       await resumeAgentLoop(msg.id)
     },
@@ -579,19 +544,13 @@ export function createChatController(initialConfig: ChatConfig): ChatController 
       const msg = state.messages.find(m =>
         m.toolCalls?.some(tc => tc.id === toolCallId && tc.status === 'requires_confirmation')
       )
-      if (!msg) return
+      const tc = msg?.toolCalls?.find(c => c.id === toolCallId)
+      if (!msg || !tc) return
 
-      const tc = msg.toolCalls!.find(c => c.id === toolCallId)!
-      const denialMessage = `Permission denied: ${reason ?? 'user denied access'}`
-
-      setAssistantMessage(msg.id, message => ({
-        ...message,
-        toolCalls: (message.toolCalls ?? []).map(call =>
-          call.id === toolCallId
-            ? { ...call, status: 'error' as const, error: denialMessage }
-            : call
-        ),
-      }))
+      updateToolCall(msg.id, toolCallId, {
+        status: 'error',
+        error: `Permission denied: ${reason ?? 'user denied access'}`,
+      })
 
       await resumeAgentLoop(msg.id)
     },

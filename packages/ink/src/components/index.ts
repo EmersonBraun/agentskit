@@ -6,6 +6,8 @@ export { ThinkingIndicator } from './ThinkingIndicator'
 export { StatusHeader } from './StatusHeader'
 export { MarkdownText } from './MarkdownText'
 export { ToolConfirmation } from './ToolConfirmation'
+export { InkThemeProvider, useInkTheme, defaultInkTheme } from './theme'
+export type { InkTheme } from './theme'
 
 export type { ChatContainerProps } from './ChatContainer'
 export type { MessageProps } from './Message'

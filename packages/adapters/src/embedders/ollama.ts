@@ -1,4 +1,5 @@
 import type { EmbedFn } from '@agentskit/core'
+import { throwIfNotOk } from './shared'
 
 export interface OllamaEmbedderConfig {
   model?: string
@@ -8,10 +9,7 @@ export interface OllamaEmbedderConfig {
 async function fetchAvailableModels(baseUrl: string): Promise<string[]> {
   const url = `${baseUrl}/api/tags`
   const response = await fetch(url)
-  if (!response.ok) {
-    const body = await response.text().catch(() => '')
-    throw new Error(`HTTP ${response.status} from ollama ${url}: ${body.slice(0, 200)}`)
-  }
+  await throwIfNotOk(response, 'ollama', url)
   const data = (await response.json()) as { models: Array<{ name: string }> }
   return data.models
     .map(m => m.name)

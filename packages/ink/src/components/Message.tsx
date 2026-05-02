@@ -1,7 +1,8 @@
 import React from 'react'
 import { Box, Text } from 'ink'
-import type { Message as MessageType, MessageRole, TokenUsage } from '@agentskit/core'
+import type { Message as MessageType, TokenUsage } from '@agentskit/core'
 import { MarkdownText } from './MarkdownText'
+import { useInkTheme } from './theme'
 
 export interface MessageProps {
   message: MessageType
@@ -24,20 +25,14 @@ function formatTokens(n: number): string {
   return `${(n / 1_000_000).toFixed(2)}m`
 }
 
-const ROLE_META: Record<MessageRole, { icon: string; label: string; color: string }> = {
-  user: { icon: '❯', label: 'you', color: 'green' },
-  assistant: { icon: '✦', label: 'assistant', color: 'cyan' },
-  system: { icon: '◆', label: 'system', color: 'yellow' },
-  tool: { icon: '⚙', label: 'tool', color: 'magenta' },
-}
-
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text
   return `${text.slice(0, max)}…`
 }
 
 export function Message({ message, markdown = true, showUsage = true }: MessageProps) {
-  const meta = ROLE_META[message.role] ?? ROLE_META.assistant
+  const theme = useInkTheme()
+  const meta = theme.roles[message.role] ?? theme.roles.assistant
   const isStreaming = message.status === 'streaming'
 
   // Tool-role messages are raw results passed back to the model; render compact.
@@ -76,9 +71,9 @@ export function Message({ message, markdown = true, showUsage = true }: MessageP
       {shouldRenderUsage && usage ? (
         <Box>
           <Text dimColor>tokens  </Text>
-          <Text color="green">↑{formatTokens(usage.promptTokens)}</Text>
+          <Text color={theme.usage.prompt}>↑{formatTokens(usage.promptTokens)}</Text>
           <Text dimColor>  </Text>
-          <Text color="yellow">↓{formatTokens(usage.completionTokens)}</Text>
+          <Text color={theme.usage.completion}>↓{formatTokens(usage.completionTokens)}</Text>
           <Text dimColor>  ·  </Text>
           <Text dimColor>{formatTokens(usage.totalTokens)} total</Text>
         </Box>

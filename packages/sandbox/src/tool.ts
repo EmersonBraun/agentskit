@@ -1,6 +1,8 @@
 import type { ToolDefinition } from '@agentskit/core'
 import { createSandbox, type SandboxConfig } from './sandbox'
 
+const WARMUP_TIMEOUT_MS = 5_000
+
 export function sandboxTool(config: SandboxConfig = {}): ToolDefinition {
   const sandbox = createSandbox(config)
 
@@ -19,7 +21,7 @@ export function sandboxTool(config: SandboxConfig = {}): ToolDefinition {
     },
     init: async () => {
       // Pre-warm the sandbox on first tool use
-      await sandbox.execute('', { timeout: 5000 }).catch(() => {})
+      await sandbox.execute('', { timeout: WARMUP_TIMEOUT_MS }).catch(() => {})
     },
     dispose: async () => {
       await sandbox.dispose()
