@@ -1,0 +1,21 @@
+{
+  "name": "@agentskit/example-dspy",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Showcase: baseline vs DSPy-optimized prompts scored against the AgentsKit eval pipeline.",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agentskit/eval-braintrust": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}

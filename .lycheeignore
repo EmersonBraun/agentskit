@@ -14,3 +14,17 @@
 
 # Anchored fragments that mdx-lint can't resolve cleanly (per-page, fine in browser)
 #strikes-known
+
+# Transient: tree links to packages added in this PR; resolve on merge to main
+^https://github\.com/AgentsKit-io/agentskit/tree/main/packages/(eval-braintrust|observability-langfuse)$
+
+# Private GitHub project board referenced from public docs
+^https://github\.com/orgs/AgentsKit-io/projects/1$
+
+# Demo GIFs not yet recorded; tracked separately
+demos/.*\.gif$
+img/examples/.*\.gif$
+
+# Internal docs pages still being authored
+docs/reference/recipes/scaffold-creator$
+docs/reference/changelog$

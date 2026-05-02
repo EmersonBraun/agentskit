@@ -1,0 +1,85 @@
+---
+title: '@agentskit/eval-braintrust — for agents'
+description: Braintrust scoring pipeline — 4 quality + 4 robustness scorers, runner, and CI regression helpers.
+---
+
+## Install
+
+```bash
+npm install @agentskit/eval-braintrust braintrust
+```
+
+`braintrust` is loaded lazily; runs without it still produce scored output (no upload).
+
+## Primary exports
+
+### Runner
+
+- `runBraintrustEval({ cases, agent, scorers, options, bt? })` — scores cases through the agent, optionally logs to a Braintrust experiment.
+- `scoreCase(scorers, args)` — scores a single case; surfaces scorer crashes as `scorer_error`.
+- `summarize(cases)` — `{ name: { mean, n } }` aggregate.
+
+### Quality scorers
+
+- `taskSuccess` — substring / regex / predicate match against `expected`.
+- `factualGrounding` — fraction of `metadata.sources` referenced in the output.
+- `citationCorrectness` — cite-tag presence + match against `metadata.expectedCitations`.
+- `toolArgValidity` — fraction of `metadata.toolCalls` with `schemaValid !== false`.
+
+### Robustness scorers
+
+- `schemaSurvival` — 1 unless `metadata.parseError` or `schemaValid === false`.
+- `hitlGateCorrectness` — 1 when `hitlExpected === hitlTriggered`.
+- `fallbackResilience` — 1 on clean run or recovered fallback; 0 on uncovered errors.
+- `noCrashSurvival` — 0 when `metadata.crashed` or `uncaughtException`.
+
+### Families
+
+- `qualityFamily`, `robustnessFamily`, `ALL_SCORERS`.
+
+### Subpaths
+
+| Subpath | Contents |
+|---|---|
+| `@agentskit/eval-braintrust/scorers` | Individual scorer factories + families. |
+| `@agentskit/eval-braintrust/ci` | `detectRegressions(baseline, current, thresholds)`, `formatAlertsMarkdown(alerts)`. |
+
+## Minimal example
+
+```ts
+import {
+  runBraintrustEval,
+  ALL_SCORERS,
+} from '@agentskit/eval-braintrust'
+
+const result = await runBraintrustEval({
+  cases: [{ input: 'Capital of France?', output: '', expected: 'Paris' }],
+  agent: async input => ({ output: await agent.run(input) }),
+  scorers: ALL_SCORERS,
+  options: { projectName: 'agentskit-showcase' },
+})
+
+console.log(result.summary, result.url)
+```
+
+## CI regression alert
+
+```ts
+import { detectRegressions, formatAlertsMarkdown } from '@agentskit/eval-braintrust/ci'
+
+const alerts = detectRegressions(baseline.summary, current.summary, { default: 0.05 })
+if (alerts.length) {
+  process.stdout.write(formatAlertsMarkdown(alerts))
+  process.exit(1)
+}
+```
+
+## Related
+
+- [@agentskit/eval](/docs/for-agents/eval) — base eval primitives.
+- [@agentskit/observability-langfuse](/docs/for-agents/observability-langfuse) — pair with tracing for trace → eval datasets.
+
+## Source
+
+- npm: https://www.npmjs.com/package/@agentskit/eval-braintrust
+- repo: https://github.com/AgentsKit-io/agentskit/tree/main/packages/eval-braintrust

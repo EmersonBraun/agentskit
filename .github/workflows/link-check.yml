@@ -38,5 +38,7 @@ jobs:
             --cache
             --max-cache-age 7d
             --accept 200,206,301,302,403,429
+            --root-dir ${{ github.workspace }}/apps/docs-next/content
+            --fallback-extensions mdx,md
             'apps/docs-next/content/docs/**/*.mdx'
             '*.md'

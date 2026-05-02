@@ -1,0 +1,66 @@
+---
+title: '@agentskit/observability-langfuse — for agents'
+description: Langfuse tracing adapter — plan / tool / model / HITL spans with token, cost, latency capture and parent linking across multi-agent topologies.
+---
+
+## Install
+
+```bash
+npm install @agentskit/observability-langfuse langfuse
+```
+
+`langfuse` is loaded lazily and is a peer install.
+
+## Primary exports
+
+- `langfuse(config?)` — returns an `Observer` that emits one Langfuse trace per agent run with nested `span` / `generation` objects per AgentsKit event.
+
+### Config
+
+| Field | Default | Notes |
+|---|---|---|
+| `publicKey` | `LANGFUSE_PUBLIC_KEY` | Required (env or arg). |
+| `secretKey` | `LANGFUSE_SECRET_KEY` | Required (env or arg). |
+| `baseUrl` | `LANGFUSE_HOST` or `https://cloud.langfuse.com` | Self-hosted or EU/US cloud. |
+| `release` / `environment` | `LANGFUSE_RELEASE` / `LANGFUSE_ENVIRONMENT` | Free-form metadata. |
+| `sessionId` / `userId` / `tags` | — | Attached to the trace. |
+| `flushAt` / `flushInterval` | `15` / `1000` | Forwarded to the Langfuse SDK. |
+
+### Span model
+
+| AgentsKit event | Langfuse object | Notes |
+|---|---|---|
+| `agent:step` | `span` | Top-level loop step (plan / act / observe). |
+| `llm:start` / `llm:end` | `generation` | Model, input message count, output content (truncated), token usage. |
+| `tool:start` / `tool:end` | `span` | Tool name, args, result snapshot, duration. |
+| `memory:load` / `memory:save` | `span` | Message count. |
+| `error` | annotates current span | Sets `level: 'ERROR'` and `statusMessage`. |
+
+## Minimal example
+
+```ts
+import { createRuntime } from '@agentskit/runtime'
+import { langfuse } from '@agentskit/observability-langfuse'
+
+const runtime = createRuntime({
+  adapter,
+  observers: [
+    langfuse({
+      publicKey: process.env.LANGFUSE_PUBLIC_KEY!,
+      secretKey: process.env.LANGFUSE_SECRET_KEY!,
+      sessionId: 'demo-session',
+      tags: ['agentskit', 'showcase'],
+    }),
+  ],
+})
+```
+
+## Related
+
+- [@agentskit/observability](/docs/for-agents/observability) — base `createTraceTracker` shared by this adapter.
+- [@agentskit/runtime](/docs/for-agents/runtime).
+
+## Source
+
+- npm: https://www.npmjs.com/package/@agentskit/observability-langfuse
+- repo: https://github.com/AgentsKit-io/agentskit/tree/main/packages/observability-langfuse

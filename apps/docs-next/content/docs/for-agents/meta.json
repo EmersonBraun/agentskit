@@ -19,8 +19,10 @@
     "rag",
     "skills",
     "observability",
+    "observability-langfuse",
     "sandbox",
     "eval",
+    "eval-braintrust",
     "cli"
   ]
 }

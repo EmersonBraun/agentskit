@@ -1,0 +1,69 @@
+{
+  "name": "@agentskit/observability-langfuse",
+  "version": "0.1.0",
+  "description": "Langfuse tracing adapter for AgentsKit. Spans for plan, tool, model, and HITL gates with token/cost/latency capture.",
+  "keywords": [
+    "agentskit",
+    "ai",
+    "agents",
+    "llm",
+    "typescript",
+    "observability",
+    "tracing",
+    "langfuse",
+    "telemetry",
+    "openai",
+    "anthropic",
+    "ai-agents"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "tsc --noEmit",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "@agentskit/core": "workspace:*",
+    "@agentskit/observability": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "langfuse": "^3.38.20",
+    "tsup": "^8.5.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "agentskit": {
+    "stability": "beta",
+    "stabilityNote": "Adapter contract stable; Langfuse SDK is peer-resolved at runtime."
+  },
+  "license": "MIT",
+  "homepage": "https://www.agentskit.io/docs/packages/observability-langfuse",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AgentsKit-io/agentskit.git",
+    "directory": "packages/observability-langfuse"
+  },
+  "bugs": {
+    "url": "https://github.com/AgentsKit-io/agentskit/issues"
+  },
+  "author": "AgentsKit Contributors"
+}
