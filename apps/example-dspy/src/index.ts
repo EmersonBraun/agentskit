@@ -29,6 +29,12 @@ async function runVariant(variant: PromptVariant): Promise<ExperimentResult> {
 
 const fmtPct = (n: number): string => `${(n * 100).toFixed(1)}%`
 
+function arrowFor(delta: number): string {
+  if (delta > 0.001) return '▲'
+  if (delta < -0.001) return '▼'
+  return '·'
+}
+
 function renderTable(baseline: ExperimentResult, optimized: ExperimentResult): string {
   const allScorers = new Set([
     ...Object.keys(baseline.summary),
@@ -38,7 +44,7 @@ function renderTable(baseline: ExperimentResult, optimized: ExperimentResult): s
     const b = baseline.summary[s]?.mean ?? 0
     const o = optimized.summary[s]?.mean ?? 0
     const delta = o - b
-    const arrow = delta > 0.001 ? '▲' : delta < -0.001 ? '▼' : '·'
+    const arrow = arrowFor(delta)
     return `| ${s.padEnd(24)} | ${fmtPct(b).padStart(7)} | ${fmtPct(o).padStart(7)} | ${arrow} ${(delta >= 0 ? '+' : '') + fmtPct(delta)} |`
   })
   return [

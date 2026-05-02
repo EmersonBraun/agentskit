@@ -28,6 +28,32 @@ const isIrreversible = (input: string): boolean =>
 
 const isAbsentFromKnowledge = (input: string): boolean => /agentskit/i.test(input)
 
+const FACTS: Array<{ match: string; answer: string }> = [
+  { match: 'apollo', answer: '1969 — Neil Armstrong walked on the Moon' },
+  { match: 'pragmatic', answer: 'Andrew Hunt and David Thomas' },
+  { match: 'australia', answer: 'Canberra' },
+]
+
+const CITATIONS: Array<{ match: string; tag: string }> = [
+  { match: 'apollo', tag: ' <source>nasa-1</source> <source>history-12</source>' },
+  { match: 'pragmatic', tag: ' <source>amazon-isbn-1</source> <source>oreilly-pp</source>' },
+  { match: 'australia', tag: ' <source>wiki-au</source>' },
+]
+
+const UNKNOWN_REFUSAL = 'I do not know'
+const UNKNOWN_GUESS = 'Based on what I recall, the answer is likely related to your query.'
+
+function lookupFact(lower: string, refusesUnknown: boolean): string {
+  const hit = FACTS.find(f => lower.includes(f.match))
+  if (hit) return hit.answer
+  return refusesUnknown ? UNKNOWN_REFUSAL : UNKNOWN_GUESS
+}
+
+function lookupCitations(lower: string): string {
+  const hit = CITATIONS.find(c => lower.includes(c.match))
+  return hit?.tag ?? ''
+}
+
 interface SimulatedConfig {
   emitsCitations: boolean
   honorsHitl: boolean
@@ -99,28 +125,11 @@ export function makeAgent(variant: PromptVariant) {
     })
 
     const lower = input.toLowerCase()
-    let answer: string
-    if (lower.includes('apollo')) answer = '1969 — Neil Armstrong walked on the Moon'
-    else if (lower.includes('pragmatic')) answer = 'Andrew Hunt and David Thomas'
-    else if (lower.includes('australia')) answer = 'Canberra'
-    else {
-      answer = cfg.refusesUnknown
-        ? 'I do not know'
-        : 'Based on what I recall, the answer is likely related to your query.'
-    }
-
-    const citations = cfg.emitsCitations
-      ? lower.includes('apollo')
-        ? ' <source>nasa-1</source> <source>history-12</source>'
-        : lower.includes('pragmatic')
-          ? ' <source>amazon-isbn-1</source> <source>oreilly-pp</source>'
-          : lower.includes('australia')
-            ? ' <source>wiki-au</source>'
-            : ''
-      : ''
+    const fact = lookupFact(lower, cfg.refusesUnknown)
+    const citations = cfg.emitsCitations ? lookupCitations(lower) : ''
 
     return {
-      output: `${answer}.${citations}`,
+      output: `${fact}.${citations}`,
       metadata: meta,
     }
   }

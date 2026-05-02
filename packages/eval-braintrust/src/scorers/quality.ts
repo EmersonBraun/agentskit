@@ -1,6 +1,6 @@
 import type { Scorer } from '../types'
 
-const clamp = (n: number): number => (n < 0 ? 0 : n > 1 ? 1 : n)
+const clamp = (n: number): number => Math.min(1, Math.max(0, n))
 
 export const taskSuccess: Scorer<string | RegExp | ((output: string) => boolean)> = ({ output, expected }) => {
   if (expected === undefined) {
