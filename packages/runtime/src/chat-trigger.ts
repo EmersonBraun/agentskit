@@ -19,6 +19,13 @@ import { ConfigError, ErrorCodes } from '@agentskit/core'
 import type { AgentHandle } from './topologies'
 import type { WebhookHandler, WebhookRequest, WebhookResponse } from './background'
 
+/**
+ * Surface identifier. The four named surfaces preserve autocomplete in
+ * editors; `(string & {})` keeps the type extensible for adapters
+ * landing later (Mattermost, Telegram, Webex). **Caveat:** a `switch
+ * (event.surface)` will not be exhaustive — TS cannot warn about
+ * missing branches when the union is open. Use a default branch.
+ */
 export type ChatSurface = 'slack' | 'teams' | 'discord' | 'whatsapp' | (string & {})
 
 /** Stable identity of a sender across surfaces. */
@@ -128,14 +135,33 @@ export interface ChatSurfaceAdapter {
   surface: ChatSurface
   /** Parse an inbound webhook into a normalized event. Return `null` to ignore. */
   parse: (req: WebhookRequest) => Promise<ChatSurfaceEvent | null> | ChatSurfaceEvent | null
-  /** Verify the request signature. Return `false` to reject with 401. */
+  /**
+   * Verify the request signature. Return `false` to reject with 401.
+   * The factory refuses to construct without `verify` unless
+   * `{ strict: false }` is passed — explicit opt-out so unverified
+   * webhook handlers cannot ship by accident.
+   *
+   * **Replay protection** (eventId dedup, timestamp window) is the
+   * adapter's responsibility — the trigger does not enforce it. The
+   * normalized `eventId` and `receivedAt` fields exist precisely so
+   * adapters can implement dedup against a memory backend.
+   */
   verify?: (req: WebhookRequest) => Promise<boolean> | boolean
   /** Optional reply hook — used when the agent's output should post back. */
   reply?: (event: ChatSurfaceEvent, text: string) => Promise<void> | void
 }
 
 export interface ChatTriggerObserverEvent {
-  type: 'received' | 'skipped' | 'handled' | 'rejected' | 'replied'
+  /**
+   * - `received` → before any work
+   * - `skipped` → adapter parse returned null OR filter rejected
+   * - `handled` → agent ran successfully
+   * - `replied` → adapter.reply succeeded after handled (autoReply only)
+   * - `reply_failed` → adapter.reply threw after handled (HTTP still 200)
+   * - `rejected` → request did not produce a successful agent run
+   *   (verify failed, parse threw, agent threw)
+   */
+  type: 'received' | 'skipped' | 'handled' | 'rejected' | 'replied' | 'reply_failed'
   surface: ChatSurface
   event?: ChatSurfaceEvent
   /** Error or skip reason. */
@@ -163,6 +189,13 @@ export interface ChatTriggerOptions<TContext = unknown> {
   filter?: (event: ChatSurfaceEvent) => boolean
   /** Auto-reply with the agent's output via `adapter.reply` when present. */
   autoReply?: boolean
+  /**
+   * Reject construction when `adapter.verify` is missing. Default
+   * `true` — set to `false` only when you have an external auth
+   * proxy in front of the trigger. Surfaces the footgun at author
+   * time instead of accepting spoofed webhooks at runtime.
+   */
+  strict?: boolean
   /** Observability hook. */
   onEvent?: (event: ChatTriggerObserverEvent) => void
 }
@@ -202,6 +235,14 @@ export function createChatTrigger<TContext = unknown>(
     throw new ConfigError({
       code: ErrorCodes.AK_CONFIG_INVALID,
       message: 'createChatTrigger: agent is required',
+    })
+  }
+  const strict = options.strict !== false
+  if (strict && !options.adapter.verify) {
+    throw new ConfigError({
+      code: ErrorCodes.AK_CONFIG_INVALID,
+      message: 'createChatTrigger: adapter.verify is missing — refusing to construct an unverified trigger',
+      hint: 'Implement adapter.verify (signature check + replay protection) or pass `{ strict: false }` if an external auth proxy guards the trigger.',
     })
   }
 
@@ -249,7 +290,7 @@ export function createChatTrigger<TContext = unknown>(
           options.onEvent?.({ type: 'replied', surface, event })
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err)
-          options.onEvent?.({ type: 'rejected', surface, event, reason: `reply error: ${message}` })
+          options.onEvent?.({ type: 'reply_failed', surface, event, reason: message })
           // 200 still — the agent ran, only the post-reply failed.
         }
       }
@@ -258,7 +299,8 @@ export function createChatTrigger<TContext = unknown>(
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       options.onEvent?.({ type: 'rejected', surface, event, reason: message })
-      return { status: 500, body: message }
+      // Don't leak raw error details into surface platform logs.
+      return { status: 500, body: 'internal error' }
     }
   }
 

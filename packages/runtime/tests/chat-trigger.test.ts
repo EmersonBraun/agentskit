@@ -29,6 +29,7 @@ function buildAdapter(overrides: Partial<ChatSurfaceAdapter> = {}): ChatSurfaceA
   return {
     surface: 'slack',
     parse: () => SAMPLE_MESSAGE,
+    verify: () => true,
     ...overrides,
   }
 }
@@ -44,6 +45,25 @@ describe('createChatTrigger — config guards', () => {
     expect(() =>
       createChatTrigger({ adapter: buildAdapter(), agent: undefined as unknown as AgentHandle }),
     ).toThrow(/agent is required/)
+  })
+
+  it('throws by default when adapter.verify is missing (strict mode)', () => {
+    expect(() =>
+      createChatTrigger({
+        adapter: { surface: 'slack', parse: () => SAMPLE_MESSAGE },
+        agent: agent(),
+      }),
+    ).toThrow(/refusing to construct an unverified trigger/)
+  })
+
+  it('allows missing verify when strict: false', () => {
+    expect(() =>
+      createChatTrigger({
+        adapter: { surface: 'slack', parse: () => SAMPLE_MESSAGE },
+        agent: agent(),
+        strict: false,
+      }),
+    ).not.toThrow()
   })
 })
 
@@ -154,16 +174,21 @@ describe('createChatTrigger — adapter signals', () => {
     expect(res.body).toContain('bad payload')
   })
 
-  it('returns 500 when the agent throws', async () => {
+  it('returns 500 with a generic body when the agent throws (no error leak to surface logs)', async () => {
+    const events: ChatTriggerObserverEvent[] = []
     const trig = createChatTrigger({
       adapter: buildAdapter(),
       agent: agent(async () => {
-        throw new Error('boom')
+        throw new Error('secret stack detail')
       }),
+      onEvent: e => events.push(e),
     })
     const res = await trig.handler(REQ)
     expect(res.status).toBe(500)
-    expect(res.body).toBe('boom')
+    expect(res.body).toBe('internal error')
+    expect(res.body).not.toContain('secret stack detail')
+    // Full message still surfaces in observer for monitoring.
+    expect(events.find(e => e.type === 'rejected')!.reason).toBe('secret stack detail')
   })
 })
 
@@ -210,7 +235,7 @@ describe('createChatTrigger — autoReply', () => {
     expect(events.map(e => e.type)).toEqual(['received', 'handled', 'replied'])
   })
 
-  it('still returns 200 when reply throws (agent already ran)', async () => {
+  it('emits reply_failed (not rejected) when reply throws after handled', async () => {
     const events: ChatTriggerObserverEvent[] = []
     const trig = createChatTrigger({
       adapter: buildAdapter({
@@ -224,7 +249,8 @@ describe('createChatTrigger — autoReply', () => {
     })
     const res = await trig.handler(REQ)
     expect(res.status).toBe(200)
-    expect(events.find(e => e.reason?.includes('reply error'))).toBeDefined()
+    expect(events.map(e => e.type)).toEqual(['received', 'handled', 'reply_failed'])
+    expect(events.find(e => e.type === 'reply_failed')!.reason).toBe('post failed')
   })
 
   it('does not call reply when autoReply is off', async () => {
