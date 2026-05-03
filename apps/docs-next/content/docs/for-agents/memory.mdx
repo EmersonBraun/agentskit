@@ -34,6 +34,8 @@ npm install @agentskit/memory
 - `createEncryptedMemory` — AES-GCM over any `ChatMemory`. See [Encrypted memory](/docs/reference/recipes/encrypted-memory).
 - `createInMemoryGraph` — knowledge graph (nodes + edges + BFS). See [Graph memory](/docs/reference/recipes/graph-memory).
 - `createInMemoryPersonalization` + `renderProfileContext` — per-subject profile. See [Personalization](/docs/reference/recipes/personalization).
+- `wrapChatMemoryWithRedaction(mem, { rules, mode?, vault?, allowedRoles? })` — redact (or tokenize) PII at save() time on any `ChatMemory`. Pairs with `@agentskit/core/security` `tokenize` / `reveal` for role-gated read.
+- `wrapVectorMemoryWithRedaction(mem, { rules, mode?, vault?, allowedRoles? })` — same for `VectorMemory.store()`. Embeddings pass through verbatim; redact the input to your embedder separately if it is a hosted provider.
 
 ## Minimal example
 

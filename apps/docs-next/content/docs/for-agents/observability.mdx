@@ -31,6 +31,10 @@ npm install @agentskit/observability
 - `priceFor`, `computeCost`, `DEFAULT_PRICES`.
 - `approximateCounter`, `countTokens`, `countTokensDetailed`, `createProviderCounter`.
 
+### PII redaction
+
+- `wrapObserverWithRedaction(observer, { rules, mode?, vault?, allowedRoles? })` — redact (or tokenize via `@agentskit/core/security`) string content fields in the AgentEvent stream (`llm:end.content`, `tool:start.args`, `tool:end.result`, `agent:delegate:end.result`, `error.message`) before they hit the underlying sink. Numeric / structural fields pass through unchanged so dashboards stay correct.
+
 ### Local trace viewer
 
 - `createFileTraceSink(dir)`, `buildTraceReport`, `renderTraceViewerHtml`. See [Trace viewer](/docs/reference/recipes/trace-viewer).
