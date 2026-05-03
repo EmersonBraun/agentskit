@@ -64,3 +64,13 @@ export type {
   HierarchicalMemoryOptions,
   HierarchicalRecall,
 } from './hierarchical'
+
+export {
+  wrapChatMemoryWithRedaction,
+  wrapVectorMemoryWithRedaction,
+} from './redaction'
+export type {
+  ChatMemoryRedactionOptions,
+  VectorMemoryRedactionOptions,
+  RedactionMode,
+} from './redaction'

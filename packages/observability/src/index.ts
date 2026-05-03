@@ -1,6 +1,12 @@
 export { consoleLogger } from './console-logger'
 export type { ConsoleLoggerConfig } from './console-logger'
 
+export { wrapObserverWithRedaction } from './redaction'
+export type {
+  ObserverRedactionOptions,
+  RedactionMode as ObserverRedactionMode,
+} from './redaction'
+
 export { langsmith } from './langsmith'
 export type { LangSmithConfig } from './langsmith'
 

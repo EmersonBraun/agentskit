@@ -17,6 +17,21 @@ export type {
 } from './taxonomy'
 
 export {
+  tokenize,
+  reveal,
+  createInMemoryRedactionVault,
+} from './vault'
+export type {
+  RedactionVault,
+  VaultEntry,
+  RevealActor,
+  TokenizeOptions,
+  RevealOptions,
+  RedactionAuditEvent,
+  RedactionAuditSink,
+} from './vault'
+
+export {
   createInjectionDetector,
   DEFAULT_INJECTION_HEURISTICS,
 } from './injection'
