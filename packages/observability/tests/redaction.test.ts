@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { wrapObserverWithRedaction } from '../src/redaction'
 import {
   createInMemoryRedactionVault,
-  createPIIRedactor,
+  DEFAULT_PII_RULES,
 } from '@agentskit/core/security'
 import type { AgentEvent, Observer } from '@agentskit/core'
 
@@ -18,7 +18,7 @@ function spyObserver(): { obs: Observer; events: AgentEvent[] } {
 describe('wrapObserverWithRedaction — redact mode', () => {
   it('redacts llm:end content', async () => {
     const { obs, events } = spyObserver()
-    const wrapped = wrapObserverWithRedaction(obs, { redactor: createPIIRedactor() })
+    const wrapped = wrapObserverWithRedaction(obs, { rules: DEFAULT_PII_RULES })
     await wrapped.on({
       type: 'llm:end',
       content: 'reach me at alice@example.com',
@@ -29,7 +29,7 @@ describe('wrapObserverWithRedaction — redact mode', () => {
 
   it('redacts tool:end result', async () => {
     const { obs, events } = spyObserver()
-    const wrapped = wrapObserverWithRedaction(obs, { redactor: createPIIRedactor() })
+    const wrapped = wrapObserverWithRedaction(obs, { rules: DEFAULT_PII_RULES })
     await wrapped.on({
       type: 'tool:end',
       name: 'sql',
@@ -41,7 +41,7 @@ describe('wrapObserverWithRedaction — redact mode', () => {
 
   it('redacts string fields inside tool:start args (deep)', async () => {
     const { obs, events } = spyObserver()
-    const wrapped = wrapObserverWithRedaction(obs, { redactor: createPIIRedactor() })
+    const wrapped = wrapObserverWithRedaction(obs, { rules: DEFAULT_PII_RULES })
     await wrapped.on({
       type: 'tool:start',
       name: 'send_email',
@@ -55,7 +55,7 @@ describe('wrapObserverWithRedaction — redact mode', () => {
 
   it('redacts agent:delegate:end result', async () => {
     const { obs, events } = spyObserver()
-    const wrapped = wrapObserverWithRedaction(obs, { redactor: createPIIRedactor() })
+    const wrapped = wrapObserverWithRedaction(obs, { rules: DEFAULT_PII_RULES })
     await wrapped.on({
       type: 'agent:delegate:end',
       name: 'researcher',
@@ -66,20 +66,24 @@ describe('wrapObserverWithRedaction — redact mode', () => {
     expect((events[0] as { result: string }).result).toContain('[REDACTED_EMAIL]')
   })
 
-  it('redacts error.message and preserves error name', async () => {
+  it('redacts error.message, preserves name AND propagates stack with redaction', async () => {
     const { obs, events } = spyObserver()
-    const wrapped = wrapObserverWithRedaction(obs, { redactor: createPIIRedactor() })
+    const wrapped = wrapObserverWithRedaction(obs, { rules: DEFAULT_PII_RULES })
     const original = new Error('SMTP failed for alice@example.com')
     original.name = 'SMTPAuthError'
     await wrapped.on({ type: 'error', error: original })
     const fwd = (events[0] as { error: Error }).error
     expect(fwd.message).toContain('[REDACTED_EMAIL]')
     expect(fwd.name).toBe('SMTPAuthError')
+    // Stack survives AND the PII inside the stack is rewritten.
+    expect(fwd.stack).toBeTruthy()
+    expect(fwd.stack).not.toContain('alice@example.com')
+    expect(fwd.stack).toContain('[REDACTED_EMAIL]')
   })
 
   it('passes structural events through unchanged', async () => {
     const { obs, events } = spyObserver()
-    const wrapped = wrapObserverWithRedaction(obs, { redactor: createPIIRedactor() })
+    const wrapped = wrapObserverWithRedaction(obs, { rules: DEFAULT_PII_RULES })
     await wrapped.on({ type: 'llm:start', model: 'gpt-5', messageCount: 4 })
     await wrapped.on({ type: 'llm:first-token', latencyMs: 200 })
     await wrapped.on({ type: 'memory:save', messageCount: 2 })
@@ -90,7 +94,7 @@ describe('wrapObserverWithRedaction — redact mode', () => {
 
   it('renames the wrapped observer for traceability', () => {
     const { obs } = spyObserver()
-    const wrapped = wrapObserverWithRedaction(obs, { redactor: createPIIRedactor() })
+    const wrapped = wrapObserverWithRedaction(obs, { rules: DEFAULT_PII_RULES })
     expect(wrapped.name).toBe('redacted(spy)')
   })
 })
@@ -100,7 +104,7 @@ describe('wrapObserverWithRedaction — tokenize mode', () => {
     const { obs, events } = spyObserver()
     const vault = createInMemoryRedactionVault()
     const wrapped = wrapObserverWithRedaction(obs, {
-      redactor: createPIIRedactor(),
+      rules: DEFAULT_PII_RULES,
       mode: 'tokenize',
       vault,
       allowedRoles: ['oncall'],
@@ -118,7 +122,7 @@ describe('wrapObserverWithRedaction — tokenize mode', () => {
   it('throws when vault missing in tokenize mode', async () => {
     const { obs } = spyObserver()
     const wrapped = wrapObserverWithRedaction(obs, {
-      redactor: createPIIRedactor(),
+      rules: DEFAULT_PII_RULES,
       mode: 'tokenize',
       allowedRoles: ['x'],
     })

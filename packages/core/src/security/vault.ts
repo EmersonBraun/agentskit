@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { ConfigError, ErrorCodes } from '../errors'
-import type { PIIRedactor } from './pii'
+import type { PIIRule } from './pii'
 
 /**
  * Reveal-by-role flow for PII that must be recoverable. Where the
@@ -59,7 +59,18 @@ export interface RedactionAuditEvent {
 export type RedactionAuditSink = (event: RedactionAuditEvent) => void | Promise<void>
 
 export interface TokenizeOptions {
-  redactor: PIIRedactor
+  /**
+   * Rules driving the match. Same shape as `PIIRedactor`'s rules; pass
+   * `DEFAULT_PII_RULES` for the baseline set or `compilePIITaxonomy(...)`
+   * for a custom JSON taxonomy.
+   *
+   * Tokenize walks the rules directly against the input rather than
+   * post-processing a redactor's output — this keeps the algorithm
+   * correct for adjacent matches, PII whose value collides with the
+   * surrounding literal text, and custom replacers that don't emit
+   * the bracketed `[REDACTED_*]` form.
+   */
+  rules: PIIRule[]
   vault: RedactionVault
   /** Roles allowed to reveal the originals. */
   allowedRoles: string[]
@@ -78,10 +89,15 @@ export interface RevealOptions {
 }
 
 const TOKEN_PATTERN = /<<piitoken:([a-f0-9]{32})>>/g
-const REDACTION_MARKER = /\[REDACTED_[A-Z][A-Z_-]*\]/g
 
 function newToken(): string {
   return `<<piitoken:${randomBytes(16).toString('hex')}>>`
+}
+
+interface SortedMatch {
+  start: number
+  end: number
+  rule: string
 }
 
 /**
@@ -89,20 +105,23 @@ function newToken(): string {
  * marker, storing the original in the vault keyed by the marker.
  * Emits one `pii:redact` audit event per call.
  *
- * Implementation walks the redactor's first-pass output (with
- * `[REDACTED_*]` tags) and pairs each tag back to its source slice in
- * the original input by anchoring on the post-tag prefix. Works for
- * any rule list as long as the replacer output uses the bracketed
- * upper-case form.
+ * Walks the supplied rules against the input directly:
+ *  1. collect every match with its [start, end) interval + rule name
+ *  2. sort by start, drop overlaps (earlier rule wins)
+ *  3. rebuild the output by interleaving literal slices with tokens
+ *
+ * Correct on adjacent matches, on PII whose value collides with the
+ * surrounding literal text, and for custom replacers — the algorithm
+ * never reads the redactor's substituted output.
  */
 export async function tokenize(
   input: string,
   options: TokenizeOptions,
 ): Promise<{ value: string; tokens: string[] }> {
-  if (!options.redactor) {
+  if (!options.rules || !Array.isArray(options.rules)) {
     throw new ConfigError({
       code: ErrorCodes.AK_CONFIG_INVALID,
-      message: 'tokenize: redactor is required',
+      message: 'tokenize: rules array is required',
     })
   }
   if (!options.vault) {
@@ -112,10 +131,32 @@ export async function tokenize(
     })
   }
 
-  const tokens: string[] = []
-  const redacted = options.redactor.redact(input)
+  // Collect intervals from every rule.
+  const intervals: SortedMatch[] = []
+  for (const rule of options.rules) {
+    // Re-create the regex with a fresh lastIndex per call so multiple
+    // tokenize() invocations on the same rules object don't see stale
+    // state (matchAll handles this internally but we keep it explicit).
+    const re = new RegExp(rule.pattern.source, rule.pattern.flags)
+    for (const m of input.matchAll(re)) {
+      const start = m.index ?? 0
+      intervals.push({ start, end: start + m[0].length, rule: rule.name })
+    }
+  }
 
-  if (redacted.hits.length === 0) {
+  // Sort by start, then by length (longer wins on tie). Drop any
+  // interval that starts before the previous interval ended — earlier
+  // (= higher-priority by rules order, then by start) wins.
+  intervals.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start))
+  const kept: SortedMatch[] = []
+  let last = -1
+  for (const iv of intervals) {
+    if (iv.start < last) continue
+    kept.push(iv)
+    last = iv.end
+  }
+
+  if (kept.length === 0) {
     await options.audit?.({
       type: 'pii:redact',
       at: new Date().toISOString(),
@@ -126,37 +167,13 @@ export async function tokenize(
     return { value: input, tokens: [] }
   }
 
-  const markers = Array.from(redacted.value.matchAll(REDACTION_MARKER))
+  const tokens: string[] = []
+  const ruleHits = new Map<string, number>()
+  let out = ''
   let cursor = 0
-  let inputCursor = 0
-  let tokenized = ''
-  for (const marker of markers) {
-    const markerStart = marker.index ?? 0
-    const prefix = redacted.value.slice(cursor, markerStart)
-    tokenized += prefix
-    inputCursor += prefix.length
-
-    const postIndex = markerStart + marker[0].length
-    // Look at the redacted output AFTER this marker, but stop at the
-    // next marker — the slice between two markers in the redacted
-    // string corresponds verbatim to the same slice in `input`.
-    const tail = redacted.value.slice(postIndex)
-    const nextMarker = tail.search(REDACTION_MARKER)
-    const literalTail = nextMarker >= 0 ? tail.slice(0, nextMarker) : tail
-    const postPrefix = literalTail.slice(0, Math.min(32, literalTail.length))
-    let originalEnd: number
-    if (postPrefix.length === 0) {
-      // Marker is at the very end (or another marker abuts it). Find
-      // the original by scanning forward in `input` to the end OR to
-      // wherever the next post-marker prefix would start.
-      originalEnd = input.length
-    } else {
-      const idx = input.indexOf(postPrefix, inputCursor)
-      originalEnd = idx >= 0 ? idx : input.length
-    }
-    const original = input.slice(inputCursor, originalEnd)
-    inputCursor = originalEnd
-
+  for (const iv of kept) {
+    out += input.slice(cursor, iv.start)
+    const original = input.slice(iv.start, iv.end)
     const token = newToken()
     tokens.push(token)
     await options.vault.put(token, {
@@ -165,20 +182,21 @@ export async function tokenize(
       allowedRoles: [...options.allowedRoles],
       metadata: options.context,
     })
-    tokenized += token
-    cursor = postIndex
+    out += token
+    cursor = iv.end
+    ruleHits.set(iv.rule, (ruleHits.get(iv.rule) ?? 0) + 1)
   }
-  tokenized += redacted.value.slice(cursor)
+  out += input.slice(cursor)
 
   await options.audit?.({
     type: 'pii:redact',
     at: new Date().toISOString(),
     tokens: tokens.length,
-    rules: redacted.hits.map(h => ({ rule: h.rule, count: h.count })),
+    rules: Array.from(ruleHits, ([rule, count]) => ({ rule, count })),
     context: options.context,
   })
 
-  return { value: tokenized, tokens }
+  return { value: out, tokens }
 }
 
 /**
@@ -188,6 +206,15 @@ export async function tokenize(
  * unchanged. Emits at most one `pii:reveal` event (when something was
  * revealed) and at most one `pii:reveal-denied` (when something was
  * denied) per call.
+ *
+ * **Security note on `denied` counts.** The returned `denied` count
+ * indicates how many tokens existed in the vault but were not
+ * revealable by this actor. Surfacing that count back to the
+ * triggering actor lets them probe arbitrary token IDs to learn which
+ * exist in the vault (token-existence oracle). Use `denied` for
+ * monitoring / audit only — do NOT include it in user-facing error
+ * messages. Same applies to the `'pii:reveal-denied'` audit event:
+ * route it to operators, not back to the calling actor.
  */
 export async function reveal(
   input: string,

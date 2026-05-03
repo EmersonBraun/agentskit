@@ -1,7 +1,8 @@
 import type { AgentEvent, Observer } from '@agentskit/core'
 import {
+  createPIIRedactor,
   tokenize,
-  type PIIRedactor,
+  type PIIRule,
   type RedactionVault,
   type RedactionAuditSink,
 } from '@agentskit/core/security'
@@ -25,7 +26,12 @@ import {
 export type RedactionMode = 'redact' | 'tokenize'
 
 export interface ObserverRedactionOptions {
-  redactor: PIIRedactor
+  /**
+   * Rules to apply. Pass `DEFAULT_PII_RULES` for the baseline set,
+   * `compilePIITaxonomy(json)` for a custom JSON taxonomy, or any
+   * hand-rolled `PIIRule[]`.
+   */
+  rules: PIIRule[]
   mode?: RedactionMode
   vault?: RedactionVault
   allowedRoles?: string[]
@@ -44,14 +50,14 @@ async function redactString(
       throw new Error('wrapObserverWithRedaction: allowedRoles is required when mode is "tokenize"')
     }
     const result = await tokenize(input, {
-      redactor: opts.redactor,
+      rules: opts.rules,
       vault: opts.vault,
       allowedRoles: opts.allowedRoles,
       audit: opts.audit,
     })
     return result.value
   }
-  return opts.redactor.redact(input).value
+  return createPIIRedactor({ rules: opts.rules }).redact(input).value
 }
 
 async function redactStringValuesDeep(
@@ -87,16 +93,23 @@ async function redactEvent(
       return { ...event, result: await redactString(event.result, opts) }
     case 'agent:delegate:end':
       return { ...event, result: await redactString(event.result, opts) }
-    case 'error':
+    case 'error': {
       // Errors carry messages that may contain PII (a stringified user
       // input, an HTTP body fragment). Wrap with a fresh Error whose
-      // message is the redacted form. Preserve the original name.
-      return {
-        ...event,
-        error: Object.assign(new Error(await redactString(event.error.message, opts)), {
-          name: event.error.name,
-        }),
+      // message is the redacted form, preserving the original name AND
+      // the original stack — losing stack context makes errors nearly
+      // undiagnosable in production. The stack normally contains the
+      // raw message in its first line; replace that occurrence too so
+      // the redacted form propagates everywhere.
+      const original = event.error
+      const safeMessage = await redactString(original.message, opts)
+      const safe = new Error(safeMessage)
+      safe.name = original.name
+      if (original.stack) {
+        safe.stack = original.stack.split(original.message).join(safeMessage)
       }
+      return { ...event, error: safe }
+    }
     default:
       return event
   }

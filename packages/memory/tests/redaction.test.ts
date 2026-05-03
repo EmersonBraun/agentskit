@@ -5,7 +5,7 @@ import {
 } from '../src/redaction'
 import {
   createInMemoryRedactionVault,
-  createPIIRedactor,
+  DEFAULT_PII_RULES,
 } from '@agentskit/core/security'
 import type { ChatMemory, VectorDocument, VectorMemory, Message } from '@agentskit/core'
 
@@ -44,7 +44,7 @@ describe('wrapChatMemoryWithRedaction — redact mode', () => {
   it('replaces PII in saved messages with bracket markers', async () => {
     const { mem, saved } = buildChatMemory()
     const wrapped = wrapChatMemoryWithRedaction(mem, {
-      redactor: createPIIRedactor(),
+      rules: DEFAULT_PII_RULES,
     })
     await wrapped.save([msg('email me alice@example.com'), msg('hi', 'assistant')])
     expect(saved[0][0].content).toContain('[REDACTED_EMAIL]')
@@ -54,7 +54,7 @@ describe('wrapChatMemoryWithRedaction — redact mode', () => {
 
   it('passes load + clear through unchanged', async () => {
     const { mem, saved } = buildChatMemory()
-    const wrapped = wrapChatMemoryWithRedaction(mem, { redactor: createPIIRedactor() })
+    const wrapped = wrapChatMemoryWithRedaction(mem, { rules: DEFAULT_PII_RULES })
     await wrapped.save([msg('plain')])
     const loaded = await wrapped.load()
     expect(loaded[0].content).toBe('plain')
@@ -68,7 +68,7 @@ describe('wrapChatMemoryWithRedaction — tokenize mode', () => {
     const { mem, saved } = buildChatMemory()
     const vault = createInMemoryRedactionVault()
     const wrapped = wrapChatMemoryWithRedaction(mem, {
-      redactor: createPIIRedactor(),
+      rules: DEFAULT_PII_RULES,
       mode: 'tokenize',
       vault,
       allowedRoles: ['support'],
@@ -86,7 +86,7 @@ describe('wrapChatMemoryWithRedaction — tokenize mode', () => {
   it('throws when vault missing in tokenize mode', async () => {
     const { mem } = buildChatMemory()
     const wrapped = wrapChatMemoryWithRedaction(mem, {
-      redactor: createPIIRedactor(),
+      rules: DEFAULT_PII_RULES,
       mode: 'tokenize',
       allowedRoles: ['x'],
     })
@@ -96,7 +96,7 @@ describe('wrapChatMemoryWithRedaction — tokenize mode', () => {
   it('throws when allowedRoles missing in tokenize mode', async () => {
     const { mem } = buildChatMemory()
     const wrapped = wrapChatMemoryWithRedaction(mem, {
-      redactor: createPIIRedactor(),
+      rules: DEFAULT_PII_RULES,
       mode: 'tokenize',
       vault: createInMemoryRedactionVault(),
     })
@@ -108,7 +108,7 @@ describe('wrapVectorMemoryWithRedaction', () => {
   it('redacts content but preserves embedding + id + metadata', async () => {
     const { mem, stored } = buildVectorMemory()
     const wrapped = wrapVectorMemoryWithRedaction(mem, {
-      redactor: createPIIRedactor(),
+      rules: DEFAULT_PII_RULES,
     })
     await wrapped.store([
       { id: 'd1', content: 'support@example.com asked about pricing', embedding: [0.1, 0.2], metadata: { source: 'sf' } },
@@ -121,7 +121,7 @@ describe('wrapVectorMemoryWithRedaction', () => {
 
   it('passes search + delete through unchanged', async () => {
     const { mem, stored } = buildVectorMemory()
-    const wrapped = wrapVectorMemoryWithRedaction(mem, { redactor: createPIIRedactor() })
+    const wrapped = wrapVectorMemoryWithRedaction(mem, { rules: DEFAULT_PII_RULES })
     await wrapped.store([{ id: 'd1', content: 'a@b.co', embedding: [0.1] }])
     expect(stored).toHaveLength(1)
     await wrapped.delete!(['d1'])
