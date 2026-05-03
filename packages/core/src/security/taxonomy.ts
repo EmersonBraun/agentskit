@@ -39,6 +39,13 @@ export interface TaxonomyValidationResult {
 }
 
 const NAME_RE = /^[a-z][a-z0-9_-]{0,63}$/
+const KNOWN_RULE_FIELDS = new Set(['name', 'pattern', 'flags', 'replacer', 'description'])
+const KNOWN_TOP_FIELDS = new Set(['version', 'id', 'rules'])
+
+/** Adversarial input used to canary-check user-supplied regexes for catastrophic backtracking. */
+const REDOS_CANARY = `${'a'.repeat(64)}!`
+/** Match-time budget per rule, in milliseconds. Generous — well-formed regex finishes in well under 1 ms. */
+const REDOS_BUDGET_MS = 25
 
 /**
  * Pure-data validation. Does not throw — returns the full list of
@@ -56,6 +63,12 @@ export function validatePIITaxonomy(input: unknown): TaxonomyValidationResult {
   }
 
   const taxonomy = input as Record<string, unknown>
+
+  for (const key of Object.keys(taxonomy)) {
+    if (!KNOWN_TOP_FIELDS.has(key)) {
+      push(key, `unknown top-level field "${key}"`)
+    }
+  }
 
   if (taxonomy.version !== '1') {
     push('version', `version must be "1" (got ${JSON.stringify(taxonomy.version)})`)
@@ -90,11 +103,33 @@ export function validatePIITaxonomy(input: unknown): TaxonomyValidationResult {
     if (typeof rule.pattern !== 'string' || rule.pattern.length === 0) {
       push(`rules[${i}].pattern`, 'pattern must be a non-empty string', i)
     } else {
+      let compiled: RegExp | undefined
       try {
-        // eslint-disable-next-line no-new
-        new RegExp(rule.pattern, typeof rule.flags === 'string' ? rule.flags : 'g')
+        compiled = new RegExp(rule.pattern, typeof rule.flags === 'string' ? rule.flags : 'g')
       } catch (err) {
         push(`rules[${i}].pattern`, `invalid regex: ${(err as Error).message}`, i)
+      }
+      if (compiled !== undefined) {
+        const start = performance.now()
+        try {
+          REDOS_CANARY.replace(compiled, '')
+        } catch {
+          // exec errors are unlikely on a successfully constructed regex; ignore.
+        }
+        const elapsed = performance.now() - start
+        if (elapsed > REDOS_BUDGET_MS) {
+          push(
+            `rules[${i}].pattern`,
+            `pattern took ${elapsed.toFixed(1)} ms on a ${REDOS_CANARY.length}-char canary (budget ${REDOS_BUDGET_MS} ms) — likely catastrophic backtracking; rewrite without nested quantifiers`,
+            i,
+          )
+        }
+      }
+    }
+
+    for (const key of Object.keys(rule)) {
+      if (!KNOWN_RULE_FIELDS.has(key)) {
+        push(`rules[${i}].${key}`, `unknown field "${key}"`, i)
       }
     }
 

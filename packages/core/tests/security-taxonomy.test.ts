@@ -77,6 +77,31 @@ describe('validatePIITaxonomy', () => {
     expect(result.issues.some(i => i.path === 'rules[0].replacer')).toBe(true)
   })
 
+  it('rejects unknown top-level fields (additionalProperties parity)', () => {
+    const result = validatePIITaxonomy({ version: '1', rules: [], extra: 1 })
+    expect(result.ok).toBe(false)
+    expect(result.issues.some(i => /unknown top-level field/.test(i.message))).toBe(true)
+  })
+
+  it('rejects unknown rule fields (additionalProperties parity)', () => {
+    const result = validatePIITaxonomy({
+      version: '1',
+      rules: [{ name: 'r', pattern: 'x', patter: 'typo' }],
+    })
+    expect(result.ok).toBe(false)
+    expect(result.issues.some(i => /unknown field "patter"/.test(i.message))).toBe(true)
+  })
+
+  it('rejects regexes that exhibit catastrophic backtracking on the canary', () => {
+    // Classic ReDoS pattern — nested quantifier on a tail-anchored alternation.
+    const result = validatePIITaxonomy({
+      version: '1',
+      rules: [{ name: 'redos', pattern: '(a+)+$' }],
+    })
+    expect(result.ok).toBe(false)
+    expect(result.issues.some(i => /catastrophic backtracking/.test(i.message))).toBe(true)
+  })
+
   it('returns ALL issues, not just the first', () => {
     const result = validatePIITaxonomy({
       version: '1',

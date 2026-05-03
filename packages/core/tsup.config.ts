@@ -1,3 +1,4 @@
+import { copyFile } from 'node:fs/promises'
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
@@ -20,4 +21,8 @@ export default defineConfig({
   sourcemap: true,
   clean: false,
   treeshake: true,
+  // tsup ships .ts entrypoints only; copy bundled JSON assets manually.
+  async onSuccess() {
+    await copyFile('src/security/default-taxonomy.json', 'dist/default-taxonomy.json')
+  },
 })
