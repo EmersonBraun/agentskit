@@ -28,6 +28,9 @@ npm install @agentskit/observability
 
 - `costGuard(options)` — dollar ceiling per run.
 - `multiTenantCostGuard(options)` — per-tenant cost cap with shared bookkeeping.
+- `createAdvancedCostGuard({ budgets, caps, mode, disableRuntime, alertSinks })` — production-grade guard with `warn` / `reject` / `kill` modes, rolling window caps (`perMinute` / `perDay` / `perMonth` / custom), 50/80/100 % threshold alerts, linear forecast alerts, and pluggable sinks.
+- `consoleAlertSink()`, `webhookAlertSink({ url, headers })`, `throttle(sink, windowMs)` — built-in alert sinks.
+- `chargebackReport(samples, { groupBy, from, to })` + `chargebackReportToCsv(report)` — pure cost-attribution exporter for finance / per-tenant invoicing.
 - `priceFor`, `computeCost`, `DEFAULT_PRICES`.
 - `approximateCounter`, `countTokens`, `countTokensDetailed`, `createProviderCounter`.
 
