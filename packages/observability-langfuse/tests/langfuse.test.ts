@@ -153,15 +153,19 @@ describe('langfuse observer', () => {
     await flush()
   })
 
-  it('throws helpful message if langfuse package is missing', async () => {
-    vi.doMock('langfuse', () => {
-      throw new Error('not found')
-    })
+  it('does not emit traces and warns when langfuse package is missing', async () => {
+    // A mock factory that throws leaves Vitest on the previous mock (FakeLangfuse).
+    // Simulate a missing / broken install: module loads but exports no Langfuse client.
+    vi.doMock('langfuse', () => ({}))
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { langfuse } = await import('../src/langfuse')
     const sink = langfuse({ publicKey: 'pk', secretKey: 'sk' })
     sink.on({ type: 'llm:start', model: 'm', messageCount: 1 })
     await flush()
     expect(captured.traces.length).toBe(0)
+    expect(warn).toHaveBeenCalled()
+    expect(String(warn.mock.calls[0]?.[0] ?? '')).toContain('observability-langfuse')
+    warn.mockRestore()
   })
 
   it('reads config from env when not provided', async () => {

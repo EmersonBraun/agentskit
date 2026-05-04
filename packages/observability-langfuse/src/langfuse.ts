@@ -1,4 +1,4 @@
-import type { Observer } from '@agentskit/core'
+import { AdapterError, ErrorCodes, type Observer } from '@agentskit/core'
 import { createTraceTracker, type TraceSpan } from '@agentskit/observability'
 
 export interface LangfuseConfig {
@@ -58,19 +58,41 @@ export function langfuse(config: LangfuseConfig = {}): Observer {
   const getClient = (): Promise<LangfuseClient> => {
     if (clientPromise) return clientPromise
     clientPromise = (async () => {
-      const mod = await import('langfuse')
-      const Ctor = (mod.Langfuse ?? (mod as { default?: unknown }).default) as unknown as new (
-        c: Record<string, unknown>,
-      ) => LangfuseClient
-      return new Ctor({
-        publicKey,
-        secretKey,
-        baseUrl,
-        release,
-        environment,
-        flushAt: config.flushAt ?? 15,
-        flushInterval: config.flushInterval ?? 1_000,
-      })
+      try {
+        const mod = await import('langfuse')
+        const Ctor = (mod.Langfuse ?? (mod as { default?: unknown }).default) as unknown as
+          | (new (c: Record<string, unknown>) => LangfuseClient)
+          | undefined
+        if (typeof Ctor !== 'function') {
+          throw new AdapterError({
+            code: ErrorCodes.AK_ADAPTER_MISSING,
+            message: 'langfuse package is missing or invalid: no `Langfuse` export.',
+            hint: 'Add the optional peer dependency: pnpm add langfuse',
+          })
+        }
+        return new Ctor({
+          publicKey,
+          secretKey,
+          baseUrl,
+          release,
+          environment,
+          flushAt: config.flushAt ?? 15,
+          flushInterval: config.flushInterval ?? 1_000,
+        })
+      } catch (cause) {
+        console.warn(
+          '[@agentskit/observability-langfuse] Optional peer `langfuse` failed to load; spans will not be sent.',
+          cause,
+        )
+        throw cause instanceof AdapterError
+          ? cause
+          : new AdapterError({
+              code: ErrorCodes.AK_ADAPTER_MISSING,
+              message: cause instanceof Error ? cause.message : String(cause),
+              hint: 'Add the optional peer dependency: pnpm add langfuse',
+              cause,
+            })
+      }
     })()
     return clientPromise
   }

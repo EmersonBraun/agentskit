@@ -49,6 +49,7 @@ npm install @agentskit/observability
 ### Signed audit log
 
 - `createSignedAuditLog`, `createInMemoryAuditStore`. Hash-chain + HMAC. See [Audit log](/docs/reference/recipes/audit-log).
+- `appendPiiAuditEvents(log, { actor, action, hits, subjectId?, reason? })` — append one signed entry per PII redaction hit to an existing `SignedAuditLog`. `action` is `pii:redact`, `pii:reveal`, or `pii:reveal-denied`; each payload records rule id, counts, and match `offset`/`length` only (no raw spans), for tamper-evident audit evidence alongside the hash chain.
 
 ## Minimal example
 
